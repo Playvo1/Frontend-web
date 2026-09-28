@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Playvo Web
 
 Admin and Venue Owner dashboards for Playvo (React + Vite).
@@ -49,3 +50,6 @@ Admin and Venue Owner dashboards for Playvo (React + Vite).
 - Arabic → Cairo, English → Poppins (self-hosted via `@fontsource`).
 - Baloo → PLAYVO logo wordmark only (local file `src/assets/fonts/Baloo-Regular.ttf`).
 - Brand colors: Navy `#01213D`, Orange `#FC4B01` (tokens in `src/index.css`).
+=======
+
+>>>>>>> 6d7eb6f596b4d42a47e18bceda33772854947601
