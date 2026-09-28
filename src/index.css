@@ -1,0 +1,99 @@
+/*
+ * Baloo — used ONLY for the PLAYVO logo wordmark (.login-wordmark in
+ * Login.css, .auth-hero-logo-text in AuthLayout.css and .dashboard-wordmark
+ * in DashboardLayout.css), never for normal UI text. Loaded from the local project file.
+ */
+@font-face {
+  font-family: 'Baloo';
+  src: url('./assets/fonts/Baloo-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+/*
+ * Playvo design tokens — the full palette from the Brand Visual System's
+ * Design Tokens page, used literally (no substituted/approximate shades).
+ */
+:root {
+  --color-navy: #01213d; /* color.brand.navy */
+  --color-orange: #fc4b01; /* color.brand.orange */
+  --color-white: #ffffff; /* color.background.primary */
+  --color-background-secondary: #f7f9fb; /* color.background.secondary */
+  --color-surface-primary: #ffffff; /* color.surface.primary */
+  --color-text-primary: #0b1116; /* color.text.primary */
+  --color-text-secondary: #3e4a55; /* color.text.secondary */
+  --color-border: #e3e8ed; /* color.border.default */
+  /*
+   * Figma Dev Mode measured the login Email/Password inputs' own border at
+   * #CBD3DA ("neutral/gray300") — a different value from the documented
+   * color.border.default (#E3E8ED) above, which is still used elsewhere
+   * (login card, footer divider). Kept as its own token rather than
+   * overwriting color-border, since the two are genuinely different values
+   * for different elements.
+   */
+  --color-input-border: #cbd3da;
+  --color-success: #16a34a; /* color.status.success */
+  --color-warning: #f59e0b; /* color.status.warning */
+  --color-error: #dc2626; /* color.status.error */
+  --color-info: #2563eb; /* color.status.info */
+
+  /*
+   * No separate "placeholder" token exists in the Brand Visual System — an
+   * input placeholder is muted/secondary text, so it reuses text.secondary
+   * rather than an invented in-between gray.
+   */
+  --color-placeholder: var(--color-text-secondary);
+
+  /*
+   * Final font decision: Cairo for Arabic text, Poppins for English text.
+   * Inter is not used anywhere in this app. Baloo is reserved for the logo
+   * wordmark only (see the @font-face at the top of this file).
+   */
+  --font-ar: 'Cairo', sans-serif;
+  --font-en: 'Poppins', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-ar);
+  color: var(--color-text-primary);
+  background: var(--color-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * The page's overall text is fully translated per language (every string in
+ * i18n.js has a complete ar/en pair), so a page-level switch keyed on
+ * html[lang] is correct for this default: when the page is in English mode
+ * every one of these regular text nodes really is English text, not just
+ * an RTL/LTR direction flip. This is intentionally different from `dir`
+ * (which only mirrors layout) — it is keyed on the same `lang` attribute
+ * App.jsx already sets to reflect the active i18n language.
+ * This default does NOT cover elements whose own text is always Latin
+ * regardless of the page's language (e.g. the PLAYVO wordmark, the
+ * footer's brand mention) — those get their own unconditional
+ * font-family: 'Poppins' declaration at the component level instead of
+ * relying on this page-level rule.
+ */
+html[lang='en'] body {
+  font-family: var(--font-en);
+}
+
+#root {
+  min-height: 100svh;
+}
+
+button,
+input {
+  font-family: inherit;
+}

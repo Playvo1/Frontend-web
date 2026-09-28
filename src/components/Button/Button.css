@@ -1,0 +1,49 @@
+/*
+ * Box model matches Figma Dev Mode's measured values for this exact button
+ * ("Frame 56"): Fixed height 48px, Radius 4px, Border 1px, Padding 8px.
+ * display:flex + centering added so the label centers within that fixed
+ * 48px height instead of relying on padding+line-height to land there —
+ * Figma's own inner-alignment for this frame wasn't shown, so this is the
+ * one detail not read directly off a Figma value.
+ */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-full-width {
+  width: 100%;
+}
+
+/*
+ * Border + background taken directly from Figma Dev Mode for this button:
+ * Border 1px, color "neutral/border" (the documented color.border.default,
+ * #E3E8ED — same token used for the login card/footer divider elsewhere).
+ * Background is a two-stop linear gradient, #01213D -> #023D70 (both
+ * confirmed Figma swatches). Figma's panel didn't show the gradient's
+ * angle/direction, only its two color stops, so 180deg (top-to-bottom) is
+ * used as a reasonable default — flagged, not a confirmed Figma value.
+ */
+.btn-primary {
+  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, #01213d 0%, #023d70 100%);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* Disabled/loading state (e.g. while the login request is in progress). */
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

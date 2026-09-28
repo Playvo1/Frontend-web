@@ -1,0 +1,394 @@
+/*
+ * AuthLayout — shared page shell for the signed-out screens (Login, Forgot
+ * Password): the form panel plus the rounded hero panel from the Figma
+ * reference (1440px-wide frame). Moved here unchanged from Login.css so both
+ * pages render the identical hero. Colors use the tokens in index.css; the
+ * only non-token values are the white/navy transparencies of the photo
+ * overlay and the translucent policy card.
+ */
+
+.auth-page {
+  min-height: 100svh;
+  display: flex;
+  background: var(--color-white);
+}
+
+/* ------------------------------------------------------------------ */
+/* Form panel                                                          */
+/* ------------------------------------------------------------------ */
+
+.auth-form-panel {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  padding-block: clamp(32px, 12.5vh, 128px) 48px;
+  padding-inline: 32px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared form controls (Login + Forgot Password)                     */
+/* ------------------------------------------------------------------ */
+
+/* Compact, light language-switcher pill from the reference. */
+.auth-form-panel .lang-switcher {
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+}
+
+.auth-form-panel .lang-switcher-option {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Input look: 8px radius, larger icon, light placeholder. */
+.auth-form-panel .input-field {
+  border-radius: 8px;
+  padding-inline: 12px;
+  gap: 10px;
+}
+
+.auth-form-panel .input-field-invalid {
+  border-color: var(--color-error);
+}
+
+.auth-form-panel .input-icon {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.5;
+  color: var(--color-input-border);
+}
+
+.auth-form-panel .input-control::placeholder {
+  color: var(--color-input-border);
+}
+
+/*
+ * Primary button: same navy → #023D70 colors as the shared primary button,
+ * but the reference shows the gradient running horizontally (dark on the
+ * left, lighter on the right) with an 8px radius and no border.
+ */
+.auth-form-panel .btn-primary {
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #01213d 0%, #023d70 100%);
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero panel                                                          */
+/* ------------------------------------------------------------------ */
+
+.auth-hero {
+  flex: 0 0 auto;
+  width: 57.4%;
+  margin: 10px;
+  margin-inline-start: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 32px;
+  background-size: cover;
+  background-position: center;
+  color: var(--color-white);
+}
+
+/* Navy tint at the top fading into a near-black bottom. */
+.auth-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(1, 33, 61, 0.7) 0%,
+    rgba(1, 33, 61, 0.45) 32%,
+    rgba(20, 6, 16, 0.72) 52%,
+    rgba(20, 6, 16, 0.92) 100%
+  );
+}
+
+.auth-hero-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-block: 44px 40px;
+  padding-inline: 90px 64px;
+}
+
+/*
+ * Logo lockup at the hero's outer top corner (inline-end: left in RTL,
+ * right in LTR). direction:ltr keeps "mark + LAYVO" reading as PLAYVO.
+ */
+.auth-hero-logo {
+  align-self: flex-end;
+  display: flex;
+  align-items: flex-end;
+  direction: ltr;
+}
+
+.auth-hero-logo-mark {
+  display: block;
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+
+.auth-hero-logo-text {
+  margin-inline-start: -30px;
+  margin-block-end: 7px;
+  font-family: 'Baloo', sans-serif;
+  font-size: 23px;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.auth-hero-logo-text-white {
+  color: var(--color-white);
+}
+
+.auth-hero-logo-text-orange {
+  color: var(--color-orange);
+}
+
+.auth-hero-body {
+  margin-block: auto;
+  max-width: 496px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: start;
+}
+
+.auth-hero-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+}
+
+.auth-hero-title-line {
+  font-size: 32px;
+  line-height: 1.3;
+  color: var(--color-white);
+}
+
+.auth-hero-title-accent {
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--color-orange);
+}
+
+.auth-hero-description {
+  margin: 20px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 2.2;
+}
+
+/* Translucent onboarding-policy card. */
+.auth-policy-card {
+  margin-block-start: 104px;
+  width: 348px;
+  max-width: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px);
+}
+
+.auth-policy-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-policy-icon {
+  flex-shrink: 0;
+  color: var(--color-orange);
+}
+
+.auth-policy-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-policy-text {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.auth-policy-actions {
+  margin-block-start: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  font-size: 11px;
+}
+
+/* English labels are wider (Poppins) — tighter spacing keeps one line. */
+html[lang='en'] .auth-policy-actions {
+  column-gap: 12px;
+}
+
+.auth-policy-request {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: 700;
+  color: var(--color-orange);
+  cursor: pointer;
+}
+
+.auth-policy-separator {
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.auth-policy-support {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+/* Tablet / small laptop: give the form more room. */
+@media (max-width: 1199px) {
+  .auth-hero {
+    width: calc(50% - 10px);
+  }
+
+  .auth-hero-content {
+    padding-inline: 48px 40px;
+  }
+
+  .auth-hero-title-accent {
+    font-size: 46px;
+  }
+}
+
+/* Mobile: stack — form first, hero card below it. */
+@media (max-width: 860px) {
+  .auth-page {
+    flex-direction: column;
+  }
+
+  .auth-form-panel {
+    padding: 24px;
+  }
+
+  /* 16px prevents iOS Safari from auto-zooming into the field on focus. */
+  .auth-form-panel .input-control {
+    font-size: 16px;
+  }
+
+  .auth-hero {
+    width: auto;
+    margin: 0 10px 10px;
+    border-radius: 24px;
+  }
+
+  .auth-hero-content {
+    padding: 28px 24px;
+  }
+
+  .auth-hero-body {
+    margin-block-start: 32px;
+  }
+
+  .auth-hero-title-line {
+    font-size: 24px;
+  }
+
+  .auth-hero-title-accent {
+    font-size: 40px;
+  }
+
+  .auth-hero-description {
+    font-size: 14px;
+  }
+
+  .auth-policy-card {
+    margin-block-start: 32px;
+    width: 100%;
+  }
+
+  /* Actions may wrap onto two lines here; drop the separator dot. */
+  .auth-policy-separator {
+    display: none;
+  }
+
+  .auth-hero-logo-mark {
+    width: 60px;
+    height: 60px;
+  }
+
+  .auth-hero-logo-text {
+    margin-inline-start: -24px;
+    margin-block-end: 6px;
+    font-size: 20px;
+  }
+}
+
+/* Small mobile (≈390px and below): 16px side gutters, scaled-down hero. */
+@media (max-width: 480px) {
+  .auth-form-panel {
+    padding: 20px 16px 24px;
+  }
+
+  .auth-hero {
+    margin: 0 8px 8px;
+    border-radius: 20px;
+  }
+
+  .auth-hero-content {
+    padding: 20px 16px 16px;
+  }
+
+  .auth-hero-body {
+    margin-block-start: 24px;
+  }
+
+  .auth-hero-logo-mark {
+    width: 52px;
+    height: 52px;
+  }
+
+  .auth-hero-logo-text {
+    margin-inline-start: -21px;
+    margin-block-end: 5px;
+    font-size: 18px;
+  }
+
+  .auth-hero-title-line {
+    font-size: 22px;
+  }
+
+  .auth-hero-title-accent {
+    font-size: 34px;
+  }
+
+  .auth-hero-description {
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  .auth-policy-card {
+    margin-block-start: 24px;
+    padding: 14px;
+  }
+}

@@ -1,0 +1,133 @@
+/*
+ * Login page content (inside AuthLayout's form panel). The page shell, the
+ * hero panel and the shared form-control look live in
+ * src/components/AuthLayout/AuthLayout.css.
+ */
+
+/* 432px content column, everything centered except the switcher/links. */
+.login-form-content {
+  width: 432px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/*
+ * Language switcher sits at the end edge of the content column (left in
+ * RTL, right in LTR). Its compact pill look comes from AuthLayout.css.
+ */
+.login-form-content .lang-switcher {
+  align-self: flex-end;
+  margin-block-end: clamp(40px, 7.3vh, 75px);
+}
+
+.login-welcome-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-navy);
+}
+
+/*
+ * PLAYVO wordmark (text logo) — Baloo, the approved logo font. Always Latin,
+ * so it never follows the page's Cairo/Poppins switch.
+ */
+.login-wordmark {
+  margin: 4px 0 0;
+  font-family: 'Baloo', sans-serif;
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 2px;
+}
+
+.login-wordmark-navy {
+  color: var(--color-navy);
+}
+
+.login-wordmark-orange {
+  color: var(--color-orange);
+}
+
+.login-welcome-subtitle {
+  margin: 20px 0 64px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Sits at the end edge (left in RTL, right in LTR). */
+.login-forgot-password {
+  align-self: flex-end;
+  margin-block-start: -12px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--color-info);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Button look comes from AuthLayout.css; only its spacing is set here. */
+.login-form .btn-primary {
+  margin-block-start: 64px;
+}
+
+/*
+ * Form-level error (wrong credentials, locked account, ...) shown above the
+ * Login button. Uses the documented color.status.error token; text-align
+ * start reads naturally in both RTL and LTR.
+ */
+.login-form-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-error);
+  text-align: start;
+}
+
+/* The error pushes the button down; keep the button close to it. */
+.login-form-error + .btn-primary {
+  margin-block-start: 0;
+}
+
+/* Mobile: stack — form first, hero card below it. */
+@media (max-width: 860px) {
+  .login-form-content .lang-switcher {
+    margin-block-end: 40px;
+  }
+
+  /* Tighter vertical rhythm once the form is no longer beside the hero. */
+  .login-welcome-subtitle {
+    margin-block-end: 40px;
+  }
+
+  .login-form .btn-primary {
+    margin-block-start: 32px;
+  }
+}
+
+/* Small mobile (≈390px and below): 16px side gutters, scaled-down hero. */
+@media (max-width: 480px) {
+  .login-form-content .lang-switcher {
+    margin-block-end: 32px;
+  }
+
+  .login-welcome-title {
+    font-size: 20px;
+  }
+
+  .login-wordmark {
+    font-size: 36px;
+  }
+}

@@ -1,0 +1,57 @@
+/* Shared styles for the dashboard SVG charts. */
+.chart {
+  width: 100%;
+  min-width: 0;
+}
+
+.chart svg {
+  display: block;
+  overflow: visible;
+}
+
+.chart-grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.chart-baseline {
+  stroke: var(--color-input-border);
+  stroke-width: 1;
+}
+
+.chart-axis-label {
+  fill: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.chart-axis-label-accent {
+  fill: var(--color-orange);
+  font-weight: 600;
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--color-orange);
+  stroke-width: 2;
+}
+
+.chart-point {
+  fill: var(--color-white);
+  stroke: var(--color-orange);
+  stroke-width: 1.5;
+}
+
+/* Horizontal reference line (Figma: grey line with day markers). */
+.chart-reference {
+  stroke: var(--color-text-secondary);
+  stroke-opacity: 0.55;
+  stroke-width: 2;
+}
+
+.chart-reference-point {
+  fill: var(--color-white);
+  stroke: var(--color-text-secondary);
+  stroke-opacity: 0.55;
+  stroke-width: 1.5;
+}

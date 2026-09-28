@@ -1,0 +1,575 @@
+/*
+ * Venue Owner bookings page — layout from the Figma reference (1440px
+ * frame): title + subtitle, a search/filter bar, the bookings table and
+ * the pagination row. Colors use the tokens in index.css.
+ */
+
+.vob-header {
+  margin-block-end: 22px;
+}
+
+.vob-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.vob-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Search + filters bar */
+.vob-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-block-end: 20px;
+  padding: 13px 14px;
+  border-radius: 10px;
+  background: var(--color-white);
+  box-shadow: 0 2px 10px rgba(1, 33, 61, 0.06);
+}
+
+.vob-search {
+  flex: 0 1 238px;
+  min-width: 0;
+}
+
+/* Shared Input, compact variant for this bar (Figma: filled, borderless). */
+.vob-search .input-field {
+  height: 38px;
+  padding: 0 12px;
+  border-color: transparent;
+  border-radius: 6px;
+  background-color: var(--color-background-secondary);
+}
+
+.vob-search .input-field:focus-within {
+  border-color: var(--color-orange);
+  background-color: var(--color-white);
+}
+
+.vob-search .input-control {
+  font-size: 13px;
+}
+
+.vob-search .input-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-navy);
+}
+
+/* "All dates" and "Filter" triggers + their popovers (Figma). */
+.vob-popover-root {
+  position: relative;
+}
+
+.vob-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+  height: 38px;
+  padding-inline: 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-background-secondary);
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-navy);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.vob-trigger-label {
+  flex: 1;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.vob-trigger-chevron-muted {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.vob-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  z-index: 10;
+  border-radius: 8px;
+  background: var(--color-white);
+  box-shadow: 0 8px 24px rgba(1, 33, 61, 0.12);
+}
+
+/* Filter panel (Figma): opens toward the trigger's end side — its end edge
+   sits 28px beyond the trigger's end edge (left in Arabic, right in
+   English), so the panel starts inside the trigger and extends past it. */
+.vob-status-panel {
+  inset-inline-end: -28px;
+  min-width: 124px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vob-status-option {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  min-height: 30px;
+  padding-inline: 8px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-navy);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vob-status-option:hover,
+.vob-status-option-selected {
+  background: var(--color-background-secondary);
+}
+
+.vob-status-option-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.vob-status-option-dot-all {
+  background: var(--color-input-border);
+}
+
+.vob-status-option-dot-confirmed {
+  background: var(--color-success);
+}
+
+.vob-status-option-dot-pending_payment {
+  background: var(--color-warning);
+}
+
+.vob-status-option-dot-cancelled {
+  background: var(--color-error);
+}
+
+/* Calendar panel: centered under the "All dates" trigger. */
+.vob-calendar {
+  left: 50%;
+  transform: translateX(-50%);
+  width: 242px;
+  padding: 12px 10px 10px;
+}
+
+.vob-calendar-header {
+  display: flex;
+  justify-content: center;
+  margin-block-end: 8px;
+}
+
+.vob-month {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.vob-month-control {
+  height: 22px;
+  padding-inline: 12px 26px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font: inherit;
+  font-family: var(--font-en);
+  font-size: 10px;
+  color: inherit;
+  cursor: pointer;
+  appearance: none;
+}
+
+.vob-month-control option {
+  color: var(--color-navy);
+}
+
+.vob-month-chevron {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+}
+
+.vob-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 4px;
+  font-family: var(--font-en);
+}
+
+.vob-weekday {
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  color: var(--color-input-border);
+}
+
+.vob-weekday-weekend {
+  color: var(--color-orange);
+}
+
+.vob-day {
+  width: 28px;
+  height: 28px;
+  margin-inline: auto;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.vob-day:hover {
+  background: var(--color-background-secondary);
+}
+
+.vob-day-outside {
+  color: var(--color-navy);
+}
+
+.vob-day-inside {
+  color: var(--color-input-border);
+}
+
+.vob-day-weekend {
+  color: var(--color-orange);
+}
+
+.vob-day-selected,
+.vob-day-selected:hover {
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+/* Table */
+.vob-table-card {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-white);
+}
+
+.vob-table-scroll {
+  overflow-x: auto;
+}
+
+.vob-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.vob-table th,
+.vob-table td {
+  padding-inline: 20px;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.vob-table th {
+  height: 58px;
+  background: var(--color-background-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.vob-table td {
+  height: 79px;
+  border-block-start: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-navy);
+}
+
+.vob-table .vob-center {
+  text-align: center;
+}
+
+.vob-table td.vob-id {
+  font-weight: 500;
+  color: var(--color-orange);
+}
+
+.vob-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vob-avatar {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(1, 33, 61, 0.06);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vob-player-name {
+  font-weight: 500;
+}
+
+.vob-table td.vob-muted {
+  color: var(--color-text-secondary);
+}
+
+.vob-amount {
+  font-weight: 600;
+}
+
+.vob-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vob-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.vob-status-confirmed {
+  background: rgba(22, 163, 74, 0.08);
+  color: var(--color-success);
+}
+
+.vob-status-pending_payment {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.vob-status-cancelled {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-error);
+}
+
+.vob-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding-inline: 14px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-background-secondary);
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.vob-view:hover {
+  background: var(--color-border);
+}
+
+.vob-table td.vob-empty {
+  height: 120px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+/* Loading placeholder bars (Figma loading state): widths per column. */
+.vob-skeleton {
+  display: inline-block;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--color-border);
+  vertical-align: middle;
+}
+
+.vob-skeleton-id {
+  width: 82px;
+}
+
+.vob-skeleton-player,
+.vob-skeleton-time {
+  width: 98px;
+}
+
+.vob-skeleton-date {
+  width: 131px;
+}
+
+.vob-skeleton-amount,
+.vob-skeleton-status {
+  width: 89px;
+}
+
+.vob-skeleton-action {
+  width: 92px;
+}
+
+/* Error state (Figma): centered in the table body, under the header. */
+.vob-error {
+  min-height: 632px; /* the height of a full page of rows (8 × 79px) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  border-block-start: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.vob-error-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vob-error-icon {
+  flex-shrink: 0;
+  color: var(--color-error);
+}
+
+.vob-error-text {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.vob-error-action {
+  width: 302px;
+  max-width: 100%;
+  margin-block-start: 26px;
+}
+
+/* Same button colors, but the gradient runs horizontally in this design. */
+.vob-error-action .btn-primary {
+  background: linear-gradient(90deg, #01213d 0%, #023d70 100%);
+}
+
+/* Footer: count + pagination */
+.vob-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-start: 16px;
+}
+
+.vob-count {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.vob-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vob-page,
+.vob-page-arrow {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.vob-page-arrow {
+  color: var(--color-navy);
+}
+
+.vob-page-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Active page: Navy 600 (#17486B) from the Brand Visual System navy scale,
+   as in the design. */
+.vob-page-active {
+  background: #17486b;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+@media (max-width: 600px) {
+  .vob-title {
+    font-size: 24px;
+  }
+
+  .vob-filters {
+    padding: 12px;
+  }
+
+  .vob-search {
+    flex: 1 1 100%;
+  }
+
+  .vob-popover-root {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .vob-trigger {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* The trigger reaches the card edge here: keep the panel on screen. */
+  .vob-status-panel {
+    inset-inline-end: 0;
+  }
+
+  /* On small screens the calendar opens from the trigger's start edge so
+     it stays inside the viewport. */
+  .vob-calendar {
+    left: 0;
+    transform: none;
+  }
+
+  /* The calendar itself is dir="ltr", so the page direction is read from
+     the document to anchor it to the trigger's start (right) edge. */
+  [dir='rtl'] .vob-calendar {
+    right: 0;
+    left: auto;
+  }
+}

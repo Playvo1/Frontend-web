@@ -1,0 +1,167 @@
+/*
+ * AuthStep — shared content column for the password-recovery steps
+ * (Forgot Password, Verify Code) inside AuthLayout's form panel: a top bar
+ * (back-to-login link + language switcher) and a vertically centered
+ * title / subtitle / form block. Moved unchanged from ForgotPassword.css
+ * (classes renamed forgot-* → auth-step-*) so both steps share one style.
+ * Measurements were read off the Figma references (1440px-wide frame).
+ */
+
+/* 432px column filling the panel's height, so the main block can center. */
+.auth-step-content {
+  width: 432px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Back link (start edge) + language switcher (end edge). */
+.auth-step-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+/* The shared switcher aligns itself to flex-end; center it in this row. */
+.auth-step-topbar .lang-switcher {
+  align-self: center;
+  margin-inline-start: auto;
+}
+
+.auth-step-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-white);
+  font-size: 12px;
+  color: var(--color-navy);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.auth-step-back-icon {
+  flex-shrink: 0;
+}
+
+/* "Back" points toward the start edge: left in LTR, right in RTL. */
+[dir='rtl'] .auth-step-back-icon {
+  transform: scaleX(-1);
+}
+
+/*
+ * Title/subtitle/form block, vertically centered in the panel below the top
+ * bar; the bottom padding lifts it to where the reference places it.
+ */
+.auth-step-main {
+  margin-block: auto;
+  padding-block: 40px clamp(0px, 13.5vh, 138px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.auth-step-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-navy);
+}
+
+.auth-step-subtitle {
+  margin: 8px 0 64px;
+  white-space: pre-line;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.auth-step-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/*
+ * Small underlined text link placed right under a field, at the end edge
+ * (left in RTL, right in LTR) — e.g. "Didn't receive a code? Resend".
+ * The negative margin tightens the form's 24px gap to ~10px below the
+ * field. 11px: the references draw it even smaller (~8.5px), but that is
+ * too small to read and tap comfortably.
+ */
+.auth-step-link {
+  align-self: flex-end;
+  margin-block-start: -14px;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--color-info);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-step-link:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* Form-level messages above the button (error / neutral confirmation). */
+.auth-step-message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: start;
+}
+
+.auth-step-message-error {
+  color: var(--color-error);
+}
+
+.auth-step-message-success {
+  color: var(--color-success);
+}
+
+/*
+ * Stacked layout: smaller fixed spacing. margin-block:auto (from above)
+ * still centers the block if the panel is taller than its content.
+ */
+@media (max-width: 860px) {
+  .auth-step-main {
+    padding-block: 56px 16px;
+  }
+
+  .auth-step-subtitle {
+    margin-block-end: 40px;
+  }
+}
+
+/* Small mobile (≈390px and below). */
+@media (max-width: 480px) {
+  .auth-step-back {
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+
+  .auth-step-main {
+    padding-block-start: 40px;
+  }
+
+  .auth-step-title {
+    font-size: 26px;
+  }
+
+  .auth-step-subtitle {
+    font-size: 13px;
+    margin-block-end: 32px;
+  }
+}

@@ -1,0 +1,54 @@
+/*
+ * Dashboard card from the Figma reference: white fading into the light
+ * background at the bottom, 10px radius, soft shadow.
+ */
+.card {
+  min-width: 0;
+  padding: 24px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--color-white) 0%, var(--color-background-secondary) 100%);
+  box-shadow: 0 2px 10px rgba(1, 33, 61, 0.06);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 20px;
+}
+
+.card-heading {
+  min-width: 0;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-navy);
+}
+
+.card-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.card-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+
+  .card-title {
+    font-size: 17px;
+  }
+}

@@ -1,0 +1,421 @@
+/*
+ * Dashboard shell — measurements read off the Figma reference and scaled
+ * to its 1440px-wide frame (sidebar ≈256px, top bar ≈70px). Colors use the
+ * tokens in index.css; the sidebar's muted text/lines are white at reduced
+ * opacity over the navy background.
+ */
+
+.dashboard-layout {
+  min-height: 100svh;
+  display: flex;
+  background: var(--color-background-secondary);
+}
+
+/* ------------------------------------------------------------------ */
+/* Sidebar (inline-start: right in RTL, left in LTR)                  */
+/* ------------------------------------------------------------------ */
+
+.dashboard-sidebar {
+  position: sticky;
+  top: 0;
+  flex: 0 0 256px;
+  width: 256px;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.dashboard-sidebar-brand {
+  flex-shrink: 0;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-inline: 24px;
+  border-block-end: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* PLAYVO wordmark — Baloo, the approved logo font. */
+.dashboard-wordmark {
+  font-family: 'Baloo', sans-serif;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 1.5px;
+}
+
+.dashboard-wordmark-light {
+  color: var(--color-white);
+}
+
+.dashboard-wordmark-accent {
+  color: var(--color-orange);
+}
+
+.dashboard-sidebar-close {
+  display: none;
+}
+
+.dashboard-nav {
+  padding: 20px 20px 0;
+}
+
+.dashboard-nav-title {
+  margin: 0 0 20px;
+  padding-inline: 4px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.dashboard-nav-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding-inline: 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+
+a.dashboard-nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dashboard-nav-item-active,
+a.dashboard-nav-item-active:hover {
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+.dashboard-nav-icon {
+  flex-shrink: 0;
+  stroke-width: 1.75;
+}
+
+.dashboard-sidebar-footer {
+  margin-block-start: auto;
+  padding: 24px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.dashboard-venue-card {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: rgba(2, 61, 112, 0.6);
+}
+
+.dashboard-venue-label {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dashboard-venue-name {
+  margin: 4px 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.dashboard-venue-status {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dashboard-venue-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+.dashboard-logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding-inline: 16px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+}
+
+.dashboard-logout:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ------------------------------------------------------------------ */
+/* Main area                                                           */
+/* ------------------------------------------------------------------ */
+
+.dashboard-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-inline: 46px;
+  background: var(--color-white);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.dashboard-topbar-start,
+.dashboard-topbar-end {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dashboard-menu-button {
+  display: none;
+}
+
+.dashboard-greeting {
+  min-width: 0;
+}
+
+.dashboard-greeting-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.dashboard-greeting-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.dashboard-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  /* Rendered as a <button>: reset the native button look. */
+  margin: 0;
+  padding: 4px 6px;
+  margin-inline: -6px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.dashboard-user:hover {
+  background: var(--color-background-secondary);
+}
+
+.dashboard-user:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.dashboard-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-navy);
+  color: var(--color-white);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dashboard-user-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dashboard-user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.dashboard-user-role {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.dashboard-user-chevron {
+  flex-shrink: 0;
+  color: var(--color-navy);
+}
+
+.dashboard-bell {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.dashboard-bell-dot {
+  position: absolute;
+  top: 7px;
+  inset-inline-end: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-orange);
+}
+
+.dashboard-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 52px 46px 48px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+/* Tablet & below: the sidebar becomes an off-canvas drawer. */
+@media (max-width: 1024px) {
+  .dashboard-sidebar {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 30;
+    height: auto;
+    transform: translateX(-100%);
+    /* Hidden drawer is also removed from keyboard focus / screen readers. */
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0.2s;
+  }
+
+  [dir='rtl'] .dashboard-sidebar {
+    transform: translateX(100%);
+  }
+
+  .dashboard-sidebar.dashboard-sidebar-open,
+  [dir='rtl'] .dashboard-sidebar.dashboard-sidebar-open {
+    transform: none;
+    visibility: visible;
+  }
+
+  .dashboard-sidebar-brand {
+    justify-content: space-between;
+  }
+
+  .dashboard-sidebar-close {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-white);
+    cursor: pointer;
+  }
+
+  .dashboard-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(1, 33, 61, 0.45);
+  }
+
+  .dashboard-menu-button {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-white);
+    color: var(--color-navy);
+    cursor: pointer;
+  }
+
+  .dashboard-topbar {
+    padding-inline: 24px;
+  }
+
+  .dashboard-content {
+    padding: 24px;
+  }
+}
+
+/* Small mobile: compact top bar (avatar only). */
+@media (max-width: 600px) {
+  .dashboard-topbar {
+    padding-inline: 16px;
+    gap: 10px;
+  }
+
+  .dashboard-topbar-start,
+  .dashboard-topbar-end {
+    gap: 10px;
+  }
+
+  .dashboard-user-text,
+  .dashboard-user-chevron {
+    display: none;
+  }
+
+  .dashboard-greeting-title {
+    font-size: 14px;
+  }
+
+  .dashboard-greeting-subtitle {
+    font-size: 11px;
+  }
+
+  .dashboard-content {
+    padding: 20px 16px 32px;
+  }
+}

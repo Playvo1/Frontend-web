@@ -1,0 +1,64 @@
+/*
+ * Sizing/radius/border/padding/gap match Figma Dev Mode's measured values
+ * for this field exactly: Fixed height 48px, Radius 4px, Border 1px
+ * (#CBD3DA — see the color-input-border note in index.css), Padding 8px
+ * (all sides), Gap 8px (between the icon and the text).
+ */
+.input-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 4px;
+  padding: 8px;
+  background-color: var(--color-white);
+}
+
+.input-field:focus-within {
+  border-color: var(--color-navy);
+}
+
+.input-icon {
+  flex-shrink: 0;
+  color: var(--color-placeholder);
+}
+
+.input-control {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.input-control::placeholder {
+  color: var(--color-placeholder);
+}
+
+/*
+ * Validation state (mock auth step). .input stacks the field and its
+ * optional error text; with no error it contains only the field, so the
+ * field's size/spacing in forms is unchanged. Uses the documented
+ * color.status.error token.
+ */
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-field-invalid,
+.input-field-invalid:focus-within {
+  border-color: var(--color-error);
+}
+
+.input-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-error);
+  text-align: start;
+}

@@ -1,0 +1,451 @@
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+
+// Only the strings needed for the screens built so far (Login, the
+// password-recovery steps, the shared auth hero, the dashboard shell, the
+// Venue Owner dashboard and the temporary admin landing page). Each page
+// adds its own section here as it gets implemented — keys are never added
+// ahead of an actual screen.
+const resources = {
+  ar: {
+    translation: {
+      common: {
+        logout: 'تسجيل الخروج',
+      },
+      login: {
+        welcomeTitle: 'أهلاً بعودتك في',
+        welcomeSubtitle: 'سجّل دخولك لإدارة ملعبك.',
+        emailPlaceholder: 'البريد الإلكتروني',
+        passwordPlaceholder: 'كلمة المرور',
+        forgotPassword: 'نسيت كلمة المرور؟',
+        submit: 'تسجيل الدخول',
+        submitting: 'جارٍ تسجيل الدخول...',
+        errors: {
+          emailRequired: 'البريد الإلكتروني مطلوب.',
+          emailInvalid: 'يرجى إدخال بريد إلكتروني صحيح.',
+          passwordRequired: 'كلمة المرور مطلوبة.',
+          invalidCredentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+          accountLocked: 'الحساب مقفل مؤقتاً، حاول مرة أخرى لاحقاً.',
+          accountInactive: 'هذا الحساب غير مفعّل. تواصل مع إدارة PLAYVO.',
+          roleNotAllowed: 'هذا الحساب لا يملك صلاحية الدخول إلى لوحة التحكم.',
+          generic: 'حدث خطأ غير متوقع، حاول مرة أخرى.',
+        },
+      },
+      auth: {
+        backToLogin: 'الرجوع لصفحة تسجيل الدخول',
+        hero: {
+          titleLine1: 'أدِر ملعبك',
+          titleLine2: 'بـإحـتـراف.',
+          description:
+            'من خلال بليفو، يمكنك إدارة ملعبك بكفاءة أكبر من خلال منصة واحدة تجمع لك كل ما تحتاجه. تابع حجوزاتك اليومية، نظّم جدول المواعيد، راقب أوقات التوفر، وتابع الإيرادات والأداء بشكل واضح ومنظم.',
+        },
+        policy: {
+          title: 'سياسة انضمام منشآت ومسؤولي الملاعب',
+          body: 'حسابات أصحاب ومسؤولي الملاعب يتم تفعيلها وتعيين صلاحياتها عبر إدارة بليفو (PLAYVO) المركزية فقط لضمان التحقق من ملكية المنشأة.',
+          requestRegistration: 'طلب تسجيل منشأة جديدة',
+          contactSupport: 'تواصل مع الدعم الفني',
+        },
+      },
+      forgotPassword: {
+        title: 'نسيت كلمة المرور؟',
+        subtitle: 'لا تقلق، أدخل بريدك الإلكتروني أدناه لاستعادة كلمة المرور.',
+        emailPlaceholder: 'البريد الإلكتروني',
+        submit: 'التالي',
+        submitting: 'جارٍ الإرسال...',
+        errors: {
+          emailRequired: 'البريد الإلكتروني مطلوب.',
+          emailInvalid: 'يرجى إدخال بريد إلكتروني صحيح.',
+          generic: 'حدث خطأ غير متوقع، حاول مرة أخرى.',
+        },
+      },
+      verifyCode: {
+        title: 'التحقق من الرمز',
+        subtitle: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني.',
+        codePlaceholder: 'أكتب الرمز المرسل إليك',
+        resend: 'لم تستلم رمزاً؟ أعد إرساله',
+        resending: 'جارٍ إعادة الإرسال...',
+        resent: 'تم إرسال رمز جديد إلى بريدك الإلكتروني.',
+        submit: 'التالي',
+        submitting: 'جارٍ التحقق...',
+        errors: {
+          codeRequired: 'رمز التحقق مطلوب.',
+          codeFormat: 'يجب أن يتكون الرمز من {{length}} أرقام.',
+          invalidOrExpired: 'الرمز غير صحيح أو منتهي الصلاحية، يرجى طلب رمز جديد.',
+          generic: 'حدث خطأ غير متوقع، حاول مرة أخرى.',
+        },
+      },
+      resetPassword: {
+        title: 'عيّن كلمة مرور',
+        // Two lines in the design — the line break is kept on purpose.
+        subtitle: 'تمت إعادة تعيين كلمة المرور السابقة الخاصة بك،\nيرجى تعيين كلمة مرور جديدة لحسابك.',
+        passwordPlaceholder: 'أكتب كلمة المرور الجديدة',
+        confirmPlaceholder: 'أكد كلمة المرور',
+        resend: 'لم تستلم رمزاً؟ أعد إرساله',
+        resending: 'جارٍ إعادة الإرسال...',
+        submit: 'تعيين كلمة المرور',
+        submitting: 'جارٍ الحفظ...',
+        success: 'تم تعيين كلمة المرور بنجاح. سيتم تحويلك إلى صفحة تسجيل الدخول...',
+        errors: {
+          passwordRequired: 'كلمة المرور الجديدة مطلوبة.',
+          passwordTooShort: 'يجب ألا تقل كلمة المرور عن {{min}} أحرف.',
+          confirmRequired: 'يرجى تأكيد كلمة المرور.',
+          mismatch: 'كلمتا المرور غير متطابقتين.',
+          invalidOrExpired: 'الرمز غير صحيح أو منتهي الصلاحية، يرجى طلب رمز جديد.',
+          generic: 'حدث خطأ غير متوقع، حاول مرة أخرى.',
+        },
+      },
+      dashboardLayout: {
+        sidebarLabel: 'القائمة الجانبية',
+        mainMenu: 'القائمة الرئيسية',
+        openMenu: 'فتح القائمة',
+        closeMenu: 'إغلاق القائمة',
+        venue: 'الملعب',
+        greeting: 'صباح الخير، {{name}}',
+        notifications: 'الإشعارات',
+        roles: {
+          venueOwner: 'مالك الملعب',
+        },
+        nav: {
+          home: 'الرئيسية',
+          bookings: 'الحجوزات',
+          schedule: 'الجدول',
+          myVenue: 'ملعبي',
+          reviews: 'التقييمات',
+          analytics: 'التحليلات',
+        },
+      },
+      venueOwnerDashboard: {
+        title: 'لوحة التحكم',
+        period: {
+          label: 'الفترة',
+          today: 'اليوم',
+          week: 'هذا الأسبوع',
+          month: 'هذا الشهر',
+          lastMonth: 'الشهر الماضي',
+        },
+        loadError: 'تعذّر تحميل بيانات لوحة التحكم.',
+        statsLabel: 'الإحصائيات',
+        stats: {
+          totalBookings: 'إجمالي الحجوزات',
+          totalBookingsNote: 'عن الشهر الماضي',
+          thisWeek: 'هذا الأسبوع',
+          thisWeekNote: 'خلال 7 أيام',
+          revenue: 'الإيرادات',
+          revenueNote: 'إيرادات هذا الأسبوع',
+          occupancy: 'نسبة الإشغال',
+          occupancyNote: 'متوسط استخدام الملعب',
+        },
+        schedule: {
+          title: 'جدول اليوم',
+          available: 'متاح',
+          open: 'مفتوح',
+          booked: 'محجوز',
+        },
+        bookingsChart: {
+          title: 'نظرة عامة على الحجوزات',
+          subtitle: 'الحجوزات اليومية هذا الأسبوع',
+          legend: 'الحجوزات',
+        },
+        revenueChart: {
+          title: 'الإيرادات',
+          subtitle: 'الإيرادات اليومية هذا الأسبوع (₪)',
+          legend: 'الإيرادات (₪)',
+        },
+        venueStatus: {
+          active: 'نشط',
+          inactive: 'غير نشط',
+        },
+        days: {
+          saturday: 'السبت',
+          sunday: 'الأحد',
+          monday: 'الاثنين',
+          tuesday: 'الثلاثاء',
+          wednesday: 'الأربعاء',
+          thursday: 'الخميس',
+          friday: 'الجمعة',
+        },
+      },
+      venueOwnerBookings: {
+        title: 'الحجوزات',
+        subtitle: 'إدارة الحجوزات الواردة إلى ملعبك.',
+        loadError: 'تعذّر تحميل الحجوزات.',
+        errorDescription: 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
+        retry: 'حاول مرة أخرى',
+        filtersLabel: 'البحث والتصفية',
+        searchPlaceholder: 'البحث في الحجوزات ...',
+        searchLabel: 'البحث في الحجوزات',
+        dateLabel: 'التاريخ',
+        allDates: 'جميع التواريخ',
+        statusLabel: 'الحالة',
+        filterButton: 'تصفية',
+        allStatuses: 'جميع الحالات',
+        monthLabel: 'الشهر',
+        tableLabel: 'قائمة الحجوزات',
+        columns: {
+          id: 'رقم الحجز',
+          player: 'اللاعب',
+          date: 'التاريخ',
+          time: 'الوقت',
+          amount: 'المبلغ',
+          status: 'الحالة',
+          action: 'الإجراء',
+        },
+        status: {
+          confirmed: 'مؤكد',
+          pending_payment: 'قيد الانتظار',
+          cancelled: 'ملغى',
+        },
+        view: 'عرض',
+        empty: 'لا توجد حجوزات مطابقة.',
+        showing: 'عرض {{from}}–{{to}} من {{total}} حجز',
+        paginationLabel: 'التنقل بين الصفحات',
+        previousPage: 'الصفحة السابقة',
+        nextPage: 'الصفحة التالية',
+        page: 'صفحة {{page}}',
+      },
+      dashboard: {
+        adminTitle: 'لوحة تحكم المسؤول',
+        signedInAs: 'مسجّل الدخول باسم {{name}} ({{email}})',
+        comingSoon: 'صفحة مؤقتة — سيتم بناء لوحة التحكم في مرحلة لاحقة.',
+      },
+    },
+  },
+  en: {
+    translation: {
+      common: {
+        logout: 'Log out',
+      },
+      login: {
+        welcomeTitle: 'Welcome back to',
+        welcomeSubtitle: 'Log in to manage your field.',
+        emailPlaceholder: 'Email',
+        passwordPlaceholder: 'Password',
+        forgotPassword: 'Forgot password?',
+        submit: 'Log in',
+        submitting: 'Logging in...',
+        errors: {
+          emailRequired: 'Email is required.',
+          emailInvalid: 'Please enter a valid email address.',
+          passwordRequired: 'Password is required.',
+          invalidCredentials: 'Invalid email or password.',
+          accountLocked: 'Account locked, try again later.',
+          accountInactive: 'This account is not active. Contact PLAYVO management.',
+          roleNotAllowed: 'This account does not have access to the dashboard.',
+          generic: 'Something went wrong, please try again.',
+        },
+      },
+      auth: {
+        backToLogin: 'Back to login',
+        hero: {
+          titleLine1: 'Manage your field',
+          titleLine2: 'like a pro.',
+          description:
+            'With Playvo, you can manage your field more efficiently from one platform that brings together everything you need. Follow your daily bookings, organize your schedule, monitor availability, and track revenue and performance clearly and in an organized way.',
+        },
+        policy: {
+          title: 'Facility & field manager onboarding policy',
+          body: 'Field owner and manager accounts are activated and assigned permissions only through PLAYVO central administration, to verify facility ownership.',
+          requestRegistration: 'Request facility registration',
+          contactSupport: 'Contact support',
+        },
+      },
+      forgotPassword: {
+        title: 'Forgot password?',
+        subtitle: "Don't worry, enter your email below to recover your password.",
+        emailPlaceholder: 'Email',
+        submit: 'Next',
+        submitting: 'Sending...',
+        errors: {
+          emailRequired: 'Email is required.',
+          emailInvalid: 'Please enter a valid email address.',
+          generic: 'Something went wrong, please try again.',
+        },
+      },
+      verifyCode: {
+        title: 'Verify code',
+        subtitle: 'A verification code has been sent to your email.',
+        codePlaceholder: 'Enter the code sent to you',
+        resend: "Didn't receive a code? Resend",
+        resending: 'Resending...',
+        resent: 'A new code has been sent to your email.',
+        submit: 'Next',
+        submitting: 'Verifying...',
+        errors: {
+          codeRequired: 'Verification code is required.',
+          codeFormat: 'The code must be {{length}} digits.',
+          invalidOrExpired: 'Invalid or expired code, please request a new one.',
+          generic: 'Something went wrong, please try again.',
+        },
+      },
+      resetPassword: {
+        title: 'Set a password',
+        subtitle: 'Your previous password has been reset. Please set a new password for your account.',
+        passwordPlaceholder: 'Enter the new password',
+        confirmPlaceholder: 'Confirm the password',
+        resend: "Didn't receive a code? Resend",
+        resending: 'Resending...',
+        submit: 'Set password',
+        submitting: 'Saving...',
+        success: 'Your password has been set. Redirecting you to the login page...',
+        errors: {
+          passwordRequired: 'New password is required.',
+          passwordTooShort: 'The password must be at least {{min}} characters.',
+          confirmRequired: 'Please confirm the password.',
+          mismatch: 'The passwords do not match.',
+          invalidOrExpired: 'Invalid or expired code, please request a new one.',
+          generic: 'Something went wrong, please try again.',
+        },
+      },
+      dashboardLayout: {
+        sidebarLabel: 'Sidebar',
+        mainMenu: 'Main menu',
+        openMenu: 'Open menu',
+        closeMenu: 'Close menu',
+        venue: 'Venue',
+        greeting: 'Good morning, {{name}}',
+        notifications: 'Notifications',
+        roles: {
+          venueOwner: 'Venue owner',
+        },
+        nav: {
+          home: 'Home',
+          bookings: 'Bookings',
+          schedule: 'Schedule',
+          myVenue: 'My venue',
+          reviews: 'Reviews',
+          analytics: 'Analytics',
+        },
+      },
+      venueOwnerDashboard: {
+        title: 'Dashboard',
+        period: {
+          label: 'Period',
+          today: 'Today',
+          week: 'This week',
+          month: 'This month',
+          lastMonth: 'Last month',
+        },
+        loadError: 'Could not load the dashboard data.',
+        statsLabel: 'Statistics',
+        stats: {
+          totalBookings: 'Total bookings',
+          totalBookingsNote: 'vs last month',
+          thisWeek: 'This week',
+          thisWeekNote: 'In the last 7 days',
+          revenue: 'Revenue',
+          revenueNote: "This week's revenue",
+          occupancy: 'Occupancy rate',
+          occupancyNote: 'Average venue usage',
+        },
+        schedule: {
+          title: "Today's schedule",
+          available: 'Available',
+          open: 'Open',
+          booked: 'Booked',
+        },
+        bookingsChart: {
+          title: 'Bookings overview',
+          subtitle: 'Daily bookings this week',
+          legend: 'Bookings',
+        },
+        revenueChart: {
+          title: 'Revenue',
+          subtitle: 'Daily revenue this week (₪)',
+          legend: 'Revenue (₪)',
+        },
+        venueStatus: {
+          active: 'Active',
+          inactive: 'Inactive',
+        },
+        days: {
+          saturday: 'Sat',
+          sunday: 'Sun',
+          monday: 'Mon',
+          tuesday: 'Tue',
+          wednesday: 'Wed',
+          thursday: 'Thu',
+          friday: 'Fri',
+        },
+      },
+      venueOwnerBookings: {
+        title: 'Bookings',
+        subtitle: 'Manage the bookings coming in to your venue.',
+        loadError: 'Could not load the bookings.',
+        errorDescription: 'Something went wrong. Please try again.',
+        retry: 'Try again',
+        filtersLabel: 'Search and filters',
+        searchPlaceholder: 'Search bookings...',
+        searchLabel: 'Search bookings',
+        dateLabel: 'Date',
+        allDates: 'All dates',
+        statusLabel: 'Status',
+        filterButton: 'Filter',
+        allStatuses: 'All statuses',
+        monthLabel: 'Month',
+        tableLabel: 'Bookings list',
+        columns: {
+          id: 'Booking ID',
+          player: 'Player',
+          date: 'Date',
+          time: 'Time',
+          amount: 'Amount',
+          status: 'Status',
+          action: 'Action',
+        },
+        status: {
+          confirmed: 'Confirmed',
+          pending_payment: 'Pending',
+          cancelled: 'Cancelled',
+        },
+        view: 'View',
+        empty: 'No matching bookings.',
+        showing: 'Showing {{from}}–{{to}} of {{total}} bookings',
+        paginationLabel: 'Pagination',
+        previousPage: 'Previous page',
+        nextPage: 'Next page',
+        page: 'Page {{page}}',
+      },
+      dashboard: {
+        adminTitle: 'Admin Dashboard',
+        signedInAs: 'Signed in as {{name}} ({{email}})',
+        comingSoon: 'Temporary page — the dashboard will be built in a later step.',
+      },
+    },
+  },
+}
+
+// The chosen language must survive a page reload. i18next itself only holds
+// the language in memory, so without this it always re-initializes to the
+// hardcoded default below on every fresh page load. This reads whatever
+// was saved last, wrapped in try/catch because localStorage can throw in some
+// browser contexts (private mode, disabled storage).
+const LANGUAGE_STORAGE_KEY = 'playvo_lang'
+
+function getStoredLanguage() {
+  try {
+    return localStorage.getItem(LANGUAGE_STORAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+const storedLanguage = getStoredLanguage()
+
+i18n.use(initReactI18next).init({
+  resources,
+  lng: storedLanguage === 'ar' || storedLanguage === 'en' ? storedLanguage : 'ar',
+  fallbackLng: 'ar',
+  interpolation: { escapeValue: false },
+})
+
+// Keep the saved language up to date every time it changes (LanguageSwitcher
+// calling i18n.changeLanguage triggers this), so the next load picks it up.
+i18n.on('languageChanged', (language) => {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+  } catch {
+    // Ignore — worst case the choice just doesn't persist this session.
+  }
+})
+
+export default i18n
