@@ -9,8 +9,9 @@ import './DashboardLayout.css'
 // navy sidebar (PLAYVO wordmark, main menu, venue card, logout) + white top
 // bar (greeting, notifications, user) + the page content.
 //
-// navItems: [{ key, labelKey, icon, to? }]. Items without `to` have no page
-// yet: they are shown (as in the design) but are not links.
+// navItems: [{ key, labelKey, icon, to?, matchNested? }]. Items without `to`
+// have no page yet: they are shown (as in the design) but are not links.
+// matchNested: also highlight the item on its sub-pages (e.g. a details page).
 // venue: { name, statusKey } | null — the sidebar venue card.
 // roleLabelKey: translation key of the role shown under the user's name.
 // On screens ≤ 1024px the sidebar becomes an off-canvas drawer opened from
@@ -60,12 +61,12 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
         <nav className="dashboard-nav" aria-label={t('dashboardLayout.mainMenu')}>
           <p className="dashboard-nav-title">{t('dashboardLayout.mainMenu')}</p>
           <ul className="dashboard-nav-list">
-            {navItems.map(({ key, labelKey, icon: Icon, to }) => (
+            {navItems.map(({ key, labelKey, icon: Icon, to, matchNested = false }) => (
               <li key={key}>
                 {to ? (
                   <NavLink
                     to={to}
-                    end
+                    end={!matchNested}
                     onClick={() => setIsMenuOpen(false)}
                     className={({ isActive }) =>
                       `dashboard-nav-item ${isActive ? 'dashboard-nav-item-active' : ''}`

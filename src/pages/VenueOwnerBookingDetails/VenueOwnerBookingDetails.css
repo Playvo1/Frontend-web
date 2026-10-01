@@ -1,0 +1,305 @@
+/*
+ * Venue Owner booking details — layout from the Figma reference (confirmed
+ * booking): page header with a back link, then two columns — status /
+ * summary / venue cards on the start side and booking information /
+ * player / timeline cards on the end side. Title, subtitle and the status
+ * pill reuse the bookings list styles (VenueOwnerBookings.css).
+ */
+
+.vobd-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 24px;
+}
+
+.vobd-booking-title {
+  margin: 18px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vobd-back {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding-inline: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-white);
+  font-size: 13px;
+  color: var(--color-navy);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.vobd-back:hover {
+  background: var(--color-background-secondary);
+}
+
+.vobd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 308px) minmax(0, 1fr);
+  align-items: start;
+  gap: 36px;
+}
+
+.vobd-side,
+.vobd-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.vobd-card {
+  padding: 20px 22px;
+  border-radius: 10px;
+  background: var(--color-white);
+  box-shadow: 0 1px 4px rgba(1, 33, 61, 0.04);
+}
+
+.vobd-card-title {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+/* Muted secondary text: Gray 500 (#7A8793) from the Brand Visual System. */
+.vobd-muted {
+  display: block;
+  font-size: 11px;
+  color: #7a8793;
+}
+
+/* Current status (top border in the status color). */
+.vobd-status-card-confirmed {
+  border-block-start: 3px solid var(--color-success);
+}
+
+.vobd-status-card-pending_payment {
+  border-block-start: 3px solid var(--color-warning);
+}
+
+.vobd-status-card-cancelled {
+  border-block-start: 3px solid var(--color-error);
+}
+
+.vobd-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.vobd-status-confirmed {
+  color: var(--color-success);
+}
+
+.vobd-status-pending_payment {
+  color: var(--color-warning);
+}
+
+.vobd-status-cancelled {
+  color: var(--color-error);
+}
+
+.vobd-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Summary */
+.vobd-summary {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vobd-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vobd-summary-icon {
+  flex-shrink: 0;
+  color: var(--color-navy);
+}
+
+.vobd-summary-label {
+  display: block;
+  font-size: 11px;
+  color: #7a8793;
+}
+
+.vobd-summary-value {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+/* Venue */
+.vobd-venue {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vobd-venue-icon {
+  flex-shrink: 0;
+  color: var(--color-orange);
+}
+
+.vobd-venue-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+/* Booking information rows */
+.vobd-info {
+  margin: 0;
+}
+
+.vobd-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 58px;
+  padding-inline: 18px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vobd-info-row dt {
+  font-size: 13px;
+  color: #7a8793;
+}
+
+.vobd-info-row dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-navy);
+}
+
+/* Player */
+.vobd-player {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vobd-player-initials {
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vobd-player-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-navy);
+}
+
+/* Timeline */
+.vobd-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vobd-step {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding-block-end: 22px;
+}
+
+.vobd-step:last-child {
+  padding-block-end: 0;
+}
+
+/* Line joining the step icons. */
+.vobd-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  bottom: 2px;
+  inset-inline-start: 7.5px;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.vobd-step-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-block-start: 2px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.vobd-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.vobd-step-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.vobd-step-time {
+  font-size: 10px;
+  color: #7a8793;
+  opacity: 0.8;
+}
+
+@media (max-width: 1199px) {
+  .vobd-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .vobd-header {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .vobd-back {
+    align-self: flex-start;
+  }
+
+  .vobd-card {
+    padding: 16px;
+  }
+
+  .vobd-info-row {
+    padding-inline: 8px;
+  }
+}
