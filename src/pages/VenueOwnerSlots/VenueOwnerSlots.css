@@ -53,7 +53,7 @@
 
 .vos-grid {
   display: grid;
-  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 356px) minmax(0, 1fr);
   align-items: start;
   gap: 18px;
 }
@@ -87,7 +87,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 20px 20px 14px;
+  margin-inline: 8px;
+  padding: 28px 24px 10px;
   border-block-end: 1px solid var(--color-border);
 }
 
@@ -99,18 +100,23 @@
 }
 
 .vos-day-counts {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 24px;
 }
 
 .vos-count {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: #7a8793; /* Gray 500 */
+}
+
+/* In the day header the booked dot is red, like the booked slot bar. */
+.vos-count .vos-dot-booked {
+  background: var(--color-error);
 }
 
 .vos-add {
@@ -138,7 +144,7 @@
 
 .vos-slots {
   margin: 0;
-  padding: 0 8px 8px;
+  padding: 0 8px 32px;
   list-style: none;
 }
 
@@ -151,10 +157,6 @@
   border-block-end: 1px solid var(--color-border);
 }
 
-.vos-slot:last-child {
-  border-block-end: none;
-}
-
 /* Colored bar on the start edge of each slot. */
 .vos-slot-info {
   display: flex;
@@ -162,6 +164,7 @@
   gap: 4px;
   min-width: 0;
   padding-inline-start: 12px;
+  line-height: 1.5;
   border-inline-start: 2px solid transparent;
 }
 
@@ -204,7 +207,7 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 32px;
 }
 
 .vos-action {
@@ -234,7 +237,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 16px 24px;
   border-block-end: 1px solid var(--color-border);
 }
 
@@ -246,8 +249,8 @@
 }
 
 .vos-month-nav {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border: none;
@@ -260,22 +263,22 @@
 .vos-month {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0 6px;
-  padding: 16px 12px 8px;
+  gap: 20px 6px;
+  padding: 20px 12px 0; /* the last week sits on the legend divider */
 }
 
 .vos-weekday {
-  padding-block-end: 16px;
   font-size: 12px;
+  line-height: 1;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: #7a8793; /* Gray 500 */
 }
 
 .vos-day-cell {
   width: 100%;
-  max-width: 78px;
-  height: 53px;
-  margin: 0 auto 20px;
+  max-width: 80px;
+  height: 56px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -300,7 +303,6 @@
 .vos-day-dots {
   display: flex;
   gap: 2px;
-  min-height: 6px;
 }
 
 /* Today: Orange 100 (#FFEAE5, Brand Visual System) with orange text. */
@@ -323,23 +325,23 @@
 .vos-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
-  padding: 14px 20px;
+  gap: 22px;
+  padding: 12px 24px 24px;
   border-block-start: 1px solid var(--color-border);
 }
 
 .vos-legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 11px;
   color: #7a8793; /* Gray 500 */
 }
 
 .vos-legend-today,
 .vos-legend-selected {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
 }
 
@@ -374,7 +376,7 @@
   }
 
   .vos-month {
-    gap: 0 2px;
+    gap: 8px 2px;
     padding-inline: 6px;
   }
 
@@ -384,7 +386,6 @@
 
   .vos-day-cell {
     height: 44px;
-    margin-block-end: 8px;
   }
 
   .vos-slot {

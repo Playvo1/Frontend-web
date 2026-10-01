@@ -268,10 +268,13 @@ function VenueOwnerSlots() {
                     onClick={() => setSelected(iso)}
                   >
                     <span className="vos-day-number">{date.getDate()}</span>
-                    <span className="vos-day-dots" aria-hidden="true">
-                      {statuses?.has('available') && <span className="vos-dot vos-dot-available" />}
-                      {statuses?.has('booked') && <span className="vos-dot vos-dot-booked" />}
-                    </span>
+                    {/* As in the design, a day without slots has its number centered. */}
+                    {statuses && (
+                      <span className="vos-day-dots" aria-hidden="true">
+                        {statuses.has('available') && <span className="vos-dot vos-dot-available" />}
+                        {statuses.has('booked') && <span className="vos-dot vos-dot-booked" />}
+                      </span>
+                    )}
                   </button>
                 )
               })}
