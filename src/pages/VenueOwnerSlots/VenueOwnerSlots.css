@@ -185,21 +185,6 @@
   color: #7a8793; /* Gray 500 */
 }
 
-.vos-empty-create {
-  height: 32px;
-  margin-block-start: 13px;
-  padding-inline: 22px;
-  border: none;
-  border-radius: 6px;
-  background: var(--color-orange);
-  font: inherit;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-white);
-  white-space: nowrap;
-  cursor: pointer;
-}
-
 .vos-slots {
   margin: 0;
   padding: 0 8px 32px;

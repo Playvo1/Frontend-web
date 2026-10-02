@@ -200,14 +200,11 @@ function VenueOwnerSlots() {
             </header>
 
             {isEmptyDay ? (
-              /* Empty state (Figma). No create-slot endpoint yet: the button is UI only. */
+              /* Empty state (Figma). */
               <div className="vos-empty">
                 <Clock className="vos-empty-icon" size={32} strokeWidth={1.5} aria-hidden="true" />
                 <p className="vos-empty-title">{t('venueOwnerSlots.noSlots')}</p>
                 <p className="vos-empty-text">{t('venueOwnerSlots.noSlotsHint')}</p>
-                <button type="button" className="vos-empty-create">
-                  {t('venueOwnerSlots.createSlot')}
-                </button>
               </div>
             ) : (
               <ul className="vos-slots">
