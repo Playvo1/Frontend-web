@@ -82,6 +82,10 @@
 }
 
 /* ---- Selected day ---- */
+.vos-day {
+  border-radius: 12px; /* as in the design (the calendar card keeps 10px) */
+}
+
 .vos-day-header {
   display: flex;
   align-items: flex-start;
@@ -135,11 +139,65 @@
 }
 
 .vos-empty {
-  margin: 0;
-  padding: 32px 20px;
-  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 51px 20px 48px;
   text-align: center;
-  color: var(--color-text-secondary);
+}
+
+/* ---- Empty day (Figma empty state) ---- */
+.vos-day-header-empty {
+  margin-inline: 0; /* full-width divider in the empty-state design */
+  padding: 15px 28px 11px;
+}
+
+.vos-day-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vos-add-outlined {
+  height: 30px;
+  margin-block-start: 4px;
+  padding-inline: 14px;
+  gap: 6px;
+  border: 1px solid #ffb09a; /* Orange 300 */
+  border-radius: 6px;
+  background: #ffeae5; /* Orange 100 */
+}
+
+.vos-empty-icon {
+  color: #bdd0db; /* Navy 200 (Brand Visual System) */
+}
+
+.vos-empty-title {
+  margin: 18px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.vos-empty-text {
+  margin: 0;
+  font-size: 12px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vos-empty-create {
+  height: 32px;
+  margin-block-start: 13px;
+  padding-inline: 22px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-orange);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-white);
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .vos-slots {
@@ -153,7 +211,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 22px 12px;
+  /* As in the design: more space above each slot's content than below. */
+  padding: 32px 12px 8px;
   border-block-end: 1px solid var(--color-border);
 }
 
@@ -207,18 +266,97 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 8px;
 }
 
+/* ---- Booked and available slots (Figma slot designs) ---- */
+.vos-slot-booked,
+.vos-slot-available {
+  align-items: flex-start;
+  margin-inline: -8px; /* full-width divider */
+  padding-block: 18px;
+  border-block-end-color: #f1f4f6; /* Gray 100 */
+}
+
+.vos-slot-booked {
+  padding-inline: 20px 28px;
+}
+
+.vos-slot-available {
+  padding-inline: 20px 23px;
+}
+
+.vos-slot-booked .vos-slot-info,
+.vos-slot-available .vos-slot-info {
+  position: relative;
+  gap: 7px;
+  padding-inline-start: 20px;
+  border-inline-start: none;
+}
+
+/* Status bar with rounded ends on the start edge. */
+.vos-slot-booked .vos-slot-info::before,
+.vos-slot-available .vos-slot-info::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--color-orange);
+}
+
+.vos-slot-available .vos-slot-info::before {
+  background: var(--color-success);
+}
+
+.vos-slot-booked .vos-slot-time,
+.vos-slot-booked .vos-slot-meta,
+.vos-slot-available .vos-slot-time,
+.vos-slot-available .vos-slot-meta {
+  line-height: 15px;
+}
+
+/* Status pill: Orange 100 (booked) / light green (available, from the design). */
+.vos-slot-booked .vos-slot-status,
+.vos-slot-available .vos-slot-status {
+  align-self: flex-start;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #ffeae5; /* Orange 100 */
+  line-height: 18px;
+}
+
+.vos-slot-available .vos-slot-status {
+  background: #f0fdf4; /* as in the design; no brand token for a light green */
+}
+
+.vos-slot-booked .vos-slot-meta,
+.vos-slot-available .vos-slot-meta {
+  gap: 6px;
+  font-size: 12px;
+}
+
+.vos-slot-locked {
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 15px;
+  color: #cbd3da; /* Gray 300 */
+  white-space: nowrap;
+}
+
+/* Edit / Delete: outlined buttons on the available-slot design. */
 .vos-action {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0;
-  border: none;
-  background: none;
+  gap: 5px;
+  height: 33px;
+  padding-inline: 11px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary);
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -391,4 +529,10 @@
   .vos-slot {
     flex-wrap: wrap;
   }
+}
+
+/* Shared overlay behind every dialog on this page (create/edit/delete):
+   black at 50%, as in the Figma prototype. */
+.vos-modal::backdrop {
+  background: rgba(0, 0, 0, 0.5);
 }

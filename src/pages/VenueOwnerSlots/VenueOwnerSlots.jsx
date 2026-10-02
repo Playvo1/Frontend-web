@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, CirclePlus, Plus, SquarePen, Trash2, User } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CirclePlus, Clock, Plus, SquarePen, Trash2, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.jsx'
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
 import { getVenueOwnerSlots } from '../../services/slotsService.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
+import DeleteSlotModal from './DeleteSlotModal.jsx'
+import EditSlotModal from './EditSlotModal.jsx'
 import './VenueOwnerSlots.css'
 
 // Venue Owner schedule (route: /venue-owner/slots), built from the Figma
@@ -57,6 +59,12 @@ function VenueOwnerSlots() {
   const language = i18n.language
   const [slots, setSlots] = useState(null)
   const [hasError, setHasError] = useState(false)
+  // Available slot whose "Edit" dialog is open (UI only, see EditSlotModal).
+  const [editingSlot, setEditingSlot] = useState(null)
+  // Available slot whose "Delete" confirmation is open (UI only, see DeleteSlotModal).
+  const [deletingSlot, setDeletingSlot] = useState(null)
+  // "Create time slot" dialog (UI only, see EditSlotModal in create mode).
+  const [isCreating, setIsCreating] = useState(false)
   const [venue, setVenue] = useState(null)
   const [selected, setSelected] = useState(() => toIso(new Date()))
   const [view, setView] = useState(() => {
@@ -95,6 +103,7 @@ function VenueOwnerSlots() {
         .sort((a, b) => a.start_time.localeCompare(b.start_time)),
     [slots, selected],
   )
+  const isEmptyDay = daySlots.length === 0
   const bookedCount = daySlots.filter((slot) => slot.status === 'booked').length
   const availableCount = daySlots.length - bookedCount
 
@@ -143,8 +152,8 @@ function VenueOwnerSlots() {
           <h1 className="vos-title">{t('venueOwnerSlots.title')}</h1>
           <p className="vos-subtitle">{t('venueOwnerSlots.subtitle')}</p>
         </header>
-        {/* No create-slot endpoint yet: UI only. */}
-        <button type="button" className="vos-create">
+        {/* Opens the create dialog; no create-slot endpoint yet, so it is UI only. */}
+        <button type="button" className="vos-create" onClick={() => setIsCreating(true)}>
           <Plus size={14} aria-hidden="true" />
           {t('venueOwnerSlots.createSlot')}
         </button>
@@ -160,28 +169,46 @@ function VenueOwnerSlots() {
         <div className="vos-grid">
           {/* Start side: the selected day's slots. */}
           <section className="vos-card vos-day" aria-live="polite">
-            <header className="vos-day-header">
+            <header className={isEmptyDay ? 'vos-day-header vos-day-header-empty' : 'vos-day-header'}>
               <div>
                 <h2 className="vos-day-title">{dayTitle}</h2>
-                <p className="vos-day-counts">
-                  <span className="vos-count">
-                    <span className="vos-dot vos-dot-booked" aria-hidden="true" />
-                    <bdi>{t('venueOwnerSlots.bookedCount', { value: bookedCount })}</bdi>
-                  </span>
-                  <span className="vos-count">
-                    <span className="vos-dot vos-dot-available" aria-hidden="true" />
-                    <bdi>{t('venueOwnerSlots.availableCount', { value: availableCount })}</bdi>
-                  </span>
-                </p>
+                {/* Empty-state design: a short note replaces the counts. */}
+                {isEmptyDay ? (
+                  <p className="vos-day-note">{t('venueOwnerSlots.noSlotsShort')}</p>
+                ) : (
+                  <p className="vos-day-counts">
+                    <span className="vos-count">
+                      <span className="vos-dot vos-dot-booked" aria-hidden="true" />
+                      <bdi>{t('venueOwnerSlots.bookedCount', { value: bookedCount })}</bdi>
+                    </span>
+                    <span className="vos-count">
+                      <span className="vos-dot vos-dot-available" aria-hidden="true" />
+                      <bdi>{t('venueOwnerSlots.availableCount', { value: availableCount })}</bdi>
+                    </span>
+                  </p>
+                )}
               </div>
-              <button type="button" className="vos-add">
-                <CirclePlus size={14} aria-hidden="true" />
+              {/* The empty-state design shows "Add" as an outlined button. */}
+              <button type="button" className={isEmptyDay ? 'vos-add vos-add-outlined' : 'vos-add'}>
+                {isEmptyDay ? (
+                  <Plus size={12} aria-hidden="true" />
+                ) : (
+                  <CirclePlus size={14} aria-hidden="true" />
+                )}
                 {t('venueOwnerSlots.add')}
               </button>
             </header>
 
-            {daySlots.length === 0 ? (
-              <p className="vos-empty">{t('venueOwnerSlots.noSlots')}</p>
+            {isEmptyDay ? (
+              /* Empty state (Figma). No create-slot endpoint yet: the button is UI only. */
+              <div className="vos-empty">
+                <Clock className="vos-empty-icon" size={32} strokeWidth={1.5} aria-hidden="true" />
+                <p className="vos-empty-title">{t('venueOwnerSlots.noSlots')}</p>
+                <p className="vos-empty-text">{t('venueOwnerSlots.noSlotsHint')}</p>
+                <button type="button" className="vos-empty-create">
+                  {t('venueOwnerSlots.createSlot')}
+                </button>
+              </div>
             ) : (
               <ul className="vos-slots">
                 {daySlots.map((slot) => (
@@ -206,17 +233,30 @@ function VenueOwnerSlots() {
                         </span>
                       )}
                     </div>
-                    {/* No edit/delete endpoints yet: UI only. */}
-                    <div className="vos-slot-actions">
-                      <button type="button" className="vos-action vos-action-edit">
-                        <SquarePen size={13} aria-hidden="true" />
-                        {t('venueOwnerSlots.edit')}
-                      </button>
-                      <button type="button" className="vos-action vos-action-delete">
-                        <Trash2 size={13} aria-hidden="true" />
-                        {t('venueOwnerSlots.delete')}
-                      </button>
-                    </div>
+                    {slot.status === 'booked' ? (
+                      /* Booked-slot design (Figma): no edit/delete, a muted note instead. */
+                      <span className="vos-slot-locked">{t('venueOwnerSlots.editUnavailable')}</span>
+                    ) : (
+                      /* No edit/delete endpoints yet: UI only. */
+                      <div className="vos-slot-actions">
+                        <button
+                          type="button"
+                          className="vos-action vos-action-edit"
+                          onClick={() => setEditingSlot(slot)}
+                        >
+                          <SquarePen size={13} aria-hidden="true" />
+                          {t('venueOwnerSlots.edit')}
+                        </button>
+                        <button
+                          type="button"
+                          className="vos-action vos-action-delete"
+                          onClick={() => setDeletingSlot(slot)}
+                        >
+                          <Trash2 size={13} aria-hidden="true" />
+                          {t('venueOwnerSlots.delete')}
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -300,6 +340,39 @@ function VenueOwnerSlots() {
             </footer>
           </section>
         </div>
+      )}
+
+      {editingSlot && (
+        <EditSlotModal
+          key={editingSlot.id}
+          slot={editingSlot}
+          formatTime={(time) => {
+            const { time: clock, period } = to12Hour(time)
+            return `${clock} ${periodLabel(period)}`
+          }}
+          onClose={() => setEditingSlot(null)}
+        />
+      )}
+
+      {isCreating && (
+        <EditSlotModal
+          mode="create"
+          slot={{ slot_date: selected, start_time: '08:00', end_time: '09:00', hourly_price: null }}
+          formatTime={(time) => {
+            const { time: clock, period } = to12Hour(time)
+            return `${clock} ${periodLabel(period)}`
+          }}
+          onClose={() => setIsCreating(false)}
+        />
+      )}
+
+      {deletingSlot && (
+        <DeleteSlotModal
+          key={deletingSlot.id}
+          slot={deletingSlot}
+          timeRange={formatRange(deletingSlot.start_time, deletingSlot.end_time)}
+          onClose={() => setDeletingSlot(null)}
+        />
       )}
     </DashboardLayout>
   )

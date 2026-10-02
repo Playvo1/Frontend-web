@@ -1,0 +1,109 @@
+/*
+ * "Delete time slot?" confirmation — measured on the Figma frame, which is
+ * exported at 1.2x (its title is 24px there vs 20px in the edit dialog):
+ * 497px wide, radius 12, 50px icon tile, 55px buttons (Button Large 16/600).
+ */
+.dsm {
+  width: 497px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  padding-block: 37px 39px;
+  padding-inline: 40px 32px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-white);
+  color: var(--color-navy);
+  font: inherit;
+}
+
+.dsm-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.dsm-icon {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #fef2f2; /* light red tile, as in the design */
+  color: var(--color-error);
+}
+
+.dsm-text {
+  min-width: 0;
+}
+
+.dsm-title {
+  margin: 3px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-navy);
+}
+
+.dsm-message,
+.dsm-slot {
+  margin: 4px 0 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: #7a8793; /* Gray 500 */
+}
+
+.dsm-slot-time {
+  font-weight: 500;
+  color: var(--color-navy);
+}
+
+.dsm-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-block-start: 33px;
+}
+
+.dsm-button {
+  height: 55px;
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dsm-cancel {
+  background: #e3edf2; /* Navy 100 */
+  color: var(--color-navy);
+}
+
+.dsm-delete {
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+@media (max-width: 600px) {
+  .dsm {
+    padding: 24px 20px;
+  }
+
+  .dsm-body {
+    gap: 16px;
+  }
+
+  .dsm-message,
+  .dsm-slot {
+    font-size: 15px;
+  }
+
+  .dsm-footer {
+    margin-block-start: 24px;
+  }
+
+  .dsm-button {
+    height: 48px;
+  }
+}
