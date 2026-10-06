@@ -14,7 +14,7 @@ export const VENUE_OWNER_NAV = [
     matchNested: true, // stays highlighted on /venue-owner/bookings/:bookingId
   },
   { key: 'schedule', labelKey: 'dashboardLayout.nav.schedule', icon: Clock, to: '/venue-owner/slots' },
-  { key: 'myVenue', labelKey: 'dashboardLayout.nav.myVenue', icon: House }, // /facility
+  { key: 'myVenue', labelKey: 'dashboardLayout.nav.myVenue', icon: House, to: '/venue-owner/facility' },
   { key: 'reviews', labelKey: 'dashboardLayout.nav.reviews', icon: Star }, // /reviews
   { key: 'analytics', labelKey: 'dashboardLayout.nav.analytics', icon: Activity }, // no documented route
 ]

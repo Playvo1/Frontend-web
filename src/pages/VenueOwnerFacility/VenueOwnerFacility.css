@@ -1,0 +1,237 @@
+/*
+ * Venue Owner "My venue" — layout from the design reference (1440px):
+ * title, a full-width cover banner, then the venue information card (start
+ * side) next to the photos card (end side). The banner uses the brand navy
+ * while there is no venue photo; orange is kept for the main action.
+ */
+
+.vof-header {
+  margin-block-end: 22px;
+}
+
+.vof-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.vof-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* ---- Cover banner ---- */
+.vof-hero {
+  min-height: 336px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 28px;
+  border-radius: 12px;
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.vof-hero-text {
+  min-width: 0;
+}
+
+.vof-hero-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-white);
+}
+
+.vof-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.vof-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding-inline: 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vof-button-primary {
+  border: none;
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+.vof-button-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-white);
+}
+
+.vof-button-muted {
+  border: none;
+  background: #e3edf2; /* Navy 100 */
+  color: var(--color-navy);
+}
+
+.vof-button-full {
+  width: 100%;
+}
+
+/* ---- Cards ---- */
+.vof-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 355px);
+  align-items: start;
+  gap: 56px;
+  margin-block-start: 28px;
+}
+
+.vof-card {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+}
+
+.vof-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 24px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vof-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vof-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-orange);
+  cursor: pointer;
+}
+
+/* ---- Venue information ---- */
+.vof-rows {
+  margin: 0;
+  padding: 0 24px 16px;
+}
+
+.vof-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 67px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vof-row-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  font-size: 13px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vof-row-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  color: var(--color-navy);
+}
+
+.vof-row-value {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+  text-align: end;
+}
+
+.vof-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- Photos ---- */
+.vof-photos-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 20px;
+  text-align: center;
+}
+
+.vof-photos-empty-icon {
+  color: #bdd0db; /* Navy 200 */
+}
+
+.vof-photos-empty-text {
+  margin: 0;
+  font-size: 13px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vof-photos-footer {
+  padding: 0 16px 16px;
+}
+
+@media (max-width: 1199px) {
+  .vof-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .vof-hero {
+    min-height: 220px;
+    padding: 20px;
+  }
+
+  .vof-hero-title {
+    font-size: 18px;
+  }
+
+  .vof-card-header,
+  .vof-rows {
+    padding-inline: 16px;
+  }
+}

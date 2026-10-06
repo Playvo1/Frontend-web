@@ -9,6 +9,7 @@ import ResetPassword from './pages/ResetPassword/ResetPassword.jsx'
 import VenueOwnerBookingDetails from './pages/VenueOwnerBookingDetails/VenueOwnerBookingDetails.jsx'
 import VenueOwnerBookings from './pages/VenueOwnerBookings/VenueOwnerBookings.jsx'
 import VenueOwnerDashboard from './pages/VenueOwnerDashboard/VenueOwnerDashboard.jsx'
+import VenueOwnerFacility from './pages/VenueOwnerFacility/VenueOwnerFacility.jsx'
 import VenueOwnerSlots from './pages/VenueOwnerSlots/VenueOwnerSlots.jsx'
 import VerifyCode from './pages/VerifyCode/VerifyCode.jsx'
 import GuestRoute from './routes/GuestRoute.jsx'
@@ -109,6 +110,15 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
             <VenueOwnerSlots />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/venue-owner/facility"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
+            <VenueOwnerFacility />
           </ProtectedRoute>
         }
       />
