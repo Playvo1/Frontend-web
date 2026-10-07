@@ -1,8 +1,8 @@
 /*
  * Venue Owner "My venue" — layout from the design reference (1440px):
  * title, a full-width cover banner, then the venue information card (start
- * side) next to the photos card (end side). The banner uses the brand navy
- * while there is no venue photo; orange is kept for the main action.
+ * side) next to the photos card (end side). The banner shows the venue's
+ * cover photo; orange is kept for the sport badge and the "Edit" link.
  */
 
 .vof-header {
@@ -23,9 +23,14 @@
   color: var(--color-text-secondary);
 }
 
+.vof-message {
+  margin: 0 0 24px;
+  color: var(--color-error);
+}
+
 /* ---- Cover banner ---- */
 .vof-hero {
-  min-height: 336px;
+  min-height: 346px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -33,7 +38,34 @@
   gap: 16px;
   padding: 28px;
   border-radius: 12px;
-  background: var(--color-navy);
+  background-color: var(--color-navy); /* behind the photo while it loads */
+  background-position: center;
+  background-size: cover;
+  color: var(--color-white);
+}
+
+.vof-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+}
+
+.vof-hero-sport {
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--color-orange);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.vof-hero-area {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
   color: var(--color-white);
 }
 
@@ -43,7 +75,7 @@
 
 .vof-hero-title {
   margin: 0;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   line-height: 1.4;
   color: var(--color-white);
@@ -70,9 +102,9 @@
   cursor: pointer;
 }
 
-.vof-button-primary {
+.vof-button-navy {
   border: none;
-  background: var(--color-orange);
+  background: var(--color-navy);
   color: var(--color-white);
 }
 
@@ -180,32 +212,38 @@
   text-align: end;
 }
 
-.vof-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 /* ---- Photos ---- */
+.vof-photos-count {
+  font-size: 12px;
+  color: #7a8793; /* Gray 500 */
+}
+
+/* One large photo, then two side by side (design). */
+.vof-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 24px 16px;
+}
+
+.vof-photo {
+  display: block;
+  width: 100%;
+  height: 90px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.vof-photo-main {
+  grid-column: 1 / -1;
+  height: 141px;
+}
+
 .vof-photos-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 48px 20px;
-  text-align: center;
-}
-
-.vof-photos-empty-icon {
-  color: #bdd0db; /* Navy 200 */
-}
-
-.vof-photos-empty-text {
   margin: 0;
+  padding: 48px 20px;
   font-size: 13px;
+  text-align: center;
   color: #7a8793; /* Gray 500 */
 }
 
@@ -222,12 +260,12 @@
 
 @media (max-width: 600px) {
   .vof-hero {
-    min-height: 220px;
+    min-height: 240px;
     padding: 20px;
   }
 
   .vof-hero-title {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .vof-card-header,
