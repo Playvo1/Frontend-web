@@ -18,14 +18,17 @@ import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
 import { getVenueOwnerFacility } from '../../services/facilityService.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
+import VenueOwnerFacilityEdit from './VenueOwnerFacilityEdit.jsx'
+import VenueOwnerFacilityPhotos from './VenueOwnerFacilityPhotos.jsx'
 import './VenueOwnerFacility.css'
 
 // Venue Owner "My venue" page (route: /venue-owner/facility), built from the
 // design: page title, a cover banner with the venue's sport, area, name and
 // actions, the venue information list and the photos card.
 //
-// Data comes from facilityService (MOCK for now — see that file). The
-// buttons have no action yet (no confirmed backend endpoints for them).
+// Data comes from facilityService (MOCK for now — see that file). "Edit" in
+// the information card opens the edit form and "View all photos" opens the
+// photos view; the other buttons have no action yet (no confirmed backend endpoints for them).
 
 // Localized value of a bilingual field ("name" -> name_ar / name_en).
 function localized(facility, field, language) {
@@ -38,6 +41,47 @@ function VenueOwnerFacility() {
   const [venue, setVenue] = useState(null)
   const [facility, setFacility] = useState(null)
   const [hasError, setHasError] = useState(false)
+  // "Edit" in the information card swaps the page for the edit form
+  // (VenueOwnerFacilityEdit). Saving keeps the changes in this page's state
+  // only (mock data — no backend request).
+  const [isEditing, setIsEditing] = useState(false)
+
+  const openEdit = () => {
+    setIsEditing(true)
+    window.scrollTo(0, 0)
+  }
+
+  const closeEdit = () => {
+    setIsEditing(false)
+    window.scrollTo(0, 0)
+  }
+
+  const saveEdit = (updated) => {
+    setFacility(updated)
+    closeEdit()
+  }
+
+  // "View all photos" swaps the page for the photos view
+  // (VenueOwnerFacilityPhotos); "Back" returns to the page.
+  const [isViewingPhotos, setIsViewingPhotos] = useState(false)
+
+  const openPhotos = () => {
+    setIsViewingPhotos(true)
+    window.scrollTo(0, 0)
+  }
+
+  const closePhotos = () => {
+    setIsViewingPhotos(false)
+    window.scrollTo(0, 0)
+  }
+
+  // Deleting a photo in the photos view: local (mock) state only.
+  const removePhoto = (photoId) => {
+    setFacility((current) => ({
+      ...current,
+      images: current.images.filter((photo) => photo.id !== photoId),
+    }))
+  }
 
   // Sidebar venue card / top-bar subtitle: same source as the other
   // Venue Owner pages.
@@ -69,6 +113,14 @@ function VenueOwnerFacility() {
   const countFormat = new Intl.NumberFormat(language === 'ar' ? 'ar-u-nu-arab' : language)
   const price = (value) => `₪${numberFormat.format(value)}`
 
+  const dimensionsText = facility
+    ? t('venueOwnerFacility.dimensionsValue', {
+        length: facility.length_m,
+        width: facility.width_m,
+        format: localized(facility, 'team_format', language),
+      })
+    : ''
+
   // Information rows, in the design's order.
   const rows = facility
     ? [
@@ -81,11 +133,7 @@ function VenueOwnerFacility() {
         {
           key: 'dimensions',
           icon: LayoutGrid,
-          value: t('venueOwnerFacility.dimensionsValue', {
-            length: facility.length_m,
-            width: facility.width_m,
-            format: localized(facility, 'team_format', language),
-          }),
+          value: dimensionsText,
         },
         { key: 'capacity', icon: Users, value: localized(facility, 'capacity', language) },
         { key: 'morningPrice', icon: CircleDollarSign, value: price(facility.morning_hourly_price) },
@@ -94,6 +142,36 @@ function VenueOwnerFacility() {
     : []
 
   const [mainPhoto, ...otherPhotos] = facility?.images ?? []
+
+  if (facility && isViewingPhotos) {
+    return (
+      <DashboardLayout
+        navItems={VENUE_OWNER_NAV}
+        venue={layoutVenue}
+        roleLabelKey="dashboardLayout.roles.venueOwner"
+      >
+        <VenueOwnerFacilityPhotos facility={facility} onBack={closePhotos} onRemovePhoto={removePhoto} />
+      </DashboardLayout>
+    )
+  }
+
+  if (facility && isEditing) {
+    return (
+      <DashboardLayout
+        navItems={VENUE_OWNER_NAV}
+        venue={layoutVenue}
+        roleLabelKey="dashboardLayout.roles.venueOwner"
+      >
+        <VenueOwnerFacilityEdit
+          key={language}
+          facility={facility}
+          dimensionsText={dimensionsText}
+          onCancel={closeEdit}
+          onSave={saveEdit}
+        />
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout
@@ -152,7 +230,7 @@ function VenueOwnerFacility() {
                 <h2 id="vof-info-title" className="vof-card-title">
                   {t('venueOwnerFacility.infoTitle')}
                 </h2>
-                <button type="button" className="vof-edit">
+                <button type="button" className="vof-edit" onClick={openEdit}>
                   <SquarePen size={13} aria-hidden="true" />
                   {t('venueOwnerFacility.edit')}
                 </button>
@@ -189,17 +267,23 @@ function VenueOwnerFacility() {
               </header>
               {mainPhoto ? (
                 <div className="vof-gallery">
-                  <img className="vof-photo vof-photo-main" src={mainPhoto.image_url} alt="" />
-                  {otherPhotos.slice(0, 2).map((photo) => (
-                    <img key={photo.id} className="vof-photo" src={photo.image_url} alt="" />
+                  {/* Hover/focus shows a dark overlay with "View" (design). No action yet (UI only). */}
+                  {[mainPhoto, ...otherPhotos.slice(0, 2)].map((photo, index) => (
+                    <button
+                      key={photo.id}
+                      type="button"
+                      className={index === 0 ? 'vof-photo-item vof-photo-item-main' : 'vof-photo-item'}
+                    >
+                      <img className="vof-photo" src={photo.image_url} alt="" />
+                      <span className="vof-photo-overlay">{t('venueOwnerFacility.viewPhoto')}</span>
+                    </button>
                   ))}
                 </div>
               ) : (
                 <p className="vof-photos-empty">{t('venueOwnerFacility.noPhotos')}</p>
               )}
               <div className="vof-photos-footer">
-                {/* No action yet (UI only). */}
-                <button type="button" className="vof-button vof-button-muted vof-button-full">
+                <button type="button" className="vof-button vof-button-muted vof-button-full" onClick={openPhotos}>
                   {t('venueOwnerFacility.viewAllPhotos')}
                 </button>
               </div>

@@ -1,0 +1,395 @@
+/*
+ * Venue Owner "Analytics" — layout from the design reference (1440px):
+ * title, three summary cards in a row, then two full-width chart cards.
+ * Orange is kept for the revenue line and the busiest hour's count.
+ */
+
+.voa-header {
+  margin-block-end: 28px;
+}
+
+.voa-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.voa-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.voa-message {
+  margin: 0 0 24px;
+  color: var(--color-error);
+}
+
+.voa-card {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+}
+
+/* ---- Summary cards ---- */
+.voa-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 56px;
+}
+
+.voa-stat {
+  padding: 20px 24px 22px;
+}
+
+.voa-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 14px;
+}
+
+.voa-stat-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.voa-stat-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  color: var(--color-navy);
+}
+
+.voa-stat-value {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-navy);
+}
+
+.voa-stat-note {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+/* ---- Chart cards ---- */
+.voa-panel {
+  margin-block-start: 36px;
+  padding: 24px 24px 32px;
+}
+
+/* Design: the trend card keeps empty room under its date labels, and the
+ * peak-hours card a shorter one under the counts. */
+.voa-panel-trend {
+  padding-block-end: 90px;
+}
+
+.voa-panel-peak {
+  padding-block-end: 50px;
+}
+
+.voa-panel-trend .voa-panel-header {
+  margin-block-end: 12px; /* the plot starts close under the subtitle */
+}
+
+.voa-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block-end: 24px;
+}
+
+.voa-panel-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.voa-panel-subtitle {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.voa-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.voa-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.voa-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.voa-legend-dot-bookings {
+  background: var(--color-navy);
+}
+
+.voa-legend-dot-revenue {
+  background: var(--color-orange);
+}
+
+.atc-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.atc-line-bookings {
+  stroke: var(--color-navy);
+}
+
+.atc-line-revenue {
+  stroke: var(--color-orange);
+}
+
+/* ---- Peak hours bars ----
+ * Design: the bars fill the card from its start edge (under the title) to
+ * the end edge of the trend chart's plot, so both charts end on the same
+ * line. The end padding is the trend chart's end-side plot margin
+ * (AnalyticsTrendChart: WIDE_MARGINS.end / NARROW_MARGINS.end). */
+.voa-bars {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  padding-inline-end: 84px;
+  list-style: none;
+}
+
+.voa-bar-item {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.voa-bar-track {
+  width: 100%;
+  height: 103px;
+  display: flex;
+  align-items: flex-end;
+  margin-block-start: 46px;
+}
+
+.voa-bar {
+  width: 100%;
+  border-radius: 5px 5px 0 0;
+  background: var(--color-border);
+}
+
+.voa-bar-high .voa-bar {
+  background: #c9d6df;
+}
+
+.voa-bar-top .voa-bar {
+  background: linear-gradient(90deg, #035a9e 0%, var(--color-navy) 100%);
+}
+
+.voa-bar-top .voa-bar-hour {
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.voa-bar-top .voa-bar-count {
+  font-weight: 600;
+  color: var(--color-orange);
+}
+
+.voa-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Loading state (design): static placeholder bars and blocks ---- */
+.voa-skeleton {
+  display: block;
+  border-radius: 4px;
+  background: var(--color-border);
+}
+
+.voa-skeleton-label {
+  width: 80px;
+  height: 12px;
+}
+
+.voa-skeleton-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+/* Value bar; the bottom margin stands in for the note line, so the card
+ * keeps the loaded card's height. */
+.voa-skeleton-value {
+  width: 120px;
+  height: 30px;
+  margin-block-end: 22px;
+  border-radius: 6px;
+}
+
+.voa-skeleton-heading {
+  height: 12px;
+  margin-block-end: 52px; /* the loaded header: title, subtitle and gap */
+}
+
+.voa-skeleton-heading-trend {
+  width: 160px;
+}
+
+.voa-skeleton-heading-peak {
+  width: 140px;
+}
+
+.voa-skeleton-block {
+  display: block;
+  border-radius: 8px;
+  background: #eef2f5;
+}
+
+/* Same heights as the loaded charts, so nothing jumps when data arrives. */
+.voa-skeleton-block-trend {
+  height: 270px;
+}
+
+.voa-skeleton-block-peak {
+  height: 222px;
+}
+
+/* ---- Empty state (design): centered below the page title, no cards ---- */
+.voa-empty-state {
+  /* Viewport minus the top bar, the content padding and the page title. */
+  min-height: calc(100dvh - 280px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-block-end: 75px; /* keeps the message centered in the viewport */
+  text-align: center;
+}
+
+.voa-empty-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-navy);
+}
+
+.voa-empty-text {
+  margin: 10px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.voa-empty-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 43px;
+  margin-block-start: 36px;
+  padding-inline: 20px;
+  border-radius: 8px;
+  background: var(--color-navy);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+@media (max-width: 1024px) {
+  .voa-empty-state {
+    min-height: calc(100dvh - 240px);
+  }
+}
+
+@media (max-width: 900px) {
+  .voa-stats {
+    gap: 20px;
+  }
+}
+
+/* The trend chart switches to its narrow margins when its card is narrower
+ * than 560px inside: below 658px (24px page padding, 24px card padding,
+ * 1px borders). */
+@media (max-width: 657px) {
+  .voa-bars {
+    padding-inline-end: 50px;
+  }
+}
+
+@media (max-width: 600px) {
+  .voa-empty-text {
+    font-size: 15px;
+  }
+
+  .voa-stats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .voa-panel {
+    margin-block-start: 24px;
+    padding: 20px 16px 24px;
+  }
+
+  .voa-bar-track {
+    margin-block-start: 32px;
+  }
+
+  /* Loaded chart heights on small screens. */
+  .voa-skeleton-block-trend {
+    height: 215px;
+  }
+
+  .voa-skeleton-block-peak {
+    height: 195px;
+  }
+
+  .voa-bars {
+    gap: 4px;
+  }
+
+  .voa-bar-item {
+    font-size: 10px;
+  }
+}

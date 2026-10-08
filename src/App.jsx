@@ -6,10 +6,12 @@ import DashboardPlaceholder from './pages/DashboardPlaceholder/DashboardPlacehol
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword.jsx'
 import Login from './pages/Login/Login.jsx'
 import ResetPassword from './pages/ResetPassword/ResetPassword.jsx'
+import VenueOwnerAnalytics from './pages/VenueOwnerAnalytics/VenueOwnerAnalytics.jsx'
 import VenueOwnerBookingDetails from './pages/VenueOwnerBookingDetails/VenueOwnerBookingDetails.jsx'
 import VenueOwnerBookings from './pages/VenueOwnerBookings/VenueOwnerBookings.jsx'
 import VenueOwnerDashboard from './pages/VenueOwnerDashboard/VenueOwnerDashboard.jsx'
 import VenueOwnerFacility from './pages/VenueOwnerFacility/VenueOwnerFacility.jsx'
+import VenueOwnerReviews from './pages/VenueOwnerReviews/VenueOwnerReviews.jsx'
 import VenueOwnerSlots from './pages/VenueOwnerSlots/VenueOwnerSlots.jsx'
 import VerifyCode from './pages/VerifyCode/VerifyCode.jsx'
 import GuestRoute from './routes/GuestRoute.jsx'
@@ -119,6 +121,24 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
             <VenueOwnerFacility />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/venue-owner/reviews"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
+            <VenueOwnerReviews />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/venue-owner/analytics"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
+            <VenueOwnerAnalytics />
           </ProtectedRoute>
         }
       />

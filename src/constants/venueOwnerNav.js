@@ -15,6 +15,6 @@ export const VENUE_OWNER_NAV = [
   },
   { key: 'schedule', labelKey: 'dashboardLayout.nav.schedule', icon: Clock, to: '/venue-owner/slots' },
   { key: 'myVenue', labelKey: 'dashboardLayout.nav.myVenue', icon: House, to: '/venue-owner/facility' },
-  { key: 'reviews', labelKey: 'dashboardLayout.nav.reviews', icon: Star }, // /reviews
-  { key: 'analytics', labelKey: 'dashboardLayout.nav.analytics', icon: Activity }, // no documented route
+  { key: 'reviews', labelKey: 'dashboardLayout.nav.reviews', icon: Star, to: '/venue-owner/reviews' },
+  { key: 'analytics', labelKey: 'dashboardLayout.nav.analytics', icon: Activity, to: '/venue-owner/analytics' },
 ]

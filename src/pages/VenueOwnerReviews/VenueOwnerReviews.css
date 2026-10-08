@@ -1,0 +1,410 @@
+/*
+ * Venue Owner "Reviews" — layout from the design reference (1440px):
+ * title, then the rating summary card (start side, 320px) next to the
+ * "All reviews" list card. Stars use the warning (amber) token; orange is
+ * kept for the 3-star bar only, as in the design.
+ */
+
+.vor-header {
+  margin-block-end: 28px;
+}
+
+.vor-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.vor-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.vor-message {
+  margin: 0 0 24px;
+  color: var(--color-error);
+}
+
+.vor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  align-items: start;
+  gap: 40px;
+}
+
+.vor-card {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+}
+
+/* ---- Stars ---- */
+.vor-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.vor-star {
+  flex-shrink: 0;
+  color: var(--color-input-border);
+}
+
+.vor-star-filled {
+  fill: var(--color-warning);
+  color: var(--color-warning);
+}
+
+/* ---- Summary ---- */
+.vor-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 32px 30px;
+}
+
+.vor-average {
+  margin: 0 0 6px;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-navy);
+}
+
+.vor-total {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vor-bars {
+  align-self: stretch;
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 0;
+  padding: 20px 0 0;
+  border-block-start: 1px solid var(--color-border);
+  list-style: none;
+}
+
+.vor-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vor-bar-level {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 26px;
+}
+
+.vor-bar-track {
+  flex: 1;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef2f5;
+}
+
+.vor-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-warning);
+}
+
+.vor-bar-row-3 .vor-bar-fill {
+  background: var(--color-orange);
+}
+
+.vor-bar-row-2 .vor-bar-fill,
+.vor-bar-row-1 .vor-bar-fill {
+  background: var(--color-error);
+}
+
+.vor-bar-count {
+  flex-shrink: 0;
+  min-width: 22px;
+  text-align: end;
+}
+
+.vor-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Reviews list ---- */
+.vor-list {
+  padding-inline: 20px;
+}
+
+.vor-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 18px 16px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vor-list-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.vor-badge {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eef2f5;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.vor-reviews {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vor-review {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-block: 18px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vor-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  margin-block-start: 6px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.vor-review-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.vor-review-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vor-review-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.vor-review-date {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vor-review-comment {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  text-align: start;
+}
+
+.vor-list-footer {
+  margin: 0;
+  padding-block: 18px 20px;
+  font-size: 11px;
+  text-align: center;
+  color: #7a8793; /* Gray 500 */
+}
+
+/* ---- Loading state (design): static placeholder bars in the cards ---- */
+.vor-skeleton {
+  display: block;
+  border-radius: 4px;
+  background: var(--color-border);
+}
+
+.vor-skeleton-average {
+  width: 96px;
+  height: 55px;
+  border-radius: 8px;
+}
+
+.vor-skeleton-total {
+  width: 80px;
+  height: 10px;
+  margin-block-start: 20px;
+}
+
+/* Same row height as the loaded bars (11px text), so the card keeps its size. */
+.vor-skeleton-bar-row {
+  min-height: 18px;
+}
+
+.vor-skeleton-level {
+  flex-shrink: 0;
+  width: 16px;
+  height: 8px;
+}
+
+.vor-skeleton-bar {
+  flex: 1;
+  height: 8px;
+}
+
+.vor-skeleton-heading {
+  width: 94px;
+  height: 12px;
+}
+
+.vor-skeleton-review {
+  align-items: center;
+}
+
+.vor-skeleton-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.vor-skeleton-lines {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.vor-skeleton-name,
+.vor-skeleton-line,
+.vor-skeleton-line-short {
+  height: 11px;
+}
+
+.vor-skeleton-name {
+  width: min(190px, 40%);
+}
+
+.vor-skeleton-line {
+  width: min(457px, 100%);
+}
+
+.vor-skeleton-line-short {
+  width: min(344px, 75%);
+}
+
+/* ---- Empty state (design): centered in the content area, no cards ---- */
+.vor-empty-state {
+  /* Viewport minus the 70px top bar and the content area's padding. */
+  min-height: calc(100dvh - 170px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.vor-empty-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-navy);
+}
+
+.vor-empty-text {
+  margin: 10px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.vor-empty-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 43px;
+  margin-block-start: 28px;
+  padding-inline: 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-navy);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+  text-decoration: none; /* now a link (to Analytics) */
+  cursor: pointer;
+}
+
+@media (max-width: 1199px) {
+  .vor-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .vor-empty-state {
+    min-height: calc(100dvh - 118px);
+  }
+}
+
+@media (max-width: 600px) {
+  .vor-empty-state {
+    min-height: calc(100dvh - 122px); /* compact top bar on small screens */
+  }
+
+  .vor-empty-text {
+    font-size: 15px;
+  }
+
+  .vor-summary {
+    padding: 24px 20px;
+  }
+
+  .vor-list {
+    padding-inline: 16px;
+  }
+
+  .vor-review {
+    gap: 12px;
+  }
+
+  .vor-review-top {
+    align-items: flex-start;
+  }
+}

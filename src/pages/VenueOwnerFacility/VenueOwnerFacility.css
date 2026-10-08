@@ -226,6 +226,22 @@
   padding: 24px 16px;
 }
 
+.vof-photo-item {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.vof-photo-item-main {
+  grid-column: 1 / -1;
+}
+
 .vof-photo {
   display: block;
   width: 100%;
@@ -234,9 +250,33 @@
   object-fit: cover;
 }
 
-.vof-photo-main {
-  grid-column: 1 / -1;
+.vof-photo-item-main .vof-photo {
   height: 141px;
+}
+
+/* Hover state (design): the photo darkens and "View" appears in the centre. */
+.vof-photo-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-white);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.vof-photo-item:hover .vof-photo-overlay,
+.vof-photo-item:focus-visible .vof-photo-overlay {
+  opacity: 1;
+}
+
+.vof-photo-item:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
 }
 
 .vof-photos-empty {
@@ -271,5 +311,474 @@
   .vof-card-header,
   .vof-rows {
     padding-inline: 16px;
+  }
+}
+
+/* ============================================================
+ * Edit venue details (VenueOwnerFacilityEdit) — design reference:
+ * breadcrumb + title with a "Back" button, one card holding the form
+ * (two columns), then "Cancel" / "Save changes" under the card.
+ * ============================================================ */
+.vofe-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 22px;
+}
+
+.vofe-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-end: 6px;
+  font-size: 12px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vofe-breadcrumb-link {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.vofe-breadcrumb-link:hover {
+  color: var(--color-navy);
+}
+
+.vofe-breadcrumb [aria-current='page'] {
+  color: var(--color-navy);
+}
+
+.vofe-back {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding-inline: 14px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  background: var(--color-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vofe-card-header {
+  padding: 18px 24px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vofe-card-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vofe-required {
+  color: var(--color-orange);
+}
+
+.vofe-body {
+  padding: 28px 24px;
+}
+
+/* Two fixed-width columns anchored to the start side (design). */
+.vofe-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 348px));
+  column-gap: clamp(24px, 10vw, 144px);
+  row-gap: 28px;
+  align-items: start;
+}
+
+.vofe-stack {
+  display: grid;
+  gap: 28px;
+}
+
+.vofe-field {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.vofe-span {
+  grid-column: 1 / -1;
+}
+
+.vofe-label {
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vofe-input {
+  width: 100%;
+  height: 42px;
+  padding-inline: 12px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 6px;
+  background: var(--color-white);
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.vofe-input:focus,
+.vofe-price:focus-within {
+  outline: none;
+  border-color: var(--color-navy);
+}
+
+.vofe-input-invalid {
+  border-color: var(--color-error);
+}
+
+.vofe-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+.vofe-textarea {
+  height: 120px;
+  padding-block: 10px;
+  resize: vertical;
+}
+
+.vofe-textarea::placeholder {
+  color: #7a8793; /* Gray 500 */
+}
+
+.vofe-price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vofe-currency {
+  color: var(--color-navy);
+  font-weight: 600;
+}
+
+.vofe-price-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  outline: none;
+}
+
+/* ---- Sport tiles ---- */
+.vofe-sport-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 110px));
+  gap: 10px;
+}
+
+.vofe-sport {
+  position: relative;
+  min-height: 73px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vofe-sport:disabled {
+  cursor: not-allowed;
+}
+
+.vofe-sport-selected {
+  border-color: var(--color-success);
+  background: #f0fdf4;
+  color: var(--color-success);
+}
+
+.vofe-sport-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.vofe-sport-soon {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-start: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--color-border);
+  font-size: 9px;
+  font-weight: 600;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vofe-divider {
+  margin: 32px 0;
+  border: none;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.vofe-grid + .vofe-info {
+  margin-block-start: 32px;
+}
+
+.vofe-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.vofe-info strong {
+  color: var(--color-navy);
+}
+
+.vofe-info-icon {
+  flex-shrink: 0;
+  color: var(--color-navy);
+}
+
+/* ---- Actions ---- */
+.vofe-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-start: 24px;
+}
+
+.vofe-cancel,
+.vofe-save {
+  height: 42px;
+  padding-inline: 20px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vofe-cancel {
+  border: 1px solid var(--color-input-border);
+  background: var(--color-white);
+  color: var(--color-navy);
+}
+
+.vofe-save {
+  border: none;
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+@media (max-width: 767px) {
+  .vofe-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .vofe-sport-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .vofe-header {
+    flex-direction: column;
+  }
+
+  .vofe-card-header,
+  .vofe-body {
+    padding-inline: 16px;
+  }
+
+  .vofe-info {
+    align-items: flex-start;
+  }
+}
+
+/* ============================================================
+ * Venue photos (VenueOwnerFacilityPhotos) — design reference: same
+ * header as the edit view, then a 4-column grid anchored to the start
+ * side: "Upload photos" tile first, then the cover (tagged) and photos.
+ * ============================================================ */
+.vofp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 224px));
+  gap: 18px;
+  margin: 50px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vofp-tile {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 224 / 167;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vofp-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vofp-cover {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--color-navy);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.vofp-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px;
+  border: 1px dashed var(--color-input-border);
+  background: var(--color-background-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.vofp-upload-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  margin-block-end: 8px;
+  border-radius: 8px;
+  background: #e3edf2; /* Navy 100 */
+  color: var(--color-navy);
+}
+
+.vofp-upload-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.vofp-upload-hint {
+  font-size: 10px;
+  color: #7a8793; /* Gray 500 */
+}
+
+/* Photo hover state (design): the bottom darkens, "Set as cover" shows at
+ * the bottom start and a remove (X) at the top end. Shown on hover for
+ * devices that support it, and on keyboard focus for everyone. */
+.vofp-photo-actions {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 55%);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+@media (hover: hover) {
+  .vofp-photo-item:hover .vofp-photo-actions {
+    opacity: 1;
+  }
+}
+
+.vofp-photo-item:focus-within .vofp-photo-actions {
+  opacity: 1;
+}
+
+.vofp-photo-remove,
+.vofp-set-cover {
+  position: absolute;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--color-white);
+  cursor: pointer;
+}
+
+.vofp-photo-remove {
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  display: grid;
+  place-items: center;
+}
+
+.vofp-set-cover {
+  inset-block-end: 10px;
+  inset-inline-start: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vofp-photo-remove:focus-visible,
+.vofp-set-cover:focus-visible {
+  outline: 2px solid var(--color-white);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* "Delete photo?" confirmation: the slot delete dialog (dsm-*) plus the
+ * selected photo under the text (design). */
+.vofp-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.vofp-dialog-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 378 / 156;
+  margin-block-start: 30px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+@media (max-width: 1199px) {
+  .vofp-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .vofp-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-block-start: 28px;
   }
 }
