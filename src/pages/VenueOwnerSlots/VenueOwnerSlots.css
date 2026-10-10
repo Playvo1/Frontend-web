@@ -437,7 +437,7 @@
 
 .vos-day-selected,
 .vos-day-selected:hover {
-  background: var(--color-orange);
+  background: var(--color-navy);
   color: var(--color-white);
 }
 
@@ -474,7 +474,7 @@
 }
 
 .vos-legend-selected {
-  background: var(--color-orange);
+  background: var(--color-navy);
 }
 
 @media (max-width: 1199px) {
