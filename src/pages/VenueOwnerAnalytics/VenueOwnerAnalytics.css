@@ -293,16 +293,24 @@
   height: 222px;
 }
 
-/* ---- Empty state (design): centered below the page title, no cards ---- */
+/* ---- Empty state (design): illustration and message centered in the
+ * content area; no page title or cards (same layout as Reviews). ---- */
 .voa-empty-state {
-  /* Viewport minus the top bar, the content padding and the page title. */
-  min-height: calc(100dvh - 280px);
+  /* Viewport minus the 70px top bar and the content area's padding. */
+  min-height: calc(100dvh - 170px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-block-end: 75px; /* keeps the message centered in the viewport */
   text-align: center;
+}
+
+.voa-empty-illustration {
+  display: block;
+  width: 285px;
+  max-width: 100%;
+  height: auto;
+  margin-block-end: 28px;
 }
 
 .voa-empty-title {
@@ -326,7 +334,7 @@
   justify-content: center;
   gap: 8px;
   height: 43px;
-  margin-block-start: 36px;
+  margin-block-start: 20px;
   padding-inline: 20px;
   border-radius: 8px;
   background: var(--color-navy);
@@ -338,7 +346,7 @@
 
 @media (max-width: 1024px) {
   .voa-empty-state {
-    min-height: calc(100dvh - 240px);
+    min-height: calc(100dvh - 118px);
   }
 }
 
@@ -358,6 +366,14 @@
 }
 
 @media (max-width: 600px) {
+  .voa-empty-state {
+    min-height: calc(100dvh - 122px); /* compact top bar on small screens */
+  }
+
+  .voa-empty-illustration {
+    width: 220px;
+  }
+
   .voa-empty-text {
     font-size: 15px;
   }

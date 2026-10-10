@@ -344,6 +344,14 @@
   color: var(--color-navy);
 }
 
+.vor-empty-illustration {
+  display: block;
+  width: 285px;
+  max-width: 100%;
+  height: auto;
+  margin-block-end: 28px;
+}
+
 .vor-empty-text {
   margin: 10px 0 0;
   font-size: 18px;
@@ -357,7 +365,7 @@
   justify-content: center;
   gap: 8px;
   height: 43px;
-  margin-block-start: 28px;
+  margin-block-start: 20px;
   padding-inline: 20px;
   border: none;
   border-radius: 8px;
@@ -386,6 +394,10 @@
 @media (max-width: 600px) {
   .vor-empty-state {
     min-height: calc(100dvh - 122px); /* compact top bar on small screens */
+  }
+
+  .vor-empty-illustration {
+    width: 220px;
   }
 
   .vor-empty-text {

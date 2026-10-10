@@ -8,6 +8,7 @@ import { getVenueOwnerAnalytics } from '../../services/analyticsService.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import AnalyticsTrendChart from './AnalyticsTrendChart.jsx'
+import emptyIllustration from '../../assets/empty-state-illustration.svg'
 import './VenueOwnerAnalytics.css'
 
 // Venue Owner "Analytics" page (route: /venue-owner/analytics), built from
@@ -106,10 +107,13 @@ function VenueOwnerAnalytics() {
       venue={layoutVenue}
       roleLabelKey="dashboardLayout.roles.venueOwner"
     >
-      <header className="voa-header">
-        <h1 className="voa-title">{t('venueOwnerAnalytics.title')}</h1>
-        <p className="voa-subtitle">{t('venueOwnerAnalytics.subtitle')}</p>
-      </header>
+      {/* The empty-state design has no page title (as on the Reviews page). */}
+      {!isEmpty && (
+        <header className="voa-header">
+          <h1 className="voa-title">{t('venueOwnerAnalytics.title')}</h1>
+          <p className="voa-subtitle">{t('venueOwnerAnalytics.subtitle')}</p>
+        </header>
+      )}
 
       {hasError && (
         <p className="voa-message" role="alert">
@@ -141,11 +145,13 @@ function VenueOwnerAnalytics() {
         </div>
       )}
 
+      {/* Empty state (design): illustration and message, centered. */}
       {isEmpty && (
         <section className="voa-empty-state" aria-labelledby="voa-empty-title">
-          <h2 id="voa-empty-title" className="voa-empty-title">
+          <img className="voa-empty-illustration" src={emptyIllustration} alt="" />
+          <h1 id="voa-empty-title" className="voa-empty-title">
             {t('venueOwnerAnalytics.emptyState.title')}
-          </h2>
+          </h1>
           <p className="voa-empty-text">{t('venueOwnerAnalytics.emptyState.message')}</p>
           <Link to="/venue-owner/dashboard" className="voa-empty-button">
             {t('venueOwnerAnalytics.emptyState.action')}

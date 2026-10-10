@@ -7,6 +7,7 @@ import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
 import { getVenueOwnerReviews } from '../../services/reviewsService.js'
 import { formatDate, numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
+import emptyIllustration from '../../assets/empty-state-illustration.svg'
 import './VenueOwnerReviews.css'
 
 // Venue Owner "Reviews" page (route: /venue-owner/reviews), built from the
@@ -101,6 +102,7 @@ function VenueOwnerReviews() {
         roleLabelKey="dashboardLayout.roles.venueOwner"
       >
         <section className="vor-empty-state" aria-labelledby="vor-empty-title">
+          <img className="vor-empty-illustration" src={emptyIllustration} alt="" />
           <h1 id="vor-empty-title" className="vor-empty-title">
             {t('venueOwnerReviews.emptyState.title')}
           </h1>
