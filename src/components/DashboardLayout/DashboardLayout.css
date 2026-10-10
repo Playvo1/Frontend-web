@@ -261,30 +261,6 @@ a.dashboard-nav-item-active:hover {
   font-weight: 700;
 }
 
-.dashboard-user-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.dashboard-user-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-navy);
-  white-space: nowrap;
-}
-
-.dashboard-user-role {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-
-.dashboard-user-chevron {
-  flex-shrink: 0;
-  color: var(--color-navy);
-}
-
 .dashboard-bell {
   position: relative;
   flex-shrink: 0;
@@ -400,11 +376,6 @@ a.dashboard-nav-item-active:hover {
   .dashboard-topbar-start,
   .dashboard-topbar-end {
     gap: 10px;
-  }
-
-  .dashboard-user-text,
-  .dashboard-user-chevron {
-    display: none;
   }
 
   .dashboard-greeting-title {

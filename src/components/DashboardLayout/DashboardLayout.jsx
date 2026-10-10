@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, ChevronDown, LogOut, Menu, X } from 'lucide-react'
+import { Bell, LogOut, Menu, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth.js'
@@ -13,7 +13,7 @@ import './DashboardLayout.css'
 // have no page yet: they are shown (as in the design) but are not links.
 // matchNested: also highlight the item on its sub-pages (e.g. a details page).
 // venue: { name, statusKey } | null — the sidebar venue card.
-// roleLabelKey: translation key of the role shown under the user's name.
+// roleLabelKey: translation key of the user's role (accessible name of the avatar button).
 // On screens ≤ 1024px the sidebar becomes an off-canvas drawer opened from
 // the top bar.
 function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
@@ -122,6 +122,18 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
             >
               <Menu size={20} aria-hidden="true" />
             </button>
+            {/* Profile button (avatar only, next to the greeting, as in the
+                design): placeholder for the future profile menu, so it has no
+                action and opens nothing for now. */}
+            <button
+              type="button"
+              className="dashboard-user"
+              aria-label={[fullName, roleLabelKey && t(roleLabelKey)].filter(Boolean).join(' — ')}
+            >
+              <span className="dashboard-avatar" aria-hidden="true">
+                {initial}
+              </span>
+            </button>
             <div className="dashboard-greeting">
               <p className="dashboard-greeting-title">
                 {t('dashboardLayout.greeting', { name: firstName })} <span aria-hidden="true">👋</span>
@@ -131,18 +143,6 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
           </div>
 
           <div className="dashboard-topbar-end">
-            {/* Profile button: placeholder for the future profile menu (not
-                built yet), so it has no action and opens nothing for now. */}
-            <button type="button" className="dashboard-user">
-              <span className="dashboard-avatar" aria-hidden="true">
-                {initial}
-              </span>
-              <span className="dashboard-user-text">
-                <span className="dashboard-user-name">{fullName}</span>
-                <span className="dashboard-user-role">{roleLabelKey && t(roleLabelKey)}</span>
-              </span>
-              <ChevronDown className="dashboard-user-chevron" size={16} aria-hidden="true" />
-            </button>
             <button
               type="button"
               className="dashboard-bell"
