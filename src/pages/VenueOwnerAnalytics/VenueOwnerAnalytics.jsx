@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ArrowRight, CalendarDays, ChartPie, DollarSign } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarDays, ChartPie, CircleAlert, DollarSign, WifiOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.jsx'
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
+import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerAnalytics } from '../../services/analyticsService.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
+import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import AnalyticsTrendChart from './AnalyticsTrendChart.jsx'
 import emptyIllustration from '../../assets/empty-state-illustration.svg'
+import '../../styles/skeleton.css'
 import './VenueOwnerAnalytics.css'
 
 // Venue Owner "Analytics" page (route: /venue-owner/analytics), built from
@@ -46,7 +49,13 @@ function VenueOwnerAnalytics() {
   const isRtl = i18n.dir() === 'rtl'
   const [venue, setVenue] = useState(null)
   const [data, setData] = useState(null)
-  const [hasError, setHasError] = useState(false)
+  const { logout } = useAuth()
+  // null (no error) | 'network' (no connection) | 'server' (any other
+  // failure) — same handling as the Bookings page.
+  const [errorKind, setErrorKind] = useState(null)
+  const hasError = errorKind !== null
+  // Incremented by "Try again" to run the analytics request once more.
+  const [attempt, setAttempt] = useState(0)
 
   // Sidebar venue card / top-bar subtitle: same source as the other
   // Venue Owner pages.
@@ -60,15 +69,33 @@ function VenueOwnerAnalytics() {
     }
   }, [])
 
+  // Analytics: loading → loaded (data or empty), or → error. 401 signs out
+  // (as on the Bookings page).
   useEffect(() => {
     let isActive = true
     getVenueOwnerAnalytics()
       .then((analyticsData) => isActive && setData(analyticsData))
-      .catch(() => isActive && setHasError(true))
+      .catch((error) => {
+        if (!isActive) return
+        if (error?.status === 401) {
+          logout()
+          return
+        }
+        setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
+      })
     return () => {
       isActive = false
     }
-  }, [])
+  }, [attempt, logout])
+
+  // "Try again": back to the loading state and one new request. The error
+  // block (and its button) is replaced by the loading state right away, so
+  // the request cannot be sent twice.
+  const retry = () => {
+    setErrorKind(null)
+    setData(null)
+    setAttempt((count) => count + 1)
+  }
 
   const layoutVenue = venue
     ? { name: venue.name, statusKey: `venueOwnerDashboard.venueStatus.${venue.status}` }
@@ -108,17 +135,38 @@ function VenueOwnerAnalytics() {
       roleLabelKey="dashboardLayout.roles.venueOwner"
     >
       {/* The empty-state design has no page title (as on the Reviews page). */}
-      {!isEmpty && (
+      {!isEmpty && !hasError && (
         <header className="voa-header">
           <h1 className="voa-title">{t('venueOwnerAnalytics.title')}</h1>
           <p className="voa-subtitle">{t('venueOwnerAnalytics.subtitle')}</p>
         </header>
       )}
 
+      {/* Error state (design): centered like the empty state, no page title
+          and no cards or charts. Connection failures show the Wi-Fi icon;
+          server errors the alert icon. */}
       {hasError && (
-        <p className="voa-message" role="alert">
-          {t('venueOwnerAnalytics.unavailable')}
-        </p>
+        <section className="voa-empty-state" role="alert" aria-labelledby="voa-error-title">
+          {errorKind === 'network' && (
+            <WifiOff className="voa-error-icon" size={100} strokeWidth={2.25} aria-hidden="true" />
+          )}
+          <h1 id="voa-error-title" className="voa-empty-title voa-error-title">
+            {errorKind === 'server' && (
+              <CircleAlert className="voa-error-alert" size={20} aria-hidden="true" />
+            )}
+            {t('venueOwnerAnalytics.errorState.title')}
+          </h1>
+          <p className="voa-empty-text">
+            {t(
+              errorKind === 'network'
+                ? 'venueOwnerAnalytics.errorState.networkMessage'
+                : 'venueOwnerAnalytics.errorState.serverMessage',
+            )}
+          </p>
+          <button type="button" className="voa-empty-button voa-retry-button" onClick={retry}>
+            {t('venueOwnerAnalytics.errorState.retry')}
+          </button>
+        </section>
       )}
 
       {/* Empty state (design): under the page title, centered. */}
@@ -129,17 +177,17 @@ function VenueOwnerAnalytics() {
             {[0, 1, 2].map((card) => (
               <div key={card} className="voa-card voa-stat">
                 <div className="voa-stat-top">
-                  <span className="voa-skeleton voa-skeleton-label" />
-                  <span className="voa-skeleton voa-skeleton-icon" />
+                  <span className="voa-skeleton pv-shimmer voa-skeleton-label" />
+                  <span className="voa-skeleton pv-shimmer voa-skeleton-icon" />
                 </div>
-                <span className="voa-skeleton voa-skeleton-value" />
+                <span className="voa-skeleton pv-shimmer voa-skeleton-value" />
               </div>
             ))}
           </div>
           {['trend', 'peak'].map((panel) => (
             <div key={panel} className="voa-card voa-panel" aria-hidden="true">
-              <span className={`voa-skeleton voa-skeleton-heading voa-skeleton-heading-${panel}`} />
-              <span className={`voa-skeleton-block voa-skeleton-block-${panel}`} />
+              <span className={`voa-skeleton pv-shimmer voa-skeleton-heading voa-skeleton-heading-${panel}`} />
+              <span className={`voa-skeleton-block pv-shimmer voa-skeleton-block-${panel}`} />
             </div>
           ))}
         </div>

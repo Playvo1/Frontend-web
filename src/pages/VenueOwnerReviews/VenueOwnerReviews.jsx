@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ArrowRight, Star } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CircleAlert, Star, WifiOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.jsx'
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
+import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
 import { getVenueOwnerReviews } from '../../services/reviewsService.js'
+import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { formatDate, numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import emptyIllustration from '../../assets/empty-state-illustration.svg'
+import '../../styles/skeleton.css'
 import './VenueOwnerReviews.css'
 
 // Venue Owner "Reviews" page (route: /venue-owner/reviews), built from the
@@ -58,7 +61,13 @@ function VenueOwnerReviews() {
   const { t, i18n } = useTranslation()
   const [venue, setVenue] = useState(null)
   const [data, setData] = useState(null)
-  const [hasError, setHasError] = useState(false)
+  const { logout } = useAuth()
+  // null (no error) | 'network' (no connection) | 'server' (any other
+  // failure) — same handling as the Bookings page.
+  const [errorKind, setErrorKind] = useState(null)
+  const hasError = errorKind !== null
+  // Incremented by "Try again" to run the reviews request once more.
+  const [attempt, setAttempt] = useState(0)
 
   // Sidebar venue card / top-bar subtitle: same source as the other
   // Venue Owner pages.
@@ -72,15 +81,33 @@ function VenueOwnerReviews() {
     }
   }, [])
 
+  // Reviews: loading → loaded (reviews or empty), or → error. 401 signs out
+  // (as on the Bookings page).
   useEffect(() => {
     let isActive = true
     getVenueOwnerReviews()
       .then((reviewsData) => isActive && setData(reviewsData))
-      .catch(() => isActive && setHasError(true))
+      .catch((error) => {
+        if (!isActive) return
+        if (error?.status === 401) {
+          logout()
+          return
+        }
+        setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
+      })
     return () => {
       isActive = false
     }
-  }, [])
+  }, [attempt, logout])
+
+  // "Try again": back to the loading state and one new request. The error
+  // block (and its button) is replaced by the loading state right away, so
+  // the request cannot be sent twice.
+  const retry = () => {
+    setErrorKind(null)
+    setData(null)
+    setAttempt((count) => count + 1)
+  }
 
   const layoutVenue = venue
     ? { name: venue.name, statusKey: `venueOwnerDashboard.venueStatus.${venue.status}` }
@@ -93,6 +120,40 @@ function VenueOwnerReviews() {
   const isLoading = data === null && !hasError
   const isEmpty = Boolean(data) && reviews.length === 0
   const ForwardIcon = i18n.dir() === 'rtl' ? ArrowLeft : ArrowRight
+
+  // Error state (design): centered like the empty state, no page title.
+  // Connection failures show the Wi-Fi icon; server errors the alert icon.
+  if (hasError) {
+    return (
+      <DashboardLayout
+        navItems={VENUE_OWNER_NAV}
+        venue={layoutVenue}
+        roleLabelKey="dashboardLayout.roles.venueOwner"
+      >
+        <section className="vor-empty-state" role="alert" aria-labelledby="vor-error-title">
+          {errorKind === 'network' && (
+            <WifiOff className="vor-error-icon" size={100} strokeWidth={2.25} aria-hidden="true" />
+          )}
+          <h1 id="vor-error-title" className="vor-empty-title vor-error-title">
+            {errorKind === 'server' && (
+              <CircleAlert className="vor-error-alert" size={20} aria-hidden="true" />
+            )}
+            {t('venueOwnerReviews.errorState.title')}
+          </h1>
+          <p className="vor-empty-text">
+            {t(
+              errorKind === 'network'
+                ? 'venueOwnerReviews.errorState.networkMessage'
+                : 'venueOwnerReviews.errorState.serverMessage',
+            )}
+          </p>
+          <button type="button" className="vor-empty-button" onClick={retry}>
+            {t('venueOwnerReviews.errorState.retry')}
+          </button>
+        </section>
+      </DashboardLayout>
+    )
+  }
 
   if (isEmpty) {
     return (
@@ -127,23 +188,17 @@ function VenueOwnerReviews() {
         <p className="vor-subtitle">{t('venueOwnerReviews.subtitle')}</p>
       </header>
 
-      {hasError && (
-        <p className="vor-message" role="alert">
-          {t('venueOwnerReviews.unavailable')}
-        </p>
-      )}
-
       {/* Loading state (design): placeholder cards in the page's layout. */}
       {isLoading && (
         <div className="vor-grid" aria-busy="true">
           <div className="vor-card vor-summary" aria-hidden="true">
-            <span className="vor-skeleton vor-skeleton-average" />
-            <span className="vor-skeleton vor-skeleton-total" />
+            <span className="vor-skeleton pv-shimmer vor-skeleton-average" />
+            <span className="vor-skeleton pv-shimmer vor-skeleton-total" />
             <ul className="vor-bars">
               {STAR_LEVELS.map((level) => (
                 <li key={level} className="vor-bar-row vor-skeleton-bar-row">
-                  <span className="vor-skeleton vor-skeleton-level" />
-                  <span className="vor-skeleton vor-skeleton-bar" />
+                  <span className="vor-skeleton pv-shimmer vor-skeleton-level" />
+                  <span className="vor-skeleton pv-shimmer vor-skeleton-bar" />
                 </li>
               ))}
             </ul>
@@ -151,16 +206,16 @@ function VenueOwnerReviews() {
 
           <div className="vor-card vor-list" aria-hidden="true">
             <div className="vor-list-header">
-              <span className="vor-skeleton vor-skeleton-heading" />
+              <span className="vor-skeleton pv-shimmer vor-skeleton-heading" />
             </div>
             <ul className="vor-reviews">
               {Array.from({ length: SKELETON_ROWS }, (_, row) => (
                 <li key={row} className="vor-review vor-skeleton-review">
-                  <span className="vor-skeleton vor-skeleton-avatar" />
+                  <span className="vor-skeleton pv-shimmer vor-skeleton-avatar" />
                   <span className="vor-skeleton-lines">
-                    <span className="vor-skeleton vor-skeleton-name" />
-                    <span className="vor-skeleton vor-skeleton-line" />
-                    <span className="vor-skeleton vor-skeleton-line-short" />
+                    <span className="vor-skeleton pv-shimmer vor-skeleton-name" />
+                    <span className="vor-skeleton pv-shimmer vor-skeleton-line" />
+                    <span className="vor-skeleton pv-shimmer vor-skeleton-line-short" />
                   </span>
                 </li>
               ))}

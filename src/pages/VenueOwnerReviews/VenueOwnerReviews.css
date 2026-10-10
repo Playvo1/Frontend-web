@@ -253,7 +253,7 @@
 .vor-skeleton {
   display: block;
   border-radius: 4px;
-  background: var(--color-border);
+  background-color: var(--color-border);
 }
 
 .vor-skeleton-average {
@@ -350,6 +350,22 @@
   max-width: 100%;
   height: auto;
   margin-block-end: 28px;
+}
+
+.vor-error-icon {
+  margin-block-end: 28px;
+  color: #a3adb8; /* Gray 400 */
+}
+
+.vor-error-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vor-error-alert {
+  flex-shrink: 0;
+  color: var(--color-error);
 }
 
 .vor-empty-text {

@@ -456,6 +456,11 @@
   color: var(--color-navy);
 }
 
+.vob-error-illustration {
+  margin-block-end: 18px;
+  color: #a3adb8; /* Gray 400 */
+}
+
 .vob-error-icon {
   flex-shrink: 0;
   color: var(--color-error);
@@ -496,6 +501,7 @@
 
 .vob-pagination {
   display: flex;
+  flex-wrap: wrap; /* many pages (real data) wrap instead of overflowing on mobile */
   align-items: center;
   gap: 6px;
 }

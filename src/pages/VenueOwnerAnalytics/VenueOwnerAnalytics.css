@@ -241,7 +241,7 @@
 .voa-skeleton {
   display: block;
   border-radius: 4px;
-  background: var(--color-border);
+  background-color: var(--color-border);
 }
 
 .voa-skeleton-label {
@@ -281,7 +281,7 @@
 .voa-skeleton-block {
   display: block;
   border-radius: 8px;
-  background: #eef2f5;
+  background-color: #eef2f5;
 }
 
 /* Same heights as the loaded charts, so nothing jumps when data arrives. */
@@ -342,6 +342,29 @@
   font-weight: 600;
   color: var(--color-white);
   text-decoration: none;
+}
+
+.voa-error-icon {
+  margin-block-end: 28px;
+  color: #a3adb8; /* Gray 400 */
+}
+
+.voa-error-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voa-error-alert {
+  flex-shrink: 0;
+  color: var(--color-error);
+}
+
+/* The empty-state link style on a <button>. */
+.voa-retry-button {
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 @media (max-width: 1024px) {
