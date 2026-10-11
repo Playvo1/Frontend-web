@@ -477,6 +477,109 @@
   background: var(--color-navy);
 }
 
+/* ---- Loading state: placeholder bars and blocks, same sizes as the
+ * loaded content (Reviews / Analytics pattern; shimmer: skeleton.css). ---- */
+.vos-skeleton {
+  display: block;
+  border-radius: 4px;
+  background-color: var(--color-border);
+}
+
+.vos-skeleton-block {
+  display: block;
+  border-radius: 8px;
+  background-color: #eef2f5;
+}
+
+.vos-skeleton-day-title {
+  width: 180px;
+  height: 12px;
+  margin-block: 4px;
+}
+
+.vos-skeleton-day-counts {
+  width: 130px;
+  height: 10px;
+  margin-block-start: 12px;
+}
+
+.vos-skeleton-add {
+  flex-shrink: 0;
+  width: 44px;
+  height: 12px;
+  margin-block-start: 12px;
+}
+
+/* Same spacing as a loaded slot row (available-slot design). */
+.vos-skeleton-slot {
+  align-items: flex-start;
+  margin-inline: -8px;
+  padding: 18px 23px 18px 20px;
+  border-block-end-color: #f1f4f6; /* Gray 100 */
+}
+
+.vos-skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding-inline-start: 20px;
+}
+
+.vos-skeleton-time {
+  width: 120px;
+  height: 12px;
+}
+
+.vos-skeleton-status {
+  width: 56px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+.vos-skeleton-meta {
+  width: 80px;
+  height: 10px;
+}
+
+.vos-skeleton-action {
+  flex-shrink: 0;
+  width: 72px;
+  height: 33px;
+  border-radius: 8px;
+}
+
+.vos-skeleton-nav {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+.vos-skeleton-month {
+  width: 120px;
+  height: 14px;
+}
+
+.vos-skeleton-weekday {
+  width: 24px;
+  height: 10px;
+  margin: 0 auto;
+}
+
+.vos-skeleton-day {
+  width: 100%;
+  max-width: 80px;
+  height: 56px;
+  margin: 0 auto;
+}
+
+.vos-skeleton-legend {
+  width: 60px;
+  height: 10px;
+  margin-block: 5px; /* the loaded legend's line height */
+}
+
 @media (max-width: 1199px) {
   .vos-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -507,7 +610,8 @@
     font-size: 10px;
   }
 
-  .vos-day-cell {
+  .vos-day-cell,
+  .vos-skeleton-day {
     height: 44px;
   }
 

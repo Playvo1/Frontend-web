@@ -8,6 +8,7 @@ import { getVenueOwnerSlots } from '../../services/slotsService.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import DeleteSlotModal from './DeleteSlotModal.jsx'
 import EditSlotModal from './EditSlotModal.jsx'
+import '../../styles/skeleton.css'
 import './VenueOwnerSlots.css'
 
 // Venue Owner schedule (route: /venue-owner/slots), built from the Figma
@@ -16,10 +17,21 @@ import './VenueOwnerSlots.css'
 // endpoint exists yet). Choosing a day and changing month are local UI
 // only; "Create time slot", "Add", "Edit" and "Delete" have no action until
 // the backend provides the time-slot endpoints.
+//
+// While the slots load, the day card and the calendar are shown as
+// placeholder blocks (no text) under the page title, as on the Reviews and
+// Analytics pages. All slots arrive in one request, so choosing another day
+// or month shows the loaded data at once (no new loading state).
 
 // As in the design, the calendar runs Monday → Sunday, left to right, in
 // both languages.
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+
+// Placeholders in the loading state: slot rows, calendar days (five weeks)
+// and legend items.
+const SKELETON_SLOTS = 4
+const SKELETON_DAYS = 35
+const SKELETON_LEGEND = 4
 
 function toIso(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -72,6 +84,7 @@ function VenueOwnerSlots() {
     return { year: today.getFullYear(), month: today.getMonth() }
   })
   const todayIso = toIso(new Date())
+  const isLoading = slots === null && !hasError
 
   useEffect(() => {
     let isActive = true
@@ -163,6 +176,54 @@ function VenueOwnerSlots() {
         <p className="vos-message" role="alert">
           {t('venueOwnerSlots.loadError')}
         </p>
+      )}
+
+      {/* Loading state: placeholders in the page's layout. */}
+      {isLoading && (
+        <div className="vos-grid" aria-busy="true">
+          <div className="vos-card vos-day" aria-hidden="true">
+            <div className="vos-day-header">
+              <div>
+                <span className="vos-skeleton pv-shimmer vos-skeleton-day-title" />
+                <span className="vos-skeleton pv-shimmer vos-skeleton-day-counts" />
+              </div>
+              <span className="vos-skeleton pv-shimmer vos-skeleton-add" />
+            </div>
+            <ul className="vos-slots">
+              {Array.from({ length: SKELETON_SLOTS }, (_, row) => (
+                <li key={row} className="vos-slot vos-skeleton-slot">
+                  <span className="vos-skeleton-lines">
+                    <span className="vos-skeleton pv-shimmer vos-skeleton-time" />
+                    <span className="vos-skeleton pv-shimmer vos-skeleton-status" />
+                    <span className="vos-skeleton pv-shimmer vos-skeleton-meta" />
+                  </span>
+                  <span className="vos-skeleton pv-shimmer vos-skeleton-action" />
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="vos-card vos-calendar" aria-hidden="true">
+            <div className="vos-calendar-header">
+              <span className="vos-skeleton pv-shimmer vos-skeleton-nav" />
+              <span className="vos-skeleton pv-shimmer vos-skeleton-month" />
+              <span className="vos-skeleton pv-shimmer vos-skeleton-nav" />
+            </div>
+            <div className="vos-month">
+              {WEEKDAYS.map((day) => (
+                <span key={day} className="vos-skeleton pv-shimmer vos-skeleton-weekday" />
+              ))}
+              {Array.from({ length: SKELETON_DAYS }, (_, day) => (
+                <span key={day} className="vos-skeleton-block pv-shimmer vos-skeleton-day" />
+              ))}
+            </div>
+            <div className="vos-legend">
+              {Array.from({ length: SKELETON_LEGEND }, (_, item) => (
+                <span key={item} className="vos-skeleton pv-shimmer vos-skeleton-legend" />
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {slots && (

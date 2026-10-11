@@ -20,6 +20,7 @@ import { getVenueOwnerFacility } from '../../services/facilityService.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import VenueOwnerFacilityEdit from './VenueOwnerFacilityEdit.jsx'
 import VenueOwnerFacilityPhotos from './VenueOwnerFacilityPhotos.jsx'
+import '../../styles/skeleton.css'
 import './VenueOwnerFacility.css'
 
 // Venue Owner "My venue" page (route: /venue-owner/facility), built from the
@@ -29,6 +30,13 @@ import './VenueOwnerFacility.css'
 // Data comes from facilityService (MOCK for now — see that file). "Edit" in
 // the information card opens the edit form and "View all photos" opens the
 // photos view; the other buttons have no action yet (no confirmed backend endpoints for them).
+//
+// While the venue loads, the banner and both cards are shown as placeholder
+// blocks (no text) under the page title, as on the Reviews and Analytics
+// pages, so nothing jumps when the data arrives.
+
+// Placeholder rows in the loading state: one per information row.
+const SKELETON_ROWS = 10
 
 // Localized value of a bilingual field ("name" -> name_ar / name_en).
 function localized(facility, field, language) {
@@ -142,6 +150,7 @@ function VenueOwnerFacility() {
     : []
 
   const [mainPhoto, ...otherPhotos] = facility?.images ?? []
+  const isLoading = facility === null && !hasError
 
   if (facility && isViewingPhotos) {
     return (
@@ -188,6 +197,45 @@ function VenueOwnerFacility() {
         <p className="vof-message" role="alert">
           {t('venueOwnerFacility.unavailable')}
         </p>
+      )}
+
+      {/* Loading state: placeholders in the page's layout. */}
+      {isLoading && (
+        <div aria-busy="true">
+          <div className="vof-skeleton-block pv-shimmer vof-skeleton-hero" aria-hidden="true" />
+          <div className="vof-grid" aria-hidden="true">
+            <div className="vof-card">
+              <div className="vof-card-header">
+                <span className="vof-skeleton pv-shimmer vof-skeleton-title" />
+              </div>
+              <div className="vof-rows">
+                {Array.from({ length: SKELETON_ROWS }, (_, row) => (
+                  <div key={row} className="vof-row">
+                    <span className="vof-row-label">
+                      <span className="vof-skeleton pv-shimmer vof-skeleton-icon" />
+                      <span className="vof-skeleton pv-shimmer vof-skeleton-label" />
+                    </span>
+                    <span className="vof-skeleton pv-shimmer vof-skeleton-value" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="vof-card">
+              <div className="vof-card-header">
+                <span className="vof-skeleton pv-shimmer vof-skeleton-title" />
+              </div>
+              <div className="vof-gallery">
+                <span className="vof-skeleton-block pv-shimmer vof-skeleton-photo vof-skeleton-photo-main" />
+                <span className="vof-skeleton-block pv-shimmer vof-skeleton-photo" />
+                <span className="vof-skeleton-block pv-shimmer vof-skeleton-photo" />
+              </div>
+              <div className="vof-photos-footer">
+                <span className="vof-skeleton pv-shimmer vof-skeleton-button" />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {facility && (

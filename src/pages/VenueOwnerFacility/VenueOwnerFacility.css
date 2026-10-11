@@ -291,6 +291,64 @@
   padding: 0 16px 16px;
 }
 
+/* ---- Loading state: placeholder bars and blocks, same sizes as the
+ * loaded content (Reviews / Analytics pattern; shimmer: skeleton.css). ---- */
+.vof-skeleton {
+  display: block;
+  border-radius: 4px;
+  background-color: var(--color-border);
+}
+
+.vof-skeleton-block {
+  display: block;
+  border-radius: 8px;
+  background-color: #eef2f5;
+}
+
+.vof-skeleton-hero {
+  min-height: 346px;
+  border-radius: 12px;
+}
+
+/* Title bar; the margins keep the loaded header's height. */
+.vof-skeleton-title {
+  width: 140px;
+  height: 12px;
+  margin-block: 8px;
+}
+
+.vof-skeleton-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.vof-skeleton-label {
+  width: 90px;
+  height: 12px;
+}
+
+.vof-skeleton-value {
+  flex-shrink: 0;
+  width: 120px;
+  height: 12px;
+}
+
+.vof-skeleton-photo {
+  height: 90px;
+}
+
+.vof-skeleton-photo-main {
+  grid-column: 1 / -1;
+  height: 141px;
+}
+
+.vof-skeleton-button {
+  height: 40px;
+  border-radius: 8px;
+}
+
 @media (max-width: 1199px) {
   .vof-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -306,6 +364,14 @@
 
   .vof-hero-title {
     font-size: 20px;
+  }
+
+  .vof-skeleton-hero {
+    min-height: 240px;
+  }
+
+  .vof-skeleton-value {
+    width: 80px;
   }
 
   .vof-card-header,
