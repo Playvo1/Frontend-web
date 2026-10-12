@@ -6,9 +6,15 @@ import { Activity, CalendarDays, Clock, House, LayoutGrid, Star } from 'lucide-r
 // they are built.
 export const VENUE_OWNER_NAV = [
   { key: 'home', labelKey: 'dashboardLayout.nav.home', icon: LayoutGrid, to: '/venue-owner/dashboard' },
-  { key: 'bookings', labelKey: 'dashboardLayout.nav.bookings', icon: CalendarDays, to: '/venue-owner/bookings' },
-  { key: 'schedule', labelKey: 'dashboardLayout.nav.schedule', icon: Clock }, // /slots
-  { key: 'myVenue', labelKey: 'dashboardLayout.nav.myVenue', icon: House }, // /facility
-  { key: 'reviews', labelKey: 'dashboardLayout.nav.reviews', icon: Star }, // /reviews
-  { key: 'analytics', labelKey: 'dashboardLayout.nav.analytics', icon: Activity }, // no documented route
+  {
+    key: 'bookings',
+    labelKey: 'dashboardLayout.nav.bookings',
+    icon: CalendarDays,
+    to: '/venue-owner/bookings',
+    matchNested: true, // stays highlighted on /venue-owner/bookings/:bookingId
+  },
+  { key: 'schedule', labelKey: 'dashboardLayout.nav.schedule', icon: Clock, to: '/venue-owner/slots' },
+  { key: 'myVenue', labelKey: 'dashboardLayout.nav.myVenue', icon: House, to: '/venue-owner/facility' },
+  { key: 'reviews', labelKey: 'dashboardLayout.nav.reviews', icon: Star, to: '/venue-owner/reviews' },
+  { key: 'analytics', labelKey: 'dashboardLayout.nav.analytics', icon: Activity, to: '/venue-owner/analytics' },
 ]

@@ -1,0 +1,627 @@
+/*
+ * Venue Owner schedule — layout from the Figma reference (1440px frame):
+ * title + "Create time slot", then the selected day's slots (start side)
+ * next to the month calendar (end side). Colors use the tokens in
+ * index.css: available → success, booked → orange (the booked accent used
+ * across the Venue Owner pages), booked slot bar → error, as in the design.
+ */
+
+.vos-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 26px;
+}
+
+.vos-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.vos-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.vos-message {
+  margin: 0 0 24px;
+  color: var(--color-error);
+}
+
+.vos-create {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding-inline: 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-orange);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-white);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vos-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 356px) minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.vos-card {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-white);
+}
+
+/* Shared dots (calendar, legend, day counts). */
+.vos-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.vos-dot-available {
+  background: var(--color-success);
+}
+
+.vos-dot-booked {
+  background: var(--color-orange);
+}
+
+/* ---- Selected day ---- */
+.vos-day {
+  border-radius: 12px; /* as in the design (the calendar card keeps 10px) */
+}
+
+.vos-day-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-inline: 8px;
+  padding: 28px 24px 10px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vos-day-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vos-day-counts {
+  margin: 6px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.vos-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+/* In the day header the booked dot is red, like the booked slot bar. */
+.vos-count .vos-dot-booked {
+  background: var(--color-error);
+}
+
+.vos-add {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-block-start: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-orange);
+  cursor: pointer;
+}
+
+.vos-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 51px 20px 48px;
+  text-align: center;
+}
+
+/* ---- Empty day (Figma empty state) ---- */
+.vos-day-header-empty {
+  margin-inline: 0; /* full-width divider in the empty-state design */
+  padding: 15px 28px 11px;
+}
+
+.vos-day-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vos-add-outlined {
+  height: 30px;
+  margin-block-start: 4px;
+  padding-inline: 14px;
+  gap: 6px;
+  border: 1px solid #ffb09a; /* Orange 300 */
+  border-radius: 6px;
+  background: #ffeae5; /* Orange 100 */
+}
+
+.vos-empty-icon {
+  color: #bdd0db; /* Navy 200 (Brand Visual System) */
+}
+
+.vos-empty-title {
+  margin: 18px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.vos-empty-text {
+  margin: 0;
+  font-size: 12px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vos-slots {
+  margin: 0;
+  padding: 0 8px 32px;
+  list-style: none;
+}
+
+.vos-slot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* As in the design: more space above each slot's content than below. */
+  padding: 32px 12px 8px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+/* Colored bar on the start edge of each slot. */
+.vos-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding-inline-start: 12px;
+  line-height: 1.5;
+  border-inline-start: 2px solid transparent;
+}
+
+.vos-slot-available .vos-slot-info {
+  border-inline-start-color: var(--color-success);
+}
+
+.vos-slot-booked .vos-slot-info {
+  border-inline-start-color: var(--color-error);
+}
+
+.vos-slot-time {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.vos-slot-status {
+  font-size: 12px;
+}
+
+.vos-slot-status-available {
+  color: var(--color-success);
+}
+
+.vos-slot-status-booked {
+  color: var(--color-orange);
+}
+
+.vos-slot-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 (Brand Visual System) */
+}
+
+.vos-slot-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- Booked and available slots (Figma slot designs) ---- */
+.vos-slot-booked,
+.vos-slot-available {
+  align-items: flex-start;
+  margin-inline: -8px; /* full-width divider */
+  padding-block: 18px;
+  border-block-end-color: #f1f4f6; /* Gray 100 */
+}
+
+.vos-slot-booked {
+  padding-inline: 20px 28px;
+}
+
+.vos-slot-available {
+  padding-inline: 20px 23px;
+}
+
+.vos-slot-booked .vos-slot-info,
+.vos-slot-available .vos-slot-info {
+  position: relative;
+  gap: 7px;
+  padding-inline-start: 20px;
+  border-inline-start: none;
+}
+
+/* Status bar with rounded ends on the start edge. */
+.vos-slot-booked .vos-slot-info::before,
+.vos-slot-available .vos-slot-info::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--color-orange);
+}
+
+.vos-slot-available .vos-slot-info::before {
+  background: var(--color-success);
+}
+
+.vos-slot-booked .vos-slot-time,
+.vos-slot-booked .vos-slot-meta,
+.vos-slot-available .vos-slot-time,
+.vos-slot-available .vos-slot-meta {
+  line-height: 15px;
+}
+
+/* Status pill: Orange 100 (booked) / light green (available, from the design). */
+.vos-slot-booked .vos-slot-status,
+.vos-slot-available .vos-slot-status {
+  align-self: flex-start;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #ffeae5; /* Orange 100 */
+  line-height: 18px;
+}
+
+.vos-slot-available .vos-slot-status {
+  background: #f0fdf4; /* as in the design; no brand token for a light green */
+}
+
+.vos-slot-booked .vos-slot-meta,
+.vos-slot-available .vos-slot-meta {
+  gap: 6px;
+  font-size: 12px;
+}
+
+.vos-slot-locked {
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 15px;
+  color: #cbd3da; /* Gray 300 */
+  white-space: nowrap;
+}
+
+/* Edit / Delete: outlined buttons on the available-slot design. */
+.vos-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 33px;
+  padding-inline: 11px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.vos-action-edit {
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.vos-action-delete {
+  color: #9babbc; /* muted, as in the design */
+}
+
+/* ---- Calendar ---- */
+.vos-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.vos-month-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vos-month-nav {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-background-secondary);
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.vos-month {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 20px 6px;
+  padding: 20px 12px 0; /* the last week sits on the legend divider */
+}
+
+.vos-weekday {
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vos-day-cell {
+  width: 100%;
+  max-width: 80px;
+  height: 56px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.vos-day-cell:hover {
+  background: var(--color-background-secondary);
+}
+
+.vos-day-number {
+  font-size: 13px;
+}
+
+.vos-day-dots {
+  display: flex;
+  gap: 2px;
+}
+
+/* Today: Orange 100 (#FFEAE5, Brand Visual System) with orange text. */
+.vos-day-today,
+.vos-day-today:hover {
+  background: #ffeae5;
+  color: var(--color-orange);
+}
+
+.vos-day-selected,
+.vos-day-selected:hover {
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.vos-day-selected .vos-dot {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.vos-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  padding: 12px 24px 24px;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.vos-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vos-legend-today,
+.vos-legend-selected {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.vos-legend-today {
+  border: 1.5px solid #ffb09a; /* Orange 300 */
+  background: #ffeae5;
+}
+
+.vos-legend-selected {
+  background: var(--color-navy);
+}
+
+/* ---- Loading state: placeholder bars and blocks, same sizes as the
+ * loaded content (Reviews / Analytics pattern; shimmer: skeleton.css). ---- */
+.vos-skeleton {
+  display: block;
+  border-radius: 4px;
+  background-color: var(--color-border);
+}
+
+.vos-skeleton-block {
+  display: block;
+  border-radius: 8px;
+  background-color: #eef2f5;
+}
+
+.vos-skeleton-day-title {
+  width: 180px;
+  height: 12px;
+  margin-block: 4px;
+}
+
+.vos-skeleton-day-counts {
+  width: 130px;
+  height: 10px;
+  margin-block-start: 12px;
+}
+
+.vos-skeleton-add {
+  flex-shrink: 0;
+  width: 44px;
+  height: 12px;
+  margin-block-start: 12px;
+}
+
+/* Same spacing as a loaded slot row (available-slot design). */
+.vos-skeleton-slot {
+  align-items: flex-start;
+  margin-inline: -8px;
+  padding: 18px 23px 18px 20px;
+  border-block-end-color: #f1f4f6; /* Gray 100 */
+}
+
+.vos-skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding-inline-start: 20px;
+}
+
+.vos-skeleton-time {
+  width: 120px;
+  height: 12px;
+}
+
+.vos-skeleton-status {
+  width: 56px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+.vos-skeleton-meta {
+  width: 80px;
+  height: 10px;
+}
+
+.vos-skeleton-action {
+  flex-shrink: 0;
+  width: 72px;
+  height: 33px;
+  border-radius: 8px;
+}
+
+.vos-skeleton-nav {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+.vos-skeleton-month {
+  width: 120px;
+  height: 14px;
+}
+
+.vos-skeleton-weekday {
+  width: 24px;
+  height: 10px;
+  margin: 0 auto;
+}
+
+.vos-skeleton-day {
+  width: 100%;
+  max-width: 80px;
+  height: 56px;
+  margin: 0 auto;
+}
+
+.vos-skeleton-legend {
+  width: 60px;
+  height: 10px;
+  margin-block: 5px; /* the loaded legend's line height */
+}
+
+@media (max-width: 1199px) {
+  .vos-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Pick a day first, then see its slots. */
+  .vos-calendar {
+    order: -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .vos-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vos-create {
+    align-self: flex-start;
+  }
+
+  .vos-month {
+    gap: 8px 2px;
+    padding-inline: 6px;
+  }
+
+  .vos-weekday {
+    font-size: 10px;
+  }
+
+  .vos-day-cell,
+  .vos-skeleton-day {
+    height: 44px;
+  }
+
+  .vos-slot {
+    flex-wrap: wrap;
+  }
+}
+
+/* Shared overlay behind every dialog on this page (create/edit/delete):
+   black at 50%, as in the Figma prototype. */
+.vos-modal::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}

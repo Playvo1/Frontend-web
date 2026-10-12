@@ -1,20 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, CircleAlert, Eye, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleAlert, Eye, Search, WifiOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import Button from '../../components/Button/Button.jsx'
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.jsx'
 import Input from '../../components/Input/Input.jsx'
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
+import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerBookings } from '../../services/bookingsService.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
+import { isConnectionFailure } from '../../utils/requestErrors.js'
+import { formatDate, formatTimeRange, initials, numberFormat } from './bookingFormat.js'
 import DateFilter from './DateFilter.jsx'
 import StatusFilter from './StatusFilter.jsx'
 import './VenueOwnerBookings.css'
 
 // Venue Owner bookings list (route: /venue-owner/bookings), built from the
-// Figma reference. Data comes from bookingsService (MOCK for now — no
-// backend endpoint exists yet); search, filters and pagination run on the
-// loaded list in the browser.
+// Figma reference. Bookings come from bookingsService (the backend's
+// GET /owner/bookings when the API is configured, mock otherwise); search,
+// filters and pagination run on the loaded list in the browser.
 
 const PAGE_SIZE = 8
 
@@ -24,50 +28,15 @@ const STATUSES = ['confirmed', 'pending_payment', 'cancelled']
 // Columns of the loading placeholder rows, in table order.
 const SKELETON_COLUMNS = ['id', 'player', 'date', 'time', 'amount', 'status', 'action']
 
-const numberFormat = new Intl.NumberFormat('en-US')
-
-// Dates and times are shown in the design's Latin format in both languages
-// ("18 Sep 2026", "8:00 – 9:00 PM").
-const monthFormat = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' })
-
-// "2026-09-18" -> "18 Sep 2026"
-function formatDate(isoDate) {
-  const [year, , day] = isoDate.split('-')
-  const month = monthFormat.format(new Date(`${isoDate}T00:00:00Z`))
-  return `${Number(day)} ${month} ${year}`
-}
-
-// "HH:mm" (24h) -> { time: "8:00", period: "PM" }
-function to12Hour(time) {
-  const [hours, minutes] = time.split(':').map(Number)
-  const period = hours >= 12 ? 'PM' : 'AM'
-  const hour12 = hours % 12 === 0 ? 12 : hours % 12
-  return { time: `${hour12}:${String(minutes).padStart(2, '0')}`, period }
-}
-
-function formatTimeRange(start, end) {
-  const from = to12Hour(start)
-  const to = to12Hour(end)
-  return from.period === to.period
-    ? `${from.time} – ${to.time} ${to.period}`
-    : `${from.time} ${from.period} – ${to.time} ${to.period}`
-}
-
-function initials(name) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('')
-}
-
 function VenueOwnerBookings() {
   const { t, i18n } = useTranslation()
+  const { token, logout } = useAuth()
   const isRtl = i18n.dir() === 'rtl'
   const [bookings, setBookings] = useState(null)
   const [venue, setVenue] = useState(null)
-  const [hasError, setHasError] = useState(false)
+  // null (no error) | 'network' (no connection) | 'server' (any other failure).
+  const [errorKind, setErrorKind] = useState(null)
+  const hasError = errorKind !== null
   const [search, setSearch] = useState('')
   const [dateFilter, setDateFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -89,18 +58,32 @@ function VenueOwnerBookings() {
   }, [])
 
   // Bookings: loading → loaded, or → error (shown in the table).
+  // 401 means the session is no longer valid: sign out (the protected route
+  // then sends the user to /login). A connection failure shows the
+  // "no connection" error state; any other failure (403, 422, 5xx) shows the
+  // generic error state, without technical details.
   useEffect(() => {
     let isActive = true
-    getVenueOwnerBookings()
+    getVenueOwnerBookings(token)
       .then((bookingList) => isActive && setBookings(bookingList))
-      .catch(() => isActive && setHasError(true))
+      .catch((error) => {
+        if (!isActive) return
+        if (error?.status === 401) {
+          logout()
+          return
+        }
+        setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
+      })
     return () => {
       isActive = false
     }
-  }, [attempt])
+  }, [attempt, token, logout])
 
+  // "Try again": back to the loading state and one new request. The error
+  // block (and its button) is replaced by the loading rows right away, so
+  // the request cannot be sent twice.
   const retry = () => {
-    setHasError(false)
+    setErrorKind(null)
     setBookings(null)
     setAttempt((count) => count + 1)
   }
@@ -222,12 +205,11 @@ function VenueOwnerBookings() {
                     </span>
                   </td>
                   <td className="vob-center">
-                    {/* Booking details are not designed/built yet, so
-                        the button has no action for now. */}
-                    <button type="button" className="vob-view">
+                    {/* Every status has a designed details page. */}
+                    <Link className="vob-view" to={`/venue-owner/bookings/${booking.id}`}>
                       <Eye size={14} aria-hidden="true" />
                       {t('venueOwnerBookings.view')}
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -254,13 +236,25 @@ function VenueOwnerBookings() {
         </div>
 
         {/* Error state (Figma): replaces the rows when loading fails. */}
+        {/* Connection failures show the no-connection design (Wi-Fi icon). */}
         {hasError && (
           <div className="vob-error" role="alert">
+            {errorKind === 'network' && (
+              <WifiOff className="vob-error-illustration" size={56} strokeWidth={2.25} aria-hidden="true" />
+            )}
             <p className="vob-error-title">
-              <CircleAlert className="vob-error-icon" size={18} aria-hidden="true" />
+              {errorKind === 'server' && (
+                <CircleAlert className="vob-error-icon" size={18} aria-hidden="true" />
+              )}
               {t('venueOwnerBookings.loadError')}
             </p>
-            <p className="vob-error-text">{t('venueOwnerBookings.errorDescription')}</p>
+            <p className="vob-error-text">
+              {t(
+                errorKind === 'network'
+                  ? 'venueOwnerBookings.networkErrorDescription'
+                  : 'venueOwnerBookings.errorDescription',
+              )}
+            </p>
             <div className="vob-error-action">
               <Button fullWidth onClick={retry}>
                 {t('venueOwnerBookings.retry')}

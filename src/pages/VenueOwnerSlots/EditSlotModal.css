@@ -1,0 +1,205 @@
+/*
+ * "Edit time slot" dialog — sizes and spacing measured on the Figma frame
+ * (662 x 678, radius 12). Field values use Gray 300 and the currency sign
+ * Gray 500, as in the design.
+ */
+.esm {
+  width: 662px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  padding-block: 54px 53px;
+  padding-inline: 35px 34px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-white);
+  color: var(--color-navy);
+  font: inherit;
+}
+
+.esm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.esm-title {
+  margin: 8px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-navy);
+}
+
+.esm-subtitle {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.esm-close {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: #fafafa;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.esm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 20px;
+  margin-block-start: 49px;
+}
+
+.esm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.esm-label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-navy);
+}
+
+.esm-required {
+  color: var(--color-error);
+}
+
+.esm-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 46px;
+  padding-inline: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-white);
+}
+
+.esm-input {
+  min-width: 0;
+  font: inherit;
+  font-size: 14px;
+  color: #cbd3da; /* Gray 300 */
+  outline: none;
+}
+
+.esm-input::placeholder {
+  color: #cbd3da; /* Gray 300, same as the values in the design */
+}
+
+input.esm-control:focus-visible,
+.esm-price:focus-within {
+  border-color: var(--color-navy);
+}
+
+.esm-value {
+  font-size: 14px;
+  color: #cbd3da; /* Gray 300 */
+  white-space: nowrap;
+}
+
+.esm-stepper {
+  display: flex;
+  flex-direction: column;
+}
+
+.esm-step {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 9px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #9babbc;
+  cursor: pointer;
+}
+
+.esm-step:hover {
+  color: var(--color-navy);
+}
+
+/* Price: currency box on the start side, divided from the amount. */
+.esm-price {
+  justify-content: flex-start;
+  gap: 0;
+  padding-inline: 0;
+}
+
+.esm-currency {
+  flex-shrink: 0;
+  width: 43px;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  border-inline-end: 1px solid var(--color-border);
+  font-size: 13px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.esm-price-input {
+  flex: 1;
+  height: 100%;
+  padding-inline: 16px;
+  border: none;
+  background: transparent;
+  font-size: 17px;
+}
+
+.esm-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-block-start: 125px;
+  margin-inline-end: 21px; /* as in the design: the buttons stop short of the fields' end edge */
+}
+
+.esm-button {
+  height: 42px;
+  border: none;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.esm-save {
+  background: var(--color-orange);
+  color: var(--color-white);
+  box-shadow: 0 4px 10px rgba(252, 75, 1, 0.2);
+}
+
+.esm-cancel {
+  background: #e3edf2; /* Navy 100 */
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 600px) {
+  .esm {
+    padding: 24px 20px;
+  }
+
+  .esm-grid {
+    grid-template-columns: minmax(0, 1fr);
+    margin-block-start: 28px;
+  }
+
+  .esm-footer {
+    margin-block-start: 32px;
+    margin-inline-end: 0;
+    gap: 12px;
+  }
+}
