@@ -123,7 +123,12 @@ const resources = {
           month: 'هذا الشهر',
           lastMonth: 'الشهر الماضي',
         },
-        loadError: 'تعذّر تحميل بيانات لوحة التحكم.',
+        errorState: {
+          title: 'تعذّر تحميل لوحة التحكم',
+          networkMessage: 'تعذّر الاتصال بالإنترنت. تحقّق من اتصالك وحاول مرة أخرى.',
+          serverMessage: 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
+          retry: 'حاول مرة أخرى',
+        },
         statsLabel: 'الإحصائيات',
         stats: {
           totalBookings: 'إجمالي الحجوزات',
@@ -576,7 +581,12 @@ const resources = {
           month: 'This month',
           lastMonth: 'Last month',
         },
-        loadError: 'Could not load the dashboard data.',
+        errorState: {
+          title: 'Could not load the dashboard',
+          networkMessage: 'Could not connect to the internet. Check your connection and try again.',
+          serverMessage: 'Something went wrong. Please try again.',
+          retry: 'Try again',
+        },
         statsLabel: 'Statistics',
         stats: {
           totalBookings: 'Total bookings',

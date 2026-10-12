@@ -86,11 +86,6 @@
   color: var(--color-orange);
 }
 
-.vo-message {
-  margin: 0 0 24px;
-  color: var(--color-error);
-}
-
 /* Statistics cards */
 .vo-stats {
   display: grid;
@@ -214,6 +209,147 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Loading state: placeholder bars and blocks, same sizes as the loaded */
+/* content (Reviews / Analytics pattern; shimmer: skeleton.css).        */
+/* ------------------------------------------------------------------ */
+.vo-skeleton {
+  display: block;
+  border-radius: 4px;
+  background-color: var(--color-border);
+}
+
+.vo-skeleton-block {
+  display: block;
+  border-radius: 8px;
+  background-color: #eef2f5;
+}
+
+/* Card label / value / note: the margins keep each loaded line's height. */
+.vo-skeleton-stat-label {
+  width: 60%;
+  height: 14px;
+  margin-block: 6px;
+}
+
+.vo-skeleton-stat-value {
+  width: 45%;
+  height: 26px;
+  margin-block: 5px;
+  border-radius: 6px;
+}
+
+.vo-skeleton-stat-note {
+  width: 70%;
+  height: 10px;
+  margin-block: 4px;
+}
+
+/* Card header: title and subtitle lines. */
+.vo-skeleton-heading {
+  display: flex;
+  flex-direction: column;
+}
+
+.vo-skeleton-title {
+  width: 150px;
+  height: 14px;
+  margin-block: 7px;
+}
+
+.vo-skeleton-subtitle {
+  width: 110px;
+  height: 10px;
+  margin-block: 6px 4px;
+}
+
+.vo-skeleton-time {
+  flex-shrink: 0;
+  width: 48px;
+  height: 12px;
+}
+
+.vo-skeleton-who {
+  width: 90px;
+  height: 12px;
+  margin-inline-start: auto;
+}
+
+.vo-skeleton-badge {
+  flex-shrink: 0;
+  width: 56px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+/* Same heights as the loaded charts (LineChart 400px, BarChart 420px). */
+.vo-skeleton-chart-bookings {
+  height: 400px;
+}
+
+.vo-skeleton-chart-revenue {
+  height: 420px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Error state: centered in the content area, as on the Reviews and    */
+/* Analytics pages.                                                    */
+/* ------------------------------------------------------------------ */
+.vo-error-state {
+  /* Viewport minus the 70px top bar and the content area's padding. */
+  min-height: calc(100dvh - 170px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.vo-error-icon {
+  margin-block-end: 28px;
+  color: #a3adb8; /* Gray 400 */
+}
+
+.vo-error-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-navy);
+}
+
+.vo-error-alert {
+  flex-shrink: 0;
+  color: var(--color-error);
+}
+
+.vo-error-text {
+  margin: 10px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.vo-error-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 43px;
+  margin-block-start: 20px;
+  padding-inline: 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-navy);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
 /* Responsive                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -230,6 +366,12 @@
 
   .vo-middle {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .vo-error-state {
+    min-height: calc(100dvh - 118px);
   }
 }
 
@@ -254,6 +396,14 @@
 
   .vo-schedule-row {
     min-height: 56px;
+  }
+
+  .vo-error-state {
+    min-height: calc(100dvh - 122px); /* compact top bar on small screens */
+  }
+
+  .vo-error-text {
+    font-size: 15px;
   }
 }
 
