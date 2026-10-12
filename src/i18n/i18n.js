@@ -396,6 +396,7 @@ const resources = {
         showing_few: 'عرض {{shown}} من {{value}} تقييمات',
         showing_many: 'عرض {{shown}} من {{value}} تقييمًا',
         showing_other: 'عرض {{shown}} من {{value}} تقييم',
+        showAll: 'عرض كل التقييمات',
       },
       venueOwnerSlots: {
         title: 'الجدول',
@@ -845,6 +846,7 @@ const resources = {
         },
         showing_one: 'Showing {{shown}} of {{value}} review',
         showing_other: 'Showing {{shown}} of {{value}} reviews',
+        showAll: 'View all reviews',
       },
       venueOwnerSlots: {
         title: 'Schedule',

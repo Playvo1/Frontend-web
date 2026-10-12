@@ -249,6 +249,23 @@
   color: #7a8793; /* Gray 500 */
 }
 
+/* "View all reviews": the footer text as a button, same look. */
+.vor-show-all {
+  display: block;
+  width: 100%;
+  padding-inline: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.vor-show-all:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
 /* ---- Loading state (design): static placeholder bars in the cards ---- */
 .vor-skeleton {
   display: block;

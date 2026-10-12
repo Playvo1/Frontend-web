@@ -31,6 +31,12 @@ const STAR_LEVELS = [5, 4, 3, 2, 1]
 // Placeholder review rows in the loading design.
 const SKELETON_ROWS = 7
 
+// Reviews listed at first (design: 8 rows). When more reviews are loaded,
+// the list footer becomes a "View all reviews" button that lists every
+// loaded review in place. It never shows more than the service returned
+// (summary.total can be larger than the loaded list).
+const INITIAL_VISIBLE_REVIEWS = 8
+
 // Avatar colors of the design's reviewer initials, picked by position.
 const AVATAR_COLORS = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#0891b2', '#dc2626', '#4338ca', '#be185d']
 
@@ -68,6 +74,8 @@ function VenueOwnerReviews() {
   const hasError = errorKind !== null
   // Incremented by "Try again" to run the reviews request once more.
   const [attempt, setAttempt] = useState(0)
+  // "View all reviews" pressed: every loaded review is listed.
+  const [showAllReviews, setShowAllReviews] = useState(false)
 
   // Sidebar venue card / top-bar subtitle: same source as the other
   // Venue Owner pages.
@@ -105,6 +113,7 @@ function VenueOwnerReviews() {
   // the request cannot be sent twice.
   const retry = () => {
     setErrorKind(null)
+    setShowAllReviews(false)
     setData(null)
     setAttempt((count) => count + 1)
   }
@@ -115,6 +124,8 @@ function VenueOwnerReviews() {
 
   const summary = data?.summary
   const reviews = data?.reviews ?? []
+  const visibleReviews = showAllReviews ? reviews : reviews.slice(0, INITIAL_VISIBLE_REVIEWS)
+  const canShowAllReviews = !showAllReviews && reviews.length > INITIAL_VISIBLE_REVIEWS
   const maxCount = summary ? Math.max(...STAR_LEVELS.map((level) => summary.distribution[level] ?? 0), 1) : 1
   const ratingLabel = (value) => t('venueOwnerReviews.ratingLabel', { value })
   const isLoading = data === null && !hasError
@@ -269,7 +280,7 @@ function VenueOwnerReviews() {
             </header>
 
             <ul className="vor-reviews">
-              {reviews.map((review, index) => (
+              {visibleReviews.map((review, index) => (
                 <li key={review.id} className="vor-review">
                   <span
                     className="vor-avatar"
@@ -298,13 +309,19 @@ function VenueOwnerReviews() {
               ))}
             </ul>
 
-            <p className="vor-list-footer">
-              {t('venueOwnerReviews.showing', {
-                count: summary.total,
-                shown: numberFormat.format(reviews.length),
-                value: numberFormat.format(summary.total),
-              })}
-            </p>
+            {canShowAllReviews ? (
+              <button type="button" className="vor-list-footer vor-show-all" onClick={() => setShowAllReviews(true)}>
+                {t('venueOwnerReviews.showAll')}
+              </button>
+            ) : (
+              <p className="vor-list-footer">
+                {t('venueOwnerReviews.showing', {
+                  count: summary.total,
+                  shown: numberFormat.format(visibleReviews.length),
+                  value: numberFormat.format(summary.total),
+                })}
+              </p>
+            )}
           </section>
         </div>
       )}
