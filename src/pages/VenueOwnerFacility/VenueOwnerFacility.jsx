@@ -33,7 +33,8 @@ import './VenueOwnerFacility.css'
 //
 // Data comes from facilityService (MOCK for now — see that file). "Edit" in
 // the information card and "Edit venue" in the cover banner open the same
-// edit form, and "View all photos" opens the photos view; the other buttons have no action yet (no confirmed backend endpoints for them).
+// edit form, and "View all photos" and "Manage photos" in the cover banner
+// open the same photos view; the other buttons have no action yet (no confirmed backend endpoints for them).
 //
 // While the venue loads, the banner and both cards are shown as placeholder
 // blocks (no text) under the page title, as on the Reviews and Analytics
@@ -88,7 +89,8 @@ function VenueOwnerFacility() {
     closeEdit()
   }
 
-  // "View all photos" swaps the page for the photos view
+  // "View all photos" and "Manage photos" (cover banner) swap the page for
+  // the photos view
   // (VenueOwnerFacilityPhotos); "Back" returns to the page.
   const [isViewingPhotos, setIsViewingPhotos] = useState(false)
 
@@ -339,9 +341,10 @@ function VenueOwnerFacility() {
               </h2>
             </div>
             {/* "Edit venue" opens the same edit form as "Edit" in the
-                information card; "Manage photos" has no action yet (UI only). */}
+                information card; "Manage photos" opens the same photos view as
+                "View all photos" in the photos card. */}
             <div className="vof-hero-actions">
-              <button type="button" className="vof-button vof-button-ghost">
+              <button type="button" className="vof-button vof-button-ghost" onClick={openPhotos}>
                 <Images size={14} aria-hidden="true" />
                 {t('venueOwnerFacility.managePhotos')}
               </button>
