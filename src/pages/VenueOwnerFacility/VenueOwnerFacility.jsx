@@ -32,8 +32,8 @@ import './VenueOwnerFacility.css'
 // actions, the venue information list and the photos card.
 //
 // Data comes from facilityService (MOCK for now — see that file). "Edit" in
-// the information card opens the edit form and "View all photos" opens the
-// photos view; the other buttons have no action yet (no confirmed backend endpoints for them).
+// the information card and "Edit venue" in the cover banner open the same
+// edit form, and "View all photos" opens the photos view; the other buttons have no action yet (no confirmed backend endpoints for them).
 //
 // While the venue loads, the banner and both cards are shown as placeholder
 // blocks (no text) under the page title, as on the Reviews and Analytics
@@ -67,7 +67,8 @@ function VenueOwnerFacility() {
   const [isUnavailable, setIsUnavailable] = useState(false)
   // Incremented by "Try again" to run the facility request once more.
   const [attempt, setAttempt] = useState(0)
-  // "Edit" in the information card swaps the page for the edit form
+  // "Edit" in the information card and "Edit venue" in the cover banner swap
+  // the page for the edit form
   // (VenueOwnerFacilityEdit). Saving keeps the changes in this page's state
   // only (mock data — no backend request).
   const [isEditing, setIsEditing] = useState(false)
@@ -337,13 +338,14 @@ function VenueOwnerFacility() {
                 {localized(facility, 'name', language)}
               </h2>
             </div>
-            {/* No actions yet (UI only). */}
+            {/* "Edit venue" opens the same edit form as "Edit" in the
+                information card; "Manage photos" has no action yet (UI only). */}
             <div className="vof-hero-actions">
               <button type="button" className="vof-button vof-button-ghost">
                 <Images size={14} aria-hidden="true" />
                 {t('venueOwnerFacility.managePhotos')}
               </button>
-              <button type="button" className="vof-button vof-button-navy">
+              <button type="button" className="vof-button vof-button-navy" onClick={openEdit}>
                 <SquarePen size={14} aria-hidden="true" />
                 {t('venueOwnerFacility.editVenue')}
               </button>
