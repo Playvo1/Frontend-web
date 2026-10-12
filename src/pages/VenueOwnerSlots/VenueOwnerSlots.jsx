@@ -15,8 +15,9 @@ import './VenueOwnerSlots.css'
 // reference: a month calendar (end side) and the selected day's time slots
 // (start side). Data comes from slotsService (MOCK for now — no backend
 // endpoint exists yet). Choosing a day and changing month are local UI
-// only; "Create time slot", "Add", "Edit" and "Delete" have no action until
-// the backend provides the time-slot endpoints.
+// only. "Create time slot" and "Add" (selected day) open the same create
+// dialog, and "Edit" / "Delete" open their dialogs; none of them saves
+// anything until the backend provides the time-slot endpoints.
 //
 // While the slots load, the day card and the calendar are shown as
 // placeholder blocks (no text) under the page title, as on the Reviews and
@@ -75,8 +76,10 @@ function VenueOwnerSlots() {
   const [editingSlot, setEditingSlot] = useState(null)
   // Available slot whose "Delete" confirmation is open (UI only, see DeleteSlotModal).
   const [deletingSlot, setDeletingSlot] = useState(null)
-  // "Create time slot" dialog (UI only, see EditSlotModal in create mode).
-  const [isCreating, setIsCreating] = useState(false)
+  // "Create time slot" dialog (UI only, see EditSlotModal in create mode):
+  // null (closed) | 'header' ("Create time slot") | 'day' ("Add" in the
+  // selected day's card, where the day and date are shown emphasized).
+  const [createSource, setCreateSource] = useState(null)
   const [venue, setVenue] = useState(null)
   const [selected, setSelected] = useState(() => toIso(new Date()))
   const [view, setView] = useState(() => {
@@ -166,7 +169,7 @@ function VenueOwnerSlots() {
           <p className="vos-subtitle">{t('venueOwnerSlots.subtitle')}</p>
         </header>
         {/* Opens the create dialog; no create-slot endpoint yet, so it is UI only. */}
-        <button type="button" className="vos-create" onClick={() => setIsCreating(true)}>
+        <button type="button" className="vos-create" onClick={() => setCreateSource('header')}>
           <Plus size={14} aria-hidden="true" />
           {t('venueOwnerSlots.createSlot')}
         </button>
@@ -249,8 +252,13 @@ function VenueOwnerSlots() {
                   </p>
                 )}
               </div>
-              {/* The empty-state design shows "Add" as an outlined button. */}
-              <button type="button" className={isEmptyDay ? 'vos-add vos-add-outlined' : 'vos-add'}>
+              {/* The empty-state design shows "Add" as an outlined button.
+                  Opens the create dialog for this day. */}
+              <button
+                type="button"
+                className={isEmptyDay ? 'vos-add vos-add-outlined' : 'vos-add'}
+                onClick={() => setCreateSource('day')}
+              >
                 {isEmptyDay ? (
                   <Plus size={12} aria-hidden="true" />
                 ) : (
@@ -412,15 +420,16 @@ function VenueOwnerSlots() {
         />
       )}
 
-      {isCreating && (
+      {createSource && (
         <EditSlotModal
           mode="create"
+          emphasizeDate={createSource === 'day'}
           slot={{ slot_date: selected, start_time: '08:00', end_time: '09:00', hourly_price: null }}
           formatTime={(time) => {
             const { time: clock, period } = to12Hour(time)
             return `${clock} ${periodLabel(period)}`
           }}
-          onClose={() => setIsCreating(false)}
+          onClose={() => setCreateSource(null)}
         />
       )}
 

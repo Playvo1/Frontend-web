@@ -95,6 +95,14 @@
   outline: none;
 }
 
+/* Day and date when the dialog is opened from "Add" in the day card:
+ * read-only and shown darker (navy) to stand out. */
+.esm-input-locked {
+  color: var(--color-navy);
+  font-weight: 500;
+  cursor: default;
+}
+
 .esm-input::placeholder {
   color: #cbd3da; /* Gray 300, same as the values in the design */
 }

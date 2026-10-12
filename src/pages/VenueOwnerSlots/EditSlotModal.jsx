@@ -6,9 +6,12 @@ import './EditSlotModal.css'
 // Time-slot form dialog (Figma), in two modes that share one layout:
 // - "edit": opened from "Edit" on an available slot; shows that slot's
 //   current values from the existing slot data.
-// - "create": opened from "Create time slot"; the day/date are the day
-//   selected in the calendar, the times start at the values shown in the
-//   design (08:00 – 09:00) and the price is empty (design value as hint).
+// - "create": opened from "Create time slot" or from "Add" in the selected
+//   day's card; the day/date are the day selected in the calendar, the
+//   times start at the values shown in the design (08:00 – 09:00) and the
+//   price is empty (design value as hint). From "Add", emphasizeDate shows
+//   the (read-only) day and date darker.
+// The day and date are read-only in every mode.
 // Changes stay in this dialog only: there are no confirmed backend
 // endpoints for editing or creating a time slot yet, so the submit button
 // has no action and nothing is written to the slot list.
@@ -25,7 +28,7 @@ function withHour(time, hour) {
   return `${String(hour).padStart(2, '0')}:${minutes}`
 }
 
-function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
+function EditSlotModal({ mode = 'edit', slot, formatTime, emphasizeDate = false, onClose }) {
   const textKey = mode === 'create' ? 'venueOwnerSlots.createSlotModal' : 'venueOwnerSlots.editSlot'
   const { t, i18n } = useTranslation()
   const dialogRef = useRef(null)
@@ -43,6 +46,7 @@ function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
   const date = new Date(year, month - 1, day)
   const weekday = new Intl.DateTimeFormat(i18n.language, { weekday: 'long' }).format(date)
   const dateLabel = `${day}-${month}-${year}` // "18-9-2026", as in the design
+  const dateInputClass = emphasizeDate ? 'esm-control esm-input esm-input-locked' : 'esm-control esm-input'
 
   const hours = hourOf(endTime) - hourOf(startTime)
   const duration = hours > 0 ? t('venueOwnerSlots.editSlot.hours', { count: hours }) : '—'
@@ -116,13 +120,13 @@ function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
           <label className="esm-label" htmlFor="esm-day">
             {t('venueOwnerSlots.editSlot.day')}
           </label>
-          <input id="esm-day" className="esm-control esm-input" value={weekday} readOnly />
+          <input id="esm-day" className={dateInputClass} value={weekday} readOnly />
         </div>
         <div className="esm-field">
           <label className="esm-label" htmlFor="esm-date">
             {t('venueOwnerSlots.editSlot.date')}
           </label>
-          <input id="esm-date" className="esm-control esm-input" value={dateLabel} readOnly />
+          <input id="esm-date" className={dateInputClass} value={dateLabel} readOnly />
         </div>
 
         {timeField('esm-start', 'venueOwnerSlots.editSlot.startTime', startTime, setStartTime)}
