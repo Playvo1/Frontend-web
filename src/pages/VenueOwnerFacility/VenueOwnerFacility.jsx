@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   Check,
+  CircleAlert,
   CircleDollarSign,
   Globe,
   House,
@@ -11,12 +12,15 @@ import {
   SquarePen,
   User,
   Users,
+  WifiOff,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.jsx'
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
+import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
 import { getVenueOwnerFacility } from '../../services/facilityService.js'
+import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import VenueOwnerFacilityEdit from './VenueOwnerFacilityEdit.jsx'
 import VenueOwnerFacilityPhotos from './VenueOwnerFacilityPhotos.jsx'
@@ -34,6 +38,12 @@ import './VenueOwnerFacility.css'
 // While the venue loads, the banner and both cards are shown as placeholder
 // blocks (no text) under the page title, as on the Reviews and Analytics
 // pages, so nothing jumps when the data arrives.
+//
+// A failed load shows the error state (connection or server) with "Try
+// again", as on the Dashboard, Reviews and Analytics pages; 401 signs out
+// (as on the Bookings page). A load that resolves without venue data shows
+// "Venue details are not available right now" with "Try again" instead of
+// waiting forever (the service's contract is unchanged).
 
 // Placeholder rows in the loading state: one per information row.
 const SKELETON_ROWS = 10
@@ -48,7 +58,15 @@ function VenueOwnerFacility() {
   const language = i18n.language
   const [venue, setVenue] = useState(null)
   const [facility, setFacility] = useState(null)
-  const [hasError, setHasError] = useState(false)
+  const { logout } = useAuth()
+  // null (no error) | 'network' (no connection) | 'server' (any other
+  // failure) — same handling as the Bookings page.
+  const [errorKind, setErrorKind] = useState(null)
+  const hasError = errorKind !== null
+  // The load finished without venue data (null / not an object).
+  const [isUnavailable, setIsUnavailable] = useState(false)
+  // Incremented by "Try again" to run the facility request once more.
+  const [attempt, setAttempt] = useState(0)
   // "Edit" in the information card swaps the page for the edit form
   // (VenueOwnerFacilityEdit). Saving keeps the changes in this page's state
   // only (mock data — no backend request).
@@ -103,15 +121,41 @@ function VenueOwnerFacility() {
     }
   }, [])
 
+  // Facility: loading → loaded, or → unavailable (no data), or → error.
+  // 401 signs out.
   useEffect(() => {
     let isActive = true
     getVenueOwnerFacility()
-      .then((data) => isActive && setFacility(data))
-      .catch(() => isActive && setHasError(true))
+      .then((data) => {
+        if (!isActive) return
+        if (data && typeof data === 'object') {
+          setFacility(data)
+        } else {
+          setIsUnavailable(true)
+        }
+      })
+      .catch((error) => {
+        if (!isActive) return
+        if (error?.status === 401) {
+          logout()
+          return
+        }
+        setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
+      })
     return () => {
       isActive = false
     }
-  }, [])
+  }, [attempt, logout])
+
+  // "Try again": back to the loading state and one new request. The error
+  // block (and its button) is replaced by the loading state right away, so
+  // the request cannot be sent twice.
+  const retry = () => {
+    setErrorKind(null)
+    setIsUnavailable(false)
+    setFacility(null)
+    setAttempt((count) => count + 1)
+  }
 
   const layoutVenue = venue
     ? { name: venue.name, statusKey: `venueOwnerDashboard.venueStatus.${venue.status}` }
@@ -150,7 +194,7 @@ function VenueOwnerFacility() {
     : []
 
   const [mainPhoto, ...otherPhotos] = facility?.images ?? []
-  const isLoading = facility === null && !hasError
+  const isLoading = facility === null && !hasError && !isUnavailable
 
   if (facility && isViewingPhotos) {
     return (
@@ -188,15 +232,50 @@ function VenueOwnerFacility() {
       venue={layoutVenue}
       roleLabelKey="dashboardLayout.roles.venueOwner"
     >
-      <header className="vof-header">
-        <h1 className="vof-title">{t('venueOwnerFacility.title')}</h1>
-        <p className="vof-subtitle">{t('venueOwnerFacility.subtitle')}</p>
-      </header>
+      {/* The error and unavailable states have no page header (as on the
+          Dashboard, Reviews and Analytics pages). */}
+      {!hasError && !isUnavailable && (
+        <header className="vof-header">
+          <h1 className="vof-title">{t('venueOwnerFacility.title')}</h1>
+          <p className="vof-subtitle">{t('venueOwnerFacility.subtitle')}</p>
+        </header>
+      )}
 
+      {/* Error state: centered. Connection failures show the Wi-Fi icon;
+          server errors the alert icon. */}
       {hasError && (
-        <p className="vof-message" role="alert">
-          {t('venueOwnerFacility.unavailable')}
-        </p>
+        <section className="vof-state" role="alert" aria-labelledby="vof-error-title">
+          {errorKind === 'network' && (
+            <WifiOff className="vof-state-icon" size={100} strokeWidth={2.25} aria-hidden="true" />
+          )}
+          <h1 id="vof-error-title" className="vof-state-title">
+            {errorKind === 'server' && <CircleAlert className="vof-state-alert" size={20} aria-hidden="true" />}
+            {t('venueOwnerFacility.errorState.title')}
+          </h1>
+          <p className="vof-state-text">
+            {t(
+              errorKind === 'network'
+                ? 'venueOwnerFacility.errorState.networkMessage'
+                : 'venueOwnerFacility.errorState.serverMessage',
+            )}
+          </p>
+          <button type="button" className="vof-state-button" onClick={retry}>
+            {t('venueOwnerFacility.errorState.retry')}
+          </button>
+        </section>
+      )}
+
+      {/* No venue data: the existing "not available" message, centered,
+          with "Try again". */}
+      {isUnavailable && (
+        <section className="vof-state" aria-labelledby="vof-unavailable-title">
+          <h1 id="vof-unavailable-title" className="vof-state-title">
+            {t('venueOwnerFacility.unavailable')}
+          </h1>
+          <button type="button" className="vof-state-button" onClick={retry}>
+            {t('venueOwnerFacility.errorState.retry')}
+          </button>
+        </section>
       )}
 
       {/* Loading state: placeholders in the page's layout. */}

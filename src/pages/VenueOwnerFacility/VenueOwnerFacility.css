@@ -23,11 +23,6 @@
   color: var(--color-text-secondary);
 }
 
-.vof-message {
-  margin: 0 0 24px;
-  color: var(--color-error);
-}
-
 /* ---- Cover banner ---- */
 .vof-hero {
   min-height: 346px;
@@ -349,6 +344,63 @@
   border-radius: 8px;
 }
 
+/* ---- Error / unavailable state: centered in the content area, as on the
+ * Dashboard, Reviews and Analytics pages. ---- */
+.vof-state {
+  /* Viewport minus the 70px top bar and the content area's padding. */
+  min-height: calc(100dvh - 170px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.vof-state-icon {
+  margin-block-end: 28px;
+  color: #a3adb8; /* Gray 400 */
+}
+
+.vof-state-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-navy);
+}
+
+.vof-state-alert {
+  flex-shrink: 0;
+  color: var(--color-error);
+}
+
+.vof-state-text {
+  margin: 10px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.vof-state-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 43px;
+  margin-block-start: 20px;
+  padding-inline: 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-navy);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+  cursor: pointer;
+}
+
 @media (max-width: 1199px) {
   .vof-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -356,10 +408,24 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .vof-state {
+    min-height: calc(100dvh - 118px);
+  }
+}
+
 @media (max-width: 600px) {
   .vof-hero {
     min-height: 240px;
     padding: 20px;
+  }
+
+  .vof-state {
+    min-height: calc(100dvh - 122px); /* compact top bar on small screens */
+  }
+
+  .vof-state-text {
+    font-size: 15px;
   }
 
   .vof-hero-title {
