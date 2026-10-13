@@ -1,0 +1,675 @@
+/*
+ * Venue Owner "Profile" — layout from the design reference: title, the
+ * account header card, then "Personal information" + "Security" (start
+ * side) next to "Venue information" (end side), and the save / cancel bar.
+ * Orange is kept for the panel links and the save button.
+ */
+
+.vop-header {
+  margin-block-end: 32px;
+}
+
+.vop-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.vop-subtitle {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #7a8793; /* Gray 500 */
+}
+
+/* Design: white cards with no border, a very light shadow, 16px corners. */
+.vop-card {
+  min-width: 0;
+  border-radius: 16px;
+  background: var(--color-white);
+  box-shadow: 0 2px 6px rgba(1, 33, 61, 0.04);
+}
+
+/* ---- Account header ---- */
+.vop-account {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 34px 36px;
+}
+
+.vop-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.vop-avatar {
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--color-white);
+  border-radius: 50%;
+  background: var(--color-navy);
+  box-shadow: 0 0 0 1px var(--color-border);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+.vop-avatar-button {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.vop-avatar-button:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 3px;
+}
+
+.vop-avatar-image {
+  object-fit: cover;
+}
+
+/* The file input is opened by the avatar button. */
+.vop-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.vop-avatar-edit {
+  position: absolute;
+  inset-block-end: 2px;
+  inset-inline-end: 2px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-white);
+  border-radius: 50%;
+  background: #e3edf2; /* Navy 100 */
+  color: var(--color-navy);
+}
+
+.vop-account-text {
+  min-width: 0;
+}
+
+.vop-account-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.vop-account-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vop-account-meta {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #7a8793; /* Gray 500 */
+  overflow-wrap: anywhere;
+}
+
+.vop-account-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.vop-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vop-badge-success {
+  background: #f0fdf4; /* light green, as on the Schedule page */
+  color: var(--color-success);
+}
+
+.vop-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---- Panels ---- */
+.vop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px 28px;
+  margin-block-start: 24px;
+}
+
+.vop-column {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.vop-panel {
+  padding: 36px 36px 32px;
+}
+
+.vop-venue {
+  align-self: stretch;
+}
+
+.vop-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 18px;
+}
+
+.vop-panel-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vop-panel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-orange);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.vop-panel-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vop-panel-link:focus-visible,
+.vop-button:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.vop-rows {
+  margin: 0;
+}
+
+.vop-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-block: 14px 12px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+/* Security: "Change password" row under the title (design). */
+.vop-row-action {
+  align-items: flex-start;
+  padding-block: 12px 18px;
+}
+
+.vop-row-label {
+  font-size: 12px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vop-row-value {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+
+/* Value with a badge at the row's end edge (email status, design). */
+.vop-row-value-split {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vop-row-value-split .vop-badge {
+  border-radius: 4px; /* design: square-cornered "Verified" badge */
+}
+
+.vop-field {
+  gap: 4px;
+  padding-block-end: 0;
+  border-block-end: none;
+}
+
+/* Editable value: looks like the design's value row (bold navy text over a
+ * divider) and shows its state on focus / error. */
+.vop-input {
+  width: 100%;
+  min-width: 0;
+  padding-block: 6px 9px;
+  padding-inline: 0;
+  border: none;
+  border-block-end: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-navy);
+  outline: none;
+}
+
+.vop-input:hover {
+  border-block-end-color: var(--color-input-border);
+}
+
+.vop-input:focus {
+  border-block-end-color: var(--color-navy);
+  box-shadow: 0 1px 0 var(--color-navy);
+}
+
+/* Email / phone are typed left-to-right but keep the page's alignment. */
+[dir='rtl'] .vop-input-ltr {
+  text-align: right;
+}
+
+.vop-input-invalid,
+.vop-input-invalid:focus {
+  border-block-end-color: var(--color-error);
+  box-shadow: 0 1px 0 var(--color-error);
+}
+
+.vop-error {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--color-error);
+}
+
+.vop-venue-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-block: 40px 24px;
+  text-align: center;
+  color: #a3adb8; /* Gray 400, as the error icons on other pages */
+}
+
+.vop-venue-state-title {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.vop-venue-state-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.vop-skeleton {
+  display: block;
+  width: 140px;
+  height: 12px;
+  margin-block: 3px;
+  border-radius: 4px;
+  background-color: var(--color-border);
+}
+
+/* ---- Save / cancel bar ---- */
+.vop-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-start: 32px;
+  padding: 20px 24px;
+}
+
+.vop-button {
+  height: 50px;
+  padding-inline: 26px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vop-button-save {
+  border: none;
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+.vop-button-cancel {
+  min-width: 80px;
+  border: 1px solid var(--color-input-border);
+  background: var(--color-white);
+  color: var(--color-navy);
+}
+
+.vop-notice {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.vop-notice svg {
+  flex-shrink: 0;
+  color: var(--color-navy);
+}
+
+.vop-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---- Change password dialog (native <dialog>, as the slot dialogs) ----
+ * As the design: 2px light border, 16px corners, shield icon + title and
+ * subtitle, 55px fields with a show/hide eye at the end edge, full-width
+ * navy "Change password". Colors sampled from the design are noted. */
+.vopm {
+  width: 588px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-white);
+  color: var(--color-navy);
+  font: inherit;
+  box-shadow: 0 12px 32px rgba(1, 33, 61, 0.12);
+}
+
+.vopm::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* The content fills the box, so a click on the <dialog> itself is outside. */
+.vopm-body {
+  padding: 32px 28px 28px;
+}
+
+.vopm-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-block-end: 22px;
+}
+
+.vopm-icon {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #eef3f7; /* design */
+  color: var(--color-navy);
+}
+
+.vopm-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.vopm-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.vopm-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #91a0af; /* design */
+}
+
+.vopm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-block-end: 14px;
+}
+
+.vopm-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-navy);
+}
+
+/* Input box: the eye button sits at the end edge (left in Arabic, right in
+ * English) through the flex row's direction. */
+.vopm-input-wrap {
+  display: flex;
+  align-items: center;
+  height: 55px;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+}
+
+.vopm-input-wrap:focus-within {
+  border-color: var(--color-navy);
+}
+
+.vopm-input-wrap.vopm-input-invalid,
+.vopm-input-wrap.vopm-input-invalid:focus-within {
+  border-color: var(--color-error);
+}
+
+.vopm-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding-inline: 18px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  color: var(--color-navy);
+  outline: none;
+}
+
+.vopm-eye {
+  flex-shrink: 0;
+  width: 72px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #91a0af; /* design */
+  cursor: pointer;
+}
+
+.vopm-eye:hover {
+  color: var(--color-navy);
+}
+
+.vopm-error {
+  margin: -4px 0 0;
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+.vopm-notice {
+  margin: 0 0 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vopm-notice-error {
+  background: #fef2f2; /* light red for the error message */
+  color: var(--color-error);
+}
+
+.vopm-notice-success {
+  background: #f0fdf4; /* light green, as the status badges */
+  color: var(--color-success);
+}
+
+/* Full-width navy action (design). */
+.vopm-button {
+  width: 100%;
+  height: 51px;
+  padding-inline: 16px;
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vopm-primary {
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.vopm-submit {
+  margin-block-start: 16px;
+}
+
+.vopm-notice + .vopm-submit {
+  margin-block-start: 20px;
+}
+
+.vopm-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vopm-button:focus-visible,
+.vopm-eye:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .vopm-body {
+    padding: 24px 16px 20px;
+  }
+
+  .vopm-header {
+    margin-block-end: 18px;
+  }
+
+  .vopm-eye {
+    width: 56px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .vop-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .vop-account {
+    padding: 24px;
+    gap: 20px;
+  }
+
+  .vop-panel {
+    padding: 28px 24px 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .vop-title {
+    font-size: 20px;
+  }
+
+  .vop-account {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .vop-avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+  }
+
+  .vop-account-name {
+    font-size: 18px;
+  }
+
+  .vop-grid,
+  .vop-column {
+    gap: 16px;
+  }
+
+  .vop-grid {
+    margin-block-start: 16px;
+  }
+
+  .vop-actions {
+    margin-block-start: 16px;
+    padding: 16px;
+  }
+
+  .vop-button {
+    height: 44px;
+  }
+
+  .vop-actions {
+    flex-wrap: wrap;
+  }
+
+  .vop-notice {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .vop-panel {
+    padding-inline: 16px;
+  }
+}

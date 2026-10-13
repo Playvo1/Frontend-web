@@ -31,10 +31,11 @@ const STAR_LEVELS = [5, 4, 3, 2, 1]
 // Placeholder review rows in the loading design.
 const SKELETON_ROWS = 7
 
-// Reviews listed at first (design: 8 rows). When more reviews are loaded,
-// the list footer becomes a "View all reviews" button that lists every
-// loaded review in place. It never shows more than the service returned
-// (summary.total can be larger than the loaded list).
+// How many reviews the list shows before "View all reviews" is pressed
+// (design: 8 rows). This only sets the first view: whether the button shows
+// depends on how many loaded reviews are actually hidden (see
+// hiddenReviewsCount), not on this number. The page never shows more than
+// the service returned (summary.total can be larger than the loaded list).
 const INITIAL_VISIBLE_REVIEWS = 8
 
 // Avatar colors of the design's reviewer initials, picked by position.
@@ -125,7 +126,10 @@ function VenueOwnerReviews() {
   const summary = data?.summary
   const reviews = data?.reviews ?? []
   const visibleReviews = showAllReviews ? reviews : reviews.slice(0, INITIAL_VISIBLE_REVIEWS)
-  const canShowAllReviews = !showAllReviews && reviews.length > INITIAL_VISIBLE_REVIEWS
+  // Loaded reviews that are not on screen; the button shows only while some
+  // exist, and pressing it lists them all (none hidden → no button).
+  const hiddenReviewsCount = reviews.length - visibleReviews.length
+  const canShowAllReviews = hiddenReviewsCount > 0
   const maxCount = summary ? Math.max(...STAR_LEVELS.map((level) => summary.distribution[level] ?? 0), 1) : 1
   const ratingLabel = (value) => t('venueOwnerReviews.ratingLabel', { value })
   const isLoading = data === null && !hasError

@@ -11,6 +11,7 @@ import VenueOwnerBookingDetails from './pages/VenueOwnerBookingDetails/VenueOwne
 import VenueOwnerBookings from './pages/VenueOwnerBookings/VenueOwnerBookings.jsx'
 import VenueOwnerDashboard from './pages/VenueOwnerDashboard/VenueOwnerDashboard.jsx'
 import VenueOwnerFacility from './pages/VenueOwnerFacility/VenueOwnerFacility.jsx'
+import VenueOwnerProfile from './pages/VenueOwnerProfile/VenueOwnerProfile.jsx'
 import VenueOwnerReviews from './pages/VenueOwnerReviews/VenueOwnerReviews.jsx'
 import VenueOwnerSlots from './pages/VenueOwnerSlots/VenueOwnerSlots.jsx'
 import VerifyCode from './pages/VerifyCode/VerifyCode.jsx'
@@ -139,6 +140,15 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
             <VenueOwnerAnalytics />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/venue-owner/profile"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
+            <VenueOwnerProfile />
           </ProtectedRoute>
         }
       />

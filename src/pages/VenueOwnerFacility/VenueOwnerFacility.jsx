@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Check,
   CircleAlert,
   CircleDollarSign,
   Globe,
   House,
-  Images,
+  ImageUp,
   LayoutGrid,
   MapPin,
   Rows3,
@@ -19,7 +19,13 @@ import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.js
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
 import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
-import { getVenueOwnerFacility } from '../../services/facilityService.js'
+import {
+  COVER_IMAGE_MAX_BYTES,
+  COVER_IMAGE_TYPES,
+  COVER_SAVE_NOT_AVAILABLE,
+  getVenueOwnerFacility,
+  saveVenueCoverImage,
+} from '../../services/facilityService.js'
 import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import VenueOwnerFacilityEdit from './VenueOwnerFacilityEdit.jsx'
@@ -32,9 +38,14 @@ import './VenueOwnerFacility.css'
 // actions, the venue information list and the photos card.
 //
 // Data comes from facilityService (MOCK for now — see that file). "Edit" in
-// the information card and "Edit venue" in the cover banner open the same
-// edit form, and "View all photos" and "Manage photos" in the cover banner
-// open the same photos view; the other buttons have no action yet (no confirmed backend endpoints for them).
+// the information card opens the edit form, "View all photos" opens the
+// photos view and "Edit venue photo" in the cover banner picks a new cover
+// image. Picking and saving are separate steps: the picked image is only
+// previewed in the banner (this page's state), then "Save photo" sends it
+// through facilityService.saveVenueCoverImage — not connected yet (no cover
+// endpoint), so it says saving is not available and nothing is reported as
+// saved; "Cancel" drops the preview. The other buttons have no action yet
+// (no confirmed backend endpoints for them).
 //
 // While the venue loads, the banner and both cards are shown as placeholder
 // blocks (no text) under the page title, as on the Reviews and Analytics
@@ -68,8 +79,7 @@ function VenueOwnerFacility() {
   const [isUnavailable, setIsUnavailable] = useState(false)
   // Incremented by "Try again" to run the facility request once more.
   const [attempt, setAttempt] = useState(0)
-  // "Edit" in the information card and "Edit venue" in the cover banner swap
-  // the page for the edit form
+  // "Edit" in the information card swaps the page for the edit form
   // (VenueOwnerFacilityEdit). Saving keeps the changes in this page's state
   // only (mock data — no backend request).
   const [isEditing, setIsEditing] = useState(false)
@@ -89,8 +99,7 @@ function VenueOwnerFacility() {
     closeEdit()
   }
 
-  // "View all photos" and "Manage photos" (cover banner) swap the page for
-  // the photos view
+  // "View all photos" swaps the page for the photos view
   // (VenueOwnerFacilityPhotos); "Back" returns to the page.
   const [isViewingPhotos, setIsViewingPhotos] = useState(false)
 
@@ -102,6 +111,70 @@ function VenueOwnerFacility() {
   const closePhotos = () => {
     setIsViewingPhotos(false)
     window.scrollTo(0, 0)
+  }
+
+  // "Edit venue photo" (cover banner), step 1 — pick & preview: the picked
+  // file is kept with an object URL that replaces the banner photo on this
+  // page only. Nothing is uploaded or stored (no localStorage / IndexedDB).
+  const coverInputRef = useRef(null)
+  const [pendingCover, setPendingCover] = useState(null) // { file, url } | null
+  // Message under the button: null | 'invalidType' | 'tooLarge' |
+  // 'notAvailable' | 'network' | 'server'.
+  const [coverMessage, setCoverMessage] = useState(null)
+  const [isSavingCover, setIsSavingCover] = useState(false)
+  const coverPreview = pendingCover?.url ?? null
+
+  // Release the previewed file when it is replaced, dropped or the page closes.
+  useEffect(() => {
+    if (!coverPreview) return undefined
+    return () => URL.revokeObjectURL(coverPreview)
+  }, [coverPreview])
+
+  const changeCover = (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (!COVER_IMAGE_TYPES.includes(file.type)) {
+      setCoverMessage('invalidType')
+      return
+    }
+    if (file.size > COVER_IMAGE_MAX_BYTES) {
+      setCoverMessage('tooLarge')
+      return
+    }
+    setCoverMessage(null)
+    setPendingCover({ file, url: URL.createObjectURL(file) })
+  }
+
+  const cancelCover = () => {
+    setPendingCover(null)
+    setCoverMessage(null)
+  }
+
+  // Step 2 — save through the service. Only a resolved request (once the
+  // backend is linked) updates the cover; until then the service rejects
+  // with COVER_SAVE_NOT_AVAILABLE and the preview stays unsaved.
+  const saveCover = () => {
+    if (!pendingCover || isSavingCover) return
+    setIsSavingCover(true)
+    setCoverMessage(null)
+    saveVenueCoverImage(pendingCover.file)
+      .then((saved) => {
+        setFacility((current) => ({ ...current, cover_image_url: saved.cover_image_url }))
+        setPendingCover(null)
+      })
+      .catch((error) => {
+        if (error?.status === 401) {
+          logout()
+          return
+        }
+        if (error?.code === COVER_SAVE_NOT_AVAILABLE) {
+          setCoverMessage('notAvailable')
+          return
+        }
+        setCoverMessage(isConnectionFailure(error) ? 'network' : 'server')
+      })
+      .finally(() => setIsSavingCover(false))
   }
 
   // Deleting a photo in the photos view: local (mock) state only.
@@ -325,7 +398,7 @@ function VenueOwnerFacility() {
           {/* Cover banner: the venue photo with its sport, area, name and actions. */}
           <section
             className="vof-hero"
-            style={{ backgroundImage: `url(${facility.cover_image_url})` }}
+            style={{ backgroundImage: `url(${coverPreview ?? facility.cover_image_url})` }}
             aria-labelledby="vof-hero-title"
           >
             <div className="vof-hero-text">
@@ -340,18 +413,53 @@ function VenueOwnerFacility() {
                 {localized(facility, 'name', language)}
               </h2>
             </div>
-            {/* "Edit venue" opens the same edit form as "Edit" in the
-                information card; "Manage photos" opens the same photos view as
-                "View all photos" in the photos card. */}
+            {/* "Edit venue photo" (design): picks a new cover image for the
+                banner; "Save photo" / "Cancel" appear while it is previewed
+                (see changeCover / saveCover). */}
             <div className="vof-hero-actions">
-              <button type="button" className="vof-button vof-button-ghost" onClick={openPhotos}>
-                <Images size={14} aria-hidden="true" />
-                {t('venueOwnerFacility.managePhotos')}
+              <button
+                type="button"
+                className="vof-button vof-button-navy"
+                onClick={() => coverInputRef.current?.click()}
+              >
+                <ImageUp size={14} aria-hidden="true" />
+                {t('venueOwnerFacility.editCover')}
               </button>
-              <button type="button" className="vof-button vof-button-navy" onClick={openEdit}>
-                <SquarePen size={14} aria-hidden="true" />
-                {t('venueOwnerFacility.editVenue')}
-              </button>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept={COVER_IMAGE_TYPES.join(',')}
+                className="vof-file-input"
+                onChange={changeCover}
+                tabIndex={-1}
+                aria-hidden="true"
+              />
+              {pendingCover && (
+                <div className="vof-hero-cover-actions">
+                  <button
+                    type="button"
+                    className="vof-button vof-button-navy"
+                    onClick={saveCover}
+                    disabled={isSavingCover}
+                  >
+                    {t(isSavingCover ? 'venueOwnerFacility.coverSaving' : 'venueOwnerFacility.coverSave')}
+                  </button>
+                  <button
+                    type="button"
+                    className="vof-button vof-button-ghost"
+                    onClick={cancelCover}
+                    disabled={isSavingCover}
+                  >
+                    {t('venueOwnerFacility.coverCancel')}
+                  </button>
+                </div>
+              )}
+              {pendingCover && <p className="vof-hero-note">{t('venueOwnerFacility.coverNotSaved')}</p>}
+              {coverMessage && (
+                <p className="vof-hero-note vof-hero-note-error" role="alert">
+                  {t(`venueOwnerFacility.coverMessages.${coverMessage}`)}
+                </p>
+              )}
             </div>
           </section>
 

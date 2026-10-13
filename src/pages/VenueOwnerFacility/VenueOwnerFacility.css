@@ -78,8 +78,44 @@
 
 .vof-hero-actions {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* the button stays at the banner's end edge */
+  gap: 6px;
+}
+
+/* "Save photo" / "Cancel" while a picked cover is previewed. */
+.vof-hero-cover-actions {
+  display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
+}
+
+.vof-hero-cover-actions .vof-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* The cover picker is opened by "Edit venue photo". */
+.vof-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Short note under "Edit venue photo" (preview not saved / wrong type). */
+.vof-hero-note {
+  margin: 0;
+  text-align: end;
+  font-size: 11px;
+  color: var(--color-white);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.vof-hero-note-error {
+  font-weight: 600;
 }
 
 .vof-button {
@@ -430,6 +466,16 @@
 
   .vof-hero-title {
     font-size: 20px;
+  }
+
+  /* The actions wrap under the venue name here: keep the button (and its
+   * note) at the start edge, where it sits on narrow screens. */
+  .vof-hero-actions {
+    align-items: flex-start;
+  }
+
+  .vof-hero-note {
+    text-align: start;
   }
 
   .vof-skeleton-hero {

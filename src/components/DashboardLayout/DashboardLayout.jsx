@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Bell, LogOut, Menu, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
+import { ROLES, getPrimaryRole } from '../../constants/roles.js'
 import { useAuth } from '../../context/useAuth.js'
 import './DashboardLayout.css'
 
@@ -34,6 +35,10 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
   const fullName = user?.name ?? ''
   const firstName = fullName.split(' ')[0]
   const initial = fullName.trim().charAt(0).toUpperCase()
+  // The avatar opens the profile page; only the Venue Owner has one so far
+  // (the Admin dashboard keeps the avatar without an action).
+  const profilePath = getPrimaryRole(user) === ROLES.VENUE_OWNER ? '/venue-owner/profile' : null
+  const avatarLabel = [fullName, roleLabelKey && t(roleLabelKey)].filter(Boolean).join(' — ')
 
   return (
     <div className="dashboard-layout">
@@ -122,18 +127,22 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
             >
               <Menu size={20} aria-hidden="true" />
             </button>
-            {/* Profile button (avatar only, next to the greeting, as in the
-                design): placeholder for the future profile menu, so it has no
-                action and opens nothing for now. */}
-            <button
-              type="button"
-              className="dashboard-user"
-              aria-label={[fullName, roleLabelKey && t(roleLabelKey)].filter(Boolean).join(' — ')}
-            >
-              <span className="dashboard-avatar" aria-hidden="true">
-                {initial}
-              </span>
-            </button>
+            {/* Avatar (next to the greeting, as in the design): opens the
+                user's profile page when the role has one; otherwise it keeps
+                no action. */}
+            {profilePath ? (
+              <Link to={profilePath} className="dashboard-user" aria-label={avatarLabel}>
+                <span className="dashboard-avatar" aria-hidden="true">
+                  {initial}
+                </span>
+              </Link>
+            ) : (
+              <button type="button" className="dashboard-user" aria-label={avatarLabel}>
+                <span className="dashboard-avatar" aria-hidden="true">
+                  {initial}
+                </span>
+              </button>
+            )}
             <div className="dashboard-greeting">
               <p className="dashboard-greeting-title">
                 {t('dashboardLayout.greeting', { name: firstName })} <span aria-hidden="true">👋</span>
