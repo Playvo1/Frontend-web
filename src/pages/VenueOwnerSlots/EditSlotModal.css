@@ -112,10 +112,75 @@ input.esm-control:focus-visible,
   border-color: var(--color-navy);
 }
 
-.esm-value {
-  font-size: 14px;
-  color: #cbd3da; /* Gray 300 */
-  white-space: nowrap;
+/* Values the user can type (times, editable date, price): navy, so they
+ * do not look read-only. */
+.esm-input-editable {
+  color: var(--color-navy);
+  font-weight: 500;
+}
+
+.esm-input-editable:focus-visible {
+  outline: none;
+}
+
+.esm-time:focus-within {
+  border-color: var(--color-navy);
+}
+
+/* Native time input: no browser icon (the arrows step the hour); the time
+ * reads left-to-right in both languages. */
+.esm-time-input {
+  flex: 1;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  direction: ltr;
+  text-align: start;
+}
+
+[dir='rtl'] .esm-time-input {
+  text-align: right;
+}
+
+.esm-time-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+/* Day picker ("Create time slot"): native select with the field's look. */
+.esm-select {
+  position: relative;
+  padding-inline: 0;
+}
+
+.esm-select:focus-within {
+  border-color: var(--color-navy);
+}
+
+.esm-select-input {
+  flex: 1;
+  height: 100%;
+  padding-inline: 12px 32px;
+  border: none;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+}
+
+.esm-select-icon {
+  position: absolute;
+  inset-inline-end: 12px;
+  color: #9babbc;
+  pointer-events: none;
+}
+
+input[type='date'].esm-input-editable {
+  cursor: text;
+  direction: ltr;
+}
+
+[dir='rtl'] input[type='date'].esm-input-editable {
+  text-align: right;
 }
 
 .esm-stepper {

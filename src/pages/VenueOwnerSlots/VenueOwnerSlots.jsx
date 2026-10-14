@@ -412,10 +412,6 @@ function VenueOwnerSlots() {
         <EditSlotModal
           key={editingSlot.id}
           slot={editingSlot}
-          formatTime={(time) => {
-            const { time: clock, period } = to12Hour(time)
-            return `${clock} ${periodLabel(period)}`
-          }}
           onClose={() => setEditingSlot(null)}
         />
       )}
@@ -425,10 +421,6 @@ function VenueOwnerSlots() {
           mode="create"
           emphasizeDate={createSource === 'day'}
           slot={{ slot_date: selected, start_time: '08:00', end_time: '09:00', hourly_price: null }}
-          formatTime={(time) => {
-            const { time: clock, period } = to12Hour(time)
-            return `${clock} ${periodLabel(period)}`
-          }}
           onClose={() => setCreateSource(null)}
         />
       )}
