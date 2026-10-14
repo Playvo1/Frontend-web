@@ -6,7 +6,7 @@ import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.js
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
 import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
-import { getVenueOwnerFacility } from '../../services/facilityService.js'
+import { FACILITY_MULTIPLE, FACILITY_NONE, getVenueOwnerFacility } from '../../services/facilityService.js'
 import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { isValidEmail } from '../../utils/validation.js'
 import ChangePasswordModal from './ChangePasswordModal.jsx'
@@ -66,7 +66,7 @@ function profileFromUser(user) {
 function VenueOwnerProfile() {
   const { t, i18n } = useTranslation()
   const language = i18n.language
-  const { user, logout } = useAuth()
+  const { user, token, logout } = useAuth()
   const [venue, setVenue] = useState(null)
   // Venue information card, loaded like the My venue page: facility (loaded)
   // | null (loading / failed / unavailable).
@@ -111,11 +111,11 @@ function VenueOwnerProfile() {
     }
   }, [])
 
-  // Venue: loading → loaded, or → unavailable (no data), or → error. 401
-  // signs out (as on the My venue page).
+  // Venue: loading → loaded, or → unavailable (no data, no venue linked or
+  // more than one), or → error. 401 signs out (as on the My venue page).
   useEffect(() => {
     let isActive = true
-    getVenueOwnerFacility()
+    getVenueOwnerFacility({ token, user })
       .then((data) => {
         if (!isActive) return
         if (data && typeof data === 'object') setFacility(data)
@@ -127,12 +127,16 @@ function VenueOwnerProfile() {
           logout()
           return
         }
+        if (error?.code === FACILITY_NONE || error?.code === FACILITY_MULTIPLE) {
+          setIsFacilityUnavailable(true)
+          return
+        }
         setFacilityError(isConnectionFailure(error) ? 'network' : 'server')
       })
     return () => {
       isActive = false
     }
-  }, [facilityAttempt, logout])
+  }, [facilityAttempt, logout, token, user])
 
   const retryFacility = () => {
     setFacilityError(null)

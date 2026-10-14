@@ -310,6 +310,16 @@
   outline-offset: 2px;
 }
 
+/* "Changes were not saved" under the information card's header (API mode). */
+.vof-info-note {
+  margin: 0;
+  padding: 10px 24px;
+  border-block-end: 1px solid var(--color-border);
+  background: var(--color-background-secondary);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
 .vof-photos-empty {
   margin: 0;
   padding: 48px 20px;

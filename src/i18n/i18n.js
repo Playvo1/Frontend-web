@@ -268,6 +268,11 @@ const resources = {
         photosCount_many: '{{value}} صورة',
         photosCount_other: '{{value}} صورة',
         dimensionsValue: '{{length}} × {{width}} م · {{format}}',
+        dimensionsOnly: '{{length}} × {{width}} م',
+        notAvailable: 'غير متوفر',
+        noVenue: 'لا يوجد ملعب مرتبط بحسابك.',
+        multipleVenues: 'يوجد أكثر من ملعب مرتبط بهذا الحساب — تواصل مع الإدارة.',
+        editNotSaved: 'لم تُحفظ التعديلات — حفظ بيانات الملعب غير متاح بعد.',
         status: {
           active: 'نشط',
           inactive: 'غير نشط',
@@ -797,6 +802,11 @@ const resources = {
         photosCount_one: '{{value}} photo',
         photosCount_other: '{{value}} photos',
         dimensionsValue: '{{length}} × {{width}} m · {{format}}',
+        dimensionsOnly: '{{length}} × {{width}} m',
+        notAvailable: 'Not available',
+        noVenue: 'No venue is linked to your account.',
+        multipleVenues: 'More than one venue is linked to this account — please contact the administration.',
+        editNotSaved: 'Changes were not saved — saving venue details is not available yet.',
         status: {
           active: 'Active',
           inactive: 'Inactive',

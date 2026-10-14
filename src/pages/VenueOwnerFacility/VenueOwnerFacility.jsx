@@ -23,9 +23,12 @@ import {
   COVER_IMAGE_MAX_BYTES,
   COVER_IMAGE_TYPES,
   COVER_SAVE_NOT_AVAILABLE,
+  FACILITY_MULTIPLE,
+  FACILITY_NONE,
   getVenueOwnerFacility,
   saveVenueCoverImage,
 } from '../../services/facilityService.js'
+import { IS_API_ENABLED } from '../../config/api.js'
 import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import VenueOwnerFacilityEdit from './VenueOwnerFacilityEdit.jsx'
@@ -37,7 +40,11 @@ import './VenueOwnerFacility.css'
 // design: page title, a cover banner with the venue's sport, area, name and
 // actions, the venue information list and the photos card.
 //
-// Data comes from facilityService (MOCK for now — see that file). "Edit" in
+// Data comes from facilityService: with the API configured, the signed-in
+// owner's venue from GET /venue_owner/owner/myvenues (the backend finds it
+// from the token; one venue per account), otherwise the local mock. Values
+// the backend does not provide are shown as "Not available"; no venue or
+// more than one venue shows a message instead of the page. "Edit" in
 // the information card opens the edit form, "View all photos" opens the
 // photos view and "Edit venue photo" in the cover banner picks a new cover
 // image. Picking and saving are separate steps: the picked image is only
@@ -70,13 +77,19 @@ function VenueOwnerFacility() {
   const language = i18n.language
   const [venue, setVenue] = useState(null)
   const [facility, setFacility] = useState(null)
-  const { logout } = useAuth()
+  const { logout, token, user } = useAuth()
   // null (no error) | 'network' (no connection) | 'server' (any other
   // failure) — same handling as the Bookings page.
   const [errorKind, setErrorKind] = useState(null)
   const hasError = errorKind !== null
-  // The load finished without venue data (null / not an object).
-  const [isUnavailable, setIsUnavailable] = useState(false)
+  // The load finished without usable venue data: null (no) | 'unavailable'
+  // (no data) | 'none' (no venue linked to the account) | 'multiple' (more
+  // than one venue linked — the page does not pick one).
+  const [unavailableKind, setUnavailableKind] = useState(null)
+  const isUnavailable = unavailableKind !== null
+  // With the API, "Edit" cannot save yet (no update wired): set after
+  // "Save" in the edit form so the page says nothing was saved.
+  const [editNotSaved, setEditNotSaved] = useState(false)
   // Incremented by "Try again" to run the facility request once more.
   const [attempt, setAttempt] = useState(0)
   // "Edit" in the information card swaps the page for the edit form
@@ -95,7 +108,12 @@ function VenueOwnerFacility() {
   }
 
   const saveEdit = (updated) => {
-    setFacility(updated)
+    if (IS_API_ENABLED) {
+      // Real venue data: nothing is sent, so nothing is applied.
+      setEditNotSaved(true)
+    } else {
+      setFacility(updated)
+    }
     closeEdit()
   }
 
@@ -201,13 +219,13 @@ function VenueOwnerFacility() {
   // 401 signs out.
   useEffect(() => {
     let isActive = true
-    getVenueOwnerFacility()
+    getVenueOwnerFacility({ token, user })
       .then((data) => {
         if (!isActive) return
         if (data && typeof data === 'object') {
           setFacility(data)
         } else {
-          setIsUnavailable(true)
+          setUnavailableKind('unavailable')
         }
       })
       .catch((error) => {
@@ -216,19 +234,27 @@ function VenueOwnerFacility() {
           logout()
           return
         }
+        if (error?.code === FACILITY_NONE) {
+          setUnavailableKind('none')
+          return
+        }
+        if (error?.code === FACILITY_MULTIPLE) {
+          setUnavailableKind('multiple')
+          return
+        }
         setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
       })
     return () => {
       isActive = false
     }
-  }, [attempt, logout])
+  }, [attempt, logout, token, user])
 
   // "Try again": back to the loading state and one new request. The error
   // block (and its button) is replaced by the loading state right away, so
   // the request cannot be sent twice.
   const retry = () => {
     setErrorKind(null)
-    setIsUnavailable(false)
+    setUnavailableKind(null)
     setFacility(null)
     setAttempt((count) => count + 1)
   }
@@ -239,31 +265,42 @@ function VenueOwnerFacility() {
 
   // Photo count with Arabic-Indic digits in Arabic, as in the design ("٣ صور").
   const countFormat = new Intl.NumberFormat(language === 'ar' ? 'ar-u-nu-arab' : language)
-  const price = (value) => `₪${numberFormat.format(value)}`
+  const notAvailable = t('venueOwnerFacility.notAvailable')
+  const price = (value) => (value == null ? notAvailable : `₪${numberFormat.format(value)}`)
+  const orNotAvailable = (value) => (value == null || value === '' ? notAvailable : value)
 
-  const dimensionsText = facility
-    ? t('venueOwnerFacility.dimensionsValue', {
-        length: facility.length_m,
-        width: facility.width_m,
-        format: localized(facility, 'team_format', language),
-      })
-    : ''
+  // "40 × 20 m · 5-a-side"; without a team format: "40 × 20 m".
+  const teamFormat = facility ? localized(facility, 'team_format', language) : null
+  const hasDimensions = facility?.length_m != null && facility?.width_m != null
+  const dimensionsText = !facility
+    ? ''
+    : !hasDimensions
+      ? notAvailable
+      : t(teamFormat ? 'venueOwnerFacility.dimensionsValue' : 'venueOwnerFacility.dimensionsOnly', {
+          length: facility.length_m,
+          width: facility.width_m,
+          format: teamFormat,
+        })
 
   // Information rows, in the design's order.
   const rows = facility
     ? [
-        { key: 'name', icon: House, value: localized(facility, 'name', language) },
-        { key: 'owner', icon: User, value: facility.owner_name },
-        { key: 'area', icon: MapPin, value: localized(facility, 'area', language) },
-        { key: 'address', icon: Globe, value: localized(facility, 'address', language) },
-        { key: 'status', icon: Check, value: t(`venueOwnerFacility.status.${facility.status}`) },
-        { key: 'surface', icon: Rows3, value: localized(facility, 'surface', language) },
+        { key: 'name', icon: House, value: orNotAvailable(localized(facility, 'name', language)) },
+        { key: 'owner', icon: User, value: orNotAvailable(facility.owner_name) },
+        { key: 'area', icon: MapPin, value: orNotAvailable(localized(facility, 'area', language)) },
+        { key: 'address', icon: Globe, value: orNotAvailable(localized(facility, 'address', language)) },
+        {
+          key: 'status',
+          icon: Check,
+          value: facility.status ? t(`venueOwnerFacility.status.${facility.status}`) : notAvailable,
+        },
+        { key: 'surface', icon: Rows3, value: orNotAvailable(localized(facility, 'surface', language)) },
         {
           key: 'dimensions',
           icon: LayoutGrid,
           value: dimensionsText,
         },
-        { key: 'capacity', icon: Users, value: localized(facility, 'capacity', language) },
+        { key: 'capacity', icon: Users, value: orNotAvailable(localized(facility, 'capacity', language)) },
         { key: 'morningPrice', icon: CircleDollarSign, value: price(facility.morning_hourly_price) },
         { key: 'eveningPrice', icon: CircleDollarSign, value: price(facility.evening_hourly_price) },
       ]
@@ -341,12 +378,18 @@ function VenueOwnerFacility() {
         </section>
       )}
 
-      {/* No venue data: the existing "not available" message, centered,
-          with "Try again". */}
+      {/* No venue data, no venue linked to the account, or more than one:
+          a centered message with "Try again" (same layout as "not available"). */}
       {isUnavailable && (
         <section className="vof-state" aria-labelledby="vof-unavailable-title">
           <h1 id="vof-unavailable-title" className="vof-state-title">
-            {t('venueOwnerFacility.unavailable')}
+            {t(
+              unavailableKind === 'none'
+                ? 'venueOwnerFacility.noVenue'
+                : unavailableKind === 'multiple'
+                  ? 'venueOwnerFacility.multipleVenues'
+                  : 'venueOwnerFacility.unavailable',
+            )}
           </h1>
           <button type="button" className="vof-state-button" onClick={retry}>
             {t('venueOwnerFacility.errorState.retry')}
@@ -398,16 +441,24 @@ function VenueOwnerFacility() {
           {/* Cover banner: the venue photo with its sport, area, name and actions. */}
           <section
             className="vof-hero"
-            style={{ backgroundImage: `url(${coverPreview ?? facility.cover_image_url})` }}
+            style={
+              coverPreview || facility.cover_image_url
+                ? { backgroundImage: `url(${coverPreview ?? facility.cover_image_url})` }
+                : undefined
+            }
             aria-labelledby="vof-hero-title"
           >
             <div className="vof-hero-text">
               <p className="vof-hero-meta">
-                <span className="vof-hero-sport">{localized(facility, 'sport', language)}</span>
-                <span className="vof-hero-area">
-                  <MapPin size={12} aria-hidden="true" />
-                  {localized(facility, 'area', language)}
-                </span>
+                {localized(facility, 'sport', language) && (
+                  <span className="vof-hero-sport">{localized(facility, 'sport', language)}</span>
+                )}
+                {localized(facility, 'area', language) && (
+                  <span className="vof-hero-area">
+                    <MapPin size={12} aria-hidden="true" />
+                    {localized(facility, 'area', language)}
+                  </span>
+                )}
               </p>
               <h2 id="vof-hero-title" className="vof-hero-title">
                 {localized(facility, 'name', language)}
@@ -470,11 +521,23 @@ function VenueOwnerFacility() {
                 <h2 id="vof-info-title" className="vof-card-title">
                   {t('venueOwnerFacility.infoTitle')}
                 </h2>
-                <button type="button" className="vof-edit" onClick={openEdit}>
+                <button
+                  type="button"
+                  className="vof-edit"
+                  onClick={() => {
+                    setEditNotSaved(false)
+                    openEdit()
+                  }}
+                >
                   <SquarePen size={13} aria-hidden="true" />
                   {t('venueOwnerFacility.edit')}
                 </button>
               </header>
+              {editNotSaved && (
+                <p className="vof-info-note" role="status">
+                  {t('venueOwnerFacility.editNotSaved')}
+                </p>
+              )}
               <dl className="vof-rows">
                 {rows.map(({ key, icon: Icon, value }) => (
                   <div key={key} className="vof-row">

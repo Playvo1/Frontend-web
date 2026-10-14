@@ -1,22 +1,97 @@
+import { API_BASE_URL, IS_API_ENABLED } from '../config/api.js'
 import { MOCK_VENUE_OWNER_FACILITY } from '../mocks/mockVenueOwnerFacility.js'
+import { apiRequest } from './apiClient.js'
 
-// Venue Owner facility ("My venue") service — MOCK for now.
+// Venue Owner facility ("My venue") service.
 //
-// The backend is not reachable from the frontend yet and its owner venue
-// endpoint is not confirmed (GET /owner/venues is not on the backend's main
-// branch @ 1e2e9be), so this returns local mock data and makes no network
-// request. When the endpoint is confirmed, implement the call here (via
-// apiClient.js) and map its response to the same shape.
+// With the API configured (VITE_API_BASE_URL set), the venue comes from
+//   GET /api/v1/venue_owner/owner/myvenues   (Bearer token, role venue_owner)
+// which returns the venues whose owner_id is the signed-in user, read from
+// the token by the backend (VenueController@myVenues) — no venue id is sent
+// or assumed. Business rule (backend team): one venue per Venue Owner
+// account, so:
+//   - no venue      → rejects with code FACILITY_NONE,
+//   - several       → rejects with code FACILITY_MULTIPLE (never picks one),
+//   - exactly one   → resolves with it, mapped to the shape below.
+// Errors from apiClient (ApiError .status: 0 network, 401, 403, 5xx) are
+// passed through; the page decides what to show. There is no fallback to
+// mock data in this mode.
 //
-// getVenueOwnerFacility() -> Promise<{
+// The endpoint returns the venue row only (no images, sports or other
+// relations). Fields the backend does not have are null, never invented:
+// sport, surface, team format, capacity, morning / evening prices, cover.
+// Images are mapped if the response ever includes them (relative
+// /storage/... URLs are completed with the API host).
+//
+// Without a configured API (mock auth) the local mock is returned, as before.
+//
+// getVenueOwnerFacility({ token, user }) -> Promise<{
 //   id, name_ar, name_en, owner_name, sport_ar, sport_en, area_ar, area_en,
 //   address_ar, address_en, status, surface_ar, surface_en, length_m,
 //   width_m, team_format_ar, team_format_en, capacity_ar, capacity_en,
 //   morning_hourly_price, evening_hourly_price, cover_image_url,
 //   images: [{ id, image_url }],
-// }>
-export async function getVenueOwnerFacility() {
-  return structuredClone(MOCK_VENUE_OWNER_FACILITY)
+// }>   (null for any value the backend does not provide)
+
+export const FACILITY_NONE = 'FACILITY_NONE'
+export const FACILITY_MULTIPLE = 'FACILITY_MULTIPLE'
+
+function codedError(code, message) {
+  const error = new Error(message)
+  error.code = code
+  return error
+}
+
+// "/storage/venues/a.jpg" -> "https://<api host>/storage/venues/a.jpg".
+function absoluteUrl(url) {
+  if (!url) return null
+  return /^https?:\/\//i.test(url) ? url : `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`
+}
+
+function toFacility(venue, user) {
+  const images = Array.isArray(venue.images)
+    ? [...venue.images]
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        .map((image) => ({ id: image.id, image_url: absoluteUrl(image.image_url) }))
+        .filter((image) => image.image_url)
+    : []
+  return {
+    id: venue.id,
+    name_ar: venue.name_ar ?? null,
+    name_en: venue.name_en ?? null,
+    // The signed-in account is the venue's owner (owner_id = user id).
+    owner_name: user?.name ?? null,
+    sport_ar: null,
+    sport_en: null,
+    area_ar: venue.area_ar ?? null,
+    area_en: venue.area_en ?? null,
+    address_ar: venue.address_ar ?? null,
+    address_en: venue.address_en ?? null,
+    status: venue.status ?? null,
+    surface_ar: null,
+    surface_en: null,
+    length_m: venue.length_m ?? null,
+    width_m: venue.width_m ?? null,
+    team_format_ar: null,
+    team_format_en: null,
+    capacity_ar: null,
+    capacity_en: null,
+    morning_hourly_price: null,
+    evening_hourly_price: null,
+    cover_image_url: null,
+    images,
+  }
+}
+
+export async function getVenueOwnerFacility({ token, user } = {}) {
+  if (!IS_API_ENABLED) return structuredClone(MOCK_VENUE_OWNER_FACILITY)
+
+  const body = await apiRequest('/venue_owner/owner/myvenues', { token })
+  const venues = Array.isArray(body?.data) ? body.data : null
+  if (!venues) return null
+  if (venues.length === 0) throw codedError(FACILITY_NONE, 'No venue is linked to this account.')
+  if (venues.length > 1) throw codedError(FACILITY_MULTIPLE, 'More than one venue is linked to this account.')
+  return toFacility(venues[0], user)
 }
 
 // ---------------------------------------------------------------------------
