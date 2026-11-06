@@ -23,16 +23,23 @@ import {
   COVER_IMAGE_MAX_BYTES,
   COVER_IMAGE_TYPES,
   COVER_SAVE_NOT_AVAILABLE,
+  FACILITY_EDITABLE_FIELDS,
   FACILITY_MULTIPLE,
   FACILITY_NONE,
-  getVenueOwnerFacility,
+  changedFacilityFields,
+  deleteVenueImage,
+  getVenueOwnerFacilityDetails,
   saveVenueCoverImage,
+  setVenueCoverImage,
+  updateVenueOwnerFacility,
+  uploadVenueImage,
 } from '../../services/facilityService.js'
 import { IS_API_ENABLED } from '../../config/api.js'
 import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import VenueOwnerFacilityEdit from './VenueOwnerFacilityEdit.jsx'
 import VenueOwnerFacilityPhotos from './VenueOwnerFacilityPhotos.jsx'
+import VenuePhoto from './VenuePhoto.jsx'
 import '../../styles/skeleton.css'
 import './VenueOwnerFacility.css'
 
@@ -40,19 +47,33 @@ import './VenueOwnerFacility.css'
 // design: page title, a cover banner with the venue's sport, area, name and
 // actions, the venue information list and the photos card.
 //
-// Data comes from facilityService: with the API configured, the signed-in
-// owner's venue from GET /venue_owner/owner/myvenues (the backend finds it
-// from the token; one venue per account), otherwise the local mock. Values
-// the backend does not provide are shown as "Not available"; no venue or
-// more than one venue shows a message instead of the page. "Edit" in
-// the information card opens the edit form, "View all photos" opens the
-// photos view and "Edit venue photo" in the cover banner picks a new cover
-// image. Picking and saving are separate steps: the picked image is only
-// previewed in the banner (this page's state), then "Save photo" sends it
-// through facilityService.saveVenueCoverImage — not connected yet (no cover
-// endpoint), so it says saving is not available and nothing is reported as
-// saved; "Cancel" drops the preview. The other buttons have no action yet
-// (no confirmed backend endpoints for them).
+// Data comes from facilityService.getVenueOwnerFacilityDetails: with the API
+// configured, the signed-in owner's venue from GET /venue_owner/owner/myvenues
+// (the backend finds it from the token; one venue per account), with its
+// sports, city / country and photos (the cover: the image marked is_cover);
+// otherwise the local mock. Values the backend does not provide are shown as
+// "Not available"; no venue or more than one venue shows a message instead
+// of the page.
+//
+// The information list is the design's in both modes (API mode: the
+// backend's name, area, address, status, surface, dimensions, capacity and
+// default morning / evening prices; the owner name from the Profile
+// endpoint). API mode differences: the banner's location is the city,
+// photos that cannot be loaded show a placeholder (VenuePhoto), and the
+// banner photo is the backend's cover_image_url (none: no photo).
+//
+// "Edit" in the information card opens the edit form: demo mode keeps the
+// changes in this page's state; API mode sends only the changed fields the
+// backend accepts (name, description, area, address, surface, dimensions,
+// capacity, morning / evening prices — not the owner name, status or sport)
+// with PUT /venue_owner/owner/venues/{id} and shows the saved values. "View all photos" opens the photos view (API
+// mode: upload, delete and "Set as cover" on the backend). "Edit venue
+// photo" in the cover banner picks a new cover image. Picking and saving are
+// separate steps: the picked image is only previewed in the banner (this
+// page's state), then "Save photo" sends it through
+// facilityService.saveVenueCoverImage (API mode: uploaded, then set as the
+// cover; demo mode: says saving is not available, nothing is reported as
+// saved); "Cancel" drops the preview.
 //
 // While the venue loads, the banner and both cards are shown as placeholder
 // blocks (no text) under the page title, as on the Reviews and Analytics
@@ -87,14 +108,14 @@ function VenueOwnerFacility() {
   // than one venue linked — the page does not pick one).
   const [unavailableKind, setUnavailableKind] = useState(null)
   const isUnavailable = unavailableKind !== null
-  // With the API, "Edit" cannot save yet (no update wired): set after
-  // "Save" in the edit form so the page says nothing was saved.
-  const [editNotSaved, setEditNotSaved] = useState(false)
+  // API mode: set after the edit form was saved on the backend, so the
+  // information card says the changes were saved.
+  const [editSaved, setEditSaved] = useState(false)
   // Incremented by "Try again" to run the facility request once more.
   const [attempt, setAttempt] = useState(0)
   // "Edit" in the information card swaps the page for the edit form
-  // (VenueOwnerFacilityEdit). Saving keeps the changes in this page's state
-  // only (mock data — no backend request).
+  // (VenueOwnerFacilityEdit). Demo mode: saving keeps the changes in this
+  // page's state only. API mode: saved on the backend (saveEdit).
   const [isEditing, setIsEditing] = useState(false)
 
   const openEdit = () => {
@@ -107,15 +128,67 @@ function VenueOwnerFacility() {
     window.scrollTo(0, 0)
   }
 
+  // Returns a promise for the form: it rejects (the form stays open with a
+  // message) when the backend did not save. 401 signs out.
   const saveEdit = (updated) => {
-    if (IS_API_ENABLED) {
-      // Real venue data: nothing is sent, so nothing is applied.
-      setEditNotSaved(true)
-    } else {
+    if (!IS_API_ENABLED) {
       setFacility(updated)
+      closeEdit()
+      return Promise.resolve()
     }
-    closeEdit()
+    // Only the changed fields are sent; nothing changed: no request.
+    const changes = changedFacilityFields(facility, updated)
+    if (Object.keys(changes).length === 0) {
+      closeEdit()
+      return Promise.resolve()
+    }
+    return updateVenueOwnerFacility(facility, changes, { token, user })
+      .then((saved) => {
+        setFacility(saved)
+        setEditSaved(true)
+        closeEdit()
+      })
+      .catch((error) => {
+        if (error?.status === 401) logout()
+        throw error
+      })
   }
+
+  // API mode: upload one photo (photos view) and add it to the list. With
+  // no cover yet it becomes the cover, as on the backend (no is_cover: the
+  // first image).
+  const uploadPhoto = (file) =>
+    uploadVenueImage(facility.id, file, { token })
+      .then((image) => {
+        setFacility((current) =>
+          current.cover_image_url
+            ? { ...current, images: [...current.images, image] }
+            : { ...current, cover_image_id: image.id, cover_image_url: image.image_url },
+        )
+        return image
+      })
+      .catch((error) => {
+        if (error?.status === 401) logout()
+        throw error
+      })
+
+  // API mode (photos view): "Set as cover" and delete, saved on the backend;
+  // the page shows the saved photos. They reject (the view says so) when the
+  // backend did not save; 401 signs out.
+  const signOutOn401 = (error) => {
+    if (error?.status === 401) logout()
+    throw error
+  }
+
+  const setCoverPhoto = (photoId) =>
+    setVenueCoverImage(facility.id, photoId, { token })
+      .then((photos) => setFacility((current) => ({ ...current, ...photos })))
+      .catch(signOutOn401)
+
+  const deletePhoto = (photoId) =>
+    deleteVenueImage(facility.id, photoId, { token })
+      .then(() => removePhoto(photoId))
+      .catch(signOutOn401)
 
   // "View all photos" swaps the page for the photos view
   // (VenueOwnerFacilityPhotos); "Back" returns to the page.
@@ -169,16 +242,17 @@ function VenueOwnerFacility() {
     setCoverMessage(null)
   }
 
-  // Step 2 — save through the service. Only a resolved request (once the
-  // backend is linked) updates the cover; until then the service rejects
-  // with COVER_SAVE_NOT_AVAILABLE and the preview stays unsaved.
+  // Step 2 — save through the service. Only a resolved request updates the
+  // cover (API mode: the saved photos); demo mode rejects with
+  // COVER_SAVE_NOT_AVAILABLE and the preview stays unsaved. When only the
+  // upload worked, the photo is added to the photos (not as the cover).
   const saveCover = () => {
     if (!pendingCover || isSavingCover) return
     setIsSavingCover(true)
     setCoverMessage(null)
-    saveVenueCoverImage(pendingCover.file)
-      .then((saved) => {
-        setFacility((current) => ({ ...current, cover_image_url: saved.cover_image_url }))
+    saveVenueCoverImage(facility.id, pendingCover.file, { token })
+      .then((photos) => {
+        setFacility((current) => ({ ...current, ...photos }))
         setPendingCover(null)
       })
       .catch((error) => {
@@ -190,12 +264,20 @@ function VenueOwnerFacility() {
           setCoverMessage('notAvailable')
           return
         }
+        if (error?.uploadedImage) {
+          const uploaded = error.uploadedImage
+          setFacility((current) => ({ ...current, images: [...current.images, uploaded] }))
+          setPendingCover(null)
+          setCoverMessage('uploadedNotCover')
+          return
+        }
         setCoverMessage(isConnectionFailure(error) ? 'network' : 'server')
       })
       .finally(() => setIsSavingCover(false))
   }
 
-  // Deleting a photo in the photos view: local (mock) state only.
+  // Removes a photo from the page's state (demo mode: the delete itself;
+  // API mode: after the backend deleted it, see deletePhoto).
   const removePhoto = (photoId) => {
     setFacility((current) => ({
       ...current,
@@ -219,7 +301,7 @@ function VenueOwnerFacility() {
   // 401 signs out.
   useEffect(() => {
     let isActive = true
-    getVenueOwnerFacility({ token, user })
+    getVenueOwnerFacilityDetails({ token, user })
       .then((data) => {
         if (!isActive) return
         if (data && typeof data === 'object') {
@@ -256,6 +338,7 @@ function VenueOwnerFacility() {
     setErrorKind(null)
     setUnavailableKind(null)
     setFacility(null)
+    setEditSaved(false)
     setAttempt((count) => count + 1)
   }
 
@@ -267,6 +350,8 @@ function VenueOwnerFacility() {
   const countFormat = new Intl.NumberFormat(language === 'ar' ? 'ar-u-nu-arab' : language)
   const notAvailable = t('venueOwnerFacility.notAvailable')
   const price = (value) => (value == null ? notAvailable : `₪${numberFormat.format(value)}`)
+  // City / country (API mode, from the venue details).
+  const city = facility ? localized(facility, 'city', language) : null
   const orNotAvailable = (value) => (value == null || value === '' ? notAvailable : value)
 
   // "40 × 20 m · 5-a-side"; without a team format: "40 × 20 m".
@@ -316,7 +401,13 @@ function VenueOwnerFacility() {
         venue={layoutVenue}
         roleLabelKey="dashboardLayout.roles.venueOwner"
       >
-        <VenueOwnerFacilityPhotos facility={facility} onBack={closePhotos} onRemovePhoto={removePhoto} />
+        <VenueOwnerFacilityPhotos
+          facility={facility}
+          onBack={closePhotos}
+          onRemovePhoto={IS_API_ENABLED ? deletePhoto : removePhoto}
+          onSetCover={IS_API_ENABLED ? setCoverPhoto : null}
+          onUploadImage={IS_API_ENABLED ? uploadPhoto : null}
+        />
       </DashboardLayout>
     )
   }
@@ -332,6 +423,7 @@ function VenueOwnerFacility() {
           key={language}
           facility={facility}
           dimensionsText={dimensionsText}
+          editableFields={IS_API_ENABLED ? FACILITY_EDITABLE_FIELDS : null}
           onCancel={closeEdit}
           onSave={saveEdit}
         />
@@ -453,10 +545,11 @@ function VenueOwnerFacility() {
                 {localized(facility, 'sport', language) && (
                   <span className="vof-hero-sport">{localized(facility, 'sport', language)}</span>
                 )}
-                {localized(facility, 'area', language) && (
+                {/* Location: the city in API mode, the area in demo mode. */}
+                {(IS_API_ENABLED ? city : localized(facility, 'area', language)) && (
                   <span className="vof-hero-area">
                     <MapPin size={12} aria-hidden="true" />
-                    {localized(facility, 'area', language)}
+                    {IS_API_ENABLED ? city : localized(facility, 'area', language)}
                   </span>
                 )}
               </p>
@@ -525,7 +618,7 @@ function VenueOwnerFacility() {
                   type="button"
                   className="vof-edit"
                   onClick={() => {
-                    setEditNotSaved(false)
+                    setEditSaved(false)
                     openEdit()
                   }}
                 >
@@ -533,9 +626,9 @@ function VenueOwnerFacility() {
                   {t('venueOwnerFacility.edit')}
                 </button>
               </header>
-              {editNotSaved && (
-                <p className="vof-info-note" role="status">
-                  {t('venueOwnerFacility.editNotSaved')}
+              {editSaved && (
+                <p className="vof-info-note vof-info-note-success" role="status">
+                  {t('venueOwnerFacility.editSaved')}
                 </p>
               )}
               <dl className="vof-rows">
@@ -570,20 +663,28 @@ function VenueOwnerFacility() {
               </header>
               {mainPhoto ? (
                 <div className="vof-gallery">
-                  {/* Hover/focus shows a dark overlay with "View" (design). No action yet (UI only). */}
+                  {/* Hover/focus shows a dark overlay with "View" (design); it opens the
+                      photos view, like "View all photos". */}
                   {[mainPhoto, ...otherPhotos.slice(0, 2)].map((photo, index) => (
                     <button
                       key={photo.id}
                       type="button"
                       className={index === 0 ? 'vof-photo-item vof-photo-item-main' : 'vof-photo-item'}
+                      onClick={openPhotos}
                     >
-                      <img className="vof-photo" src={photo.image_url} alt="" />
+                      <VenuePhoto className="vof-photo" src={photo.image_url} />
                       <span className="vof-photo-overlay">{t('venueOwnerFacility.viewPhoto')}</span>
                     </button>
                   ))}
                 </div>
               ) : (
-                <p className="vof-photos-empty">{t('venueOwnerFacility.noPhotos')}</p>
+                <p className="vof-photos-empty">
+                  {t(
+                    facility.imagesStatus === 'inactive'
+                      ? 'venueOwnerFacility.photosInactive'
+                      : 'venueOwnerFacility.noPhotos',
+                  )}
+                </p>
               )}
               <div className="vof-photos-footer">
                 <button type="button" className="vof-button vof-button-muted vof-button-full" onClick={openPhotos}>

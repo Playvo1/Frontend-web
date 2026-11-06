@@ -1,0 +1,621 @@
+/*
+ * Venue Owner "Notifications" page (design reference). Logical properties
+ * (inline-start / end) so the same rules work in RTL and LTR.
+ */
+
+.von-header {
+  margin-block-end: 24px;
+}
+
+.von-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.von-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+/* "3 unread" pill next to the title. */
+.von-unread-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff1ea; /* light tint of the brand orange */
+  color: var(--color-orange);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.von-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.von-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+  box-shadow: 0 1px 3px rgb(1 33 61 / 6%); /* design: soft card shadow */
+}
+
+.von-toolbar {
+  padding: 16px 24px;
+}
+
+/* All / Unread / Read — segmented control. */
+.von-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #e9eef2; /* design: gray track, no border */
+}
+
+.von-tab {
+  min-width: 96px;
+  padding: 6px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.von-tab-active {
+  background: var(--color-white);
+  font-weight: 600;
+  color: var(--color-navy);
+  box-shadow: 0 1px 2px rgb(1 33 61 / 6%);
+}
+
+/* "Read" design: the selected tab has a light border ("All" / "Unread"
+ * designs: none). */
+.von-tab-active-read {
+  border-color: #d4d9de;
+}
+
+.von-mark-error {
+  margin: 0;
+  padding: 10px 24px;
+  border-block-start: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+/* ---- List ---- */
+.von-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.von-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 24px;
+  border-block-start: 1px solid var(--color-border);
+  cursor: default;
+}
+
+.von-row-unread {
+  background: #f0f5f8; /* unread rows: light navy tint (design) */
+  cursor: pointer;
+}
+
+.von-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #edf2f6; /* read notifications: gray tile, no border (design) */
+  color: var(--color-text-secondary);
+}
+
+.von-icon-accent {
+  border-color: transparent;
+  background: #fff1ea;
+  color: var(--color-orange);
+}
+
+.von-icon-danger {
+  border-color: transparent;
+  background: #fdecec;
+  color: var(--color-error);
+}
+
+.von-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.von-row-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.von-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-orange);
+}
+
+.von-row-body {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.von-row-time {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.von-row-end {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  align-self: center;
+}
+
+/* Action buttons: navy for unread notifications, outlined for read ones. */
+.von-action {
+  padding: 8px 16px;
+  border: 1px solid var(--color-navy);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.von-action-primary {
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.von-action-secondary {
+  border-color: var(--color-input-border);
+  background: var(--color-white);
+  color: var(--color-navy);
+}
+
+.von-action:focus-visible,
+.von-tab:focus-visible,
+.von-menu-button:focus-visible,
+.von-menu-item:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+/* ---- "..." menu ---- */
+.von-menu {
+  position: relative;
+}
+
+.von-menu-button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #7a8793;
+  cursor: pointer;
+}
+
+.von-menu-button:hover {
+  background: var(--color-background-secondary);
+}
+
+.von-menu-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  inset-inline-end: 0;
+  z-index: 5;
+  min-width: 150px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-white);
+  box-shadow: 0 6px 16px rgb(1 33 61 / 10%);
+}
+
+.von-menu-item {
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-navy);
+  text-align: start;
+  cursor: pointer;
+}
+
+.von-menu-item:hover:not(:disabled) {
+  background: var(--color-background-secondary);
+}
+
+.von-menu-item:disabled {
+  color: #a3adb8;
+  cursor: default;
+}
+
+/* ---- Empty / error (inside the card) ---- */
+.von-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 56px 24px;
+  border-block-start: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.von-state-icon {
+  color: #a3adb8; /* Gray 400 */
+}
+
+.von-state-icon-error {
+  color: var(--color-error);
+}
+
+.von-state-title {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.von-state-text {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* ---- Loading placeholders ---- */
+.von-skeleton {
+  display: block;
+  border-radius: 6px;
+  background-color: #eef2f5; /* placeholder gray (as on the other pages) */
+}
+
+.von-skeleton-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.von-skeleton-title {
+  width: 30%;
+  height: 12px;
+}
+
+.von-skeleton-body {
+  width: 60%;
+  height: 10px;
+  margin-block-start: 10px;
+}
+
+.von-skeleton-time {
+  width: 15%;
+  height: 8px;
+  margin-block-start: 10px;
+}
+
+.von-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Small screens: actions move under the text ---- */
+@media (max-width: 600px) {
+  .von-title {
+    font-size: 20px;
+  }
+
+  .von-toolbar {
+    padding: 14px 16px;
+  }
+
+  .von-tabs {
+    display: flex;
+  }
+
+  .von-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  .von-row {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .von-content {
+    flex-basis: calc(100% - 46px);
+  }
+
+  .von-row-end {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .von-mark-error {
+    padding-inline: 16px;
+  }
+}
+
+/* ---- "View details" dialog (NotificationDetailsModal) ---- */
+.von-dialog {
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-white);
+  color: var(--color-navy);
+  font: inherit;
+  box-shadow: 0 12px 32px rgb(1 33 61 / 16%);
+}
+
+.von-dialog::backdrop {
+  background: rgb(1 33 61 / 40%);
+}
+
+.von-dialog-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.von-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.von-dialog-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.von-dialog-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: #7a8793;
+  cursor: pointer;
+}
+
+.von-dialog-close:hover {
+  background: var(--color-background-secondary);
+}
+
+.von-dialog-close:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+.von-dialog-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.von-dialog-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font-size: 12px;
+}
+
+.von-dialog-meta dt {
+  color: #7a8793;
+}
+
+.von-dialog-meta dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.von-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 600px) {
+  .von-dialog-panel {
+    padding: 20px 16px;
+  }
+}
+
+/* ---- Page states: tabs above, then loading / error / empty (designs) ---- */
+.von-toolbar-outside {
+  margin-block-end: 16px;
+}
+
+.von-skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.von-skeleton-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+}
+
+.von-skeleton-card .von-skeleton-title {
+  width: 24%;
+}
+
+.von-skeleton-card .von-skeleton-body {
+  width: 72%;
+}
+
+.von-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 96px 16px;
+  text-align: center;
+}
+
+.von-error-icon {
+  margin-block-end: 12px;
+  color: #a3adb8; /* Gray 400 */
+}
+
+.von-error-icon-server {
+  color: var(--color-error);
+}
+
+.von-error-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.von-error-text {
+  max-width: 420px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #7a8793; /* Gray 500 */
+}
+
+.von-error-retry {
+  margin-block-start: 16px;
+  min-width: 160px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-navy);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.von-error-retry:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+.von-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 72px 24px 88px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+  box-shadow: 0 1px 3px rgb(1 33 61 / 6%);
+  text-align: center;
+}
+
+.von-empty-illustration {
+  width: 200px;
+  max-width: 60%;
+  height: auto;
+  margin-block-end: 20px;
+}
+
+.von-empty-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.von-empty-text {
+  max-width: 440px;
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 600px) {
+  .von-skeleton-card {
+    padding: 16px;
+  }
+
+  .von-error-state {
+    padding-block: 64px;
+  }
+
+  .von-empty-card {
+    padding: 48px 16px 56px;
+  }
+
+  .von-empty-illustration {
+    width: 160px;
+  }
+}

@@ -38,6 +38,20 @@
   border-block-end: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Logo lockup: optional provided logo mark (used as-is) + the wordmark. */
+.dashboard-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dashboard-brand-mark {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
 /* PLAYVO wordmark — Baloo, the approved logo font. */
 .dashboard-wordmark {
   font-family: 'Baloo', sans-serif;
@@ -259,6 +273,12 @@ a.dashboard-nav-item-active:hover {
   color: var(--color-white);
   font-size: 15px;
   font-weight: 700;
+}
+
+/* The user's photo in the same circle. */
+.dashboard-avatar-image {
+  display: block;
+  object-fit: cover;
 }
 
 .dashboard-bell {

@@ -404,6 +404,22 @@
   cursor: not-allowed;
 }
 
+/* Result of "Save changes": saved (success) or not saved (error). */
+.vop-notice-success,
+.vop-notice-success svg {
+  color: var(--color-success);
+}
+
+.vop-notice-error,
+.vop-notice-error svg {
+  color: var(--color-error);
+}
+
+/* Photo picker while the profile loads or saves. */
+.vop-avatar-button:disabled {
+  cursor: default;
+}
+
 /* ---- Change password dialog (native <dialog>, as the slot dialogs) ----
  * As the design: 2px light border, 16px corners, shield icon + title and
  * subtitle, 55px fields with a show/hide eye at the end edge, full-width

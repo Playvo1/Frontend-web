@@ -5,13 +5,18 @@ import AuthLayout from '../../components/AuthLayout/AuthLayout.jsx'
 import AuthStep from '../../components/AuthLayout/AuthStep.jsx'
 import Button from '../../components/Button/Button.jsx'
 import Input from '../../components/Input/Input.jsx'
+import { ROLES, ROLE_LOGIN, toForgotPasswordPath } from '../../constants/roles.js'
 import { AUTH_ERRORS, requestPasswordReset, verifyResetCode } from '../../services/authService.js'
+import { getRecoveryLoginPath } from '../../utils/recoveryFlow.js'
 import { RESET_CODE_LENGTH, isValidResetCode, normalizeResetCode } from '../../utils/validation.js'
+import AdminAuthHero from '../AdminLogin/AdminAuthHero.jsx'
 
 // Verify Code — password recovery step 2, route: /verify-code.
-// Reached from /forgot-password, which passes the email in the route state;
-// opening this page directly (or after a reload, which clears that state)
-// sends the user back to step 1.
+// Reached from /forgot-password or /admin/forgot-password, which pass the
+// email (and the flow's login page) in the route state; that state survives
+// a reload. Opening this page without it sends the user back to the flow's
+// step 1. Shared by both roles: an Admin flow shows the Admin hero (Admin
+// design), a Venue Owner flow the default one — the form is the same.
 //
 // Matches the Figma reference: one code field (not split digit boxes), a
 // "Didn't receive a code? Resend" link under it, and the Next button.
@@ -23,6 +28,8 @@ function VerifyCode() {
   const location = useLocation()
   const navigate = useNavigate()
   const email = location.state?.email
+  // Login page of this recovery flow (route state, or remembered for the tab).
+  const loginPath = getRecoveryLoginPath(location.state?.loginPath)
 
   const [code, setCode] = useState('')
   const [codeError, setCodeError] = useState(null)
@@ -32,7 +39,7 @@ function VerifyCode() {
   const [isResending, setIsResending] = useState(false)
 
   if (!email) {
-    return <Navigate to="/forgot-password" replace />
+    return <Navigate to={toForgotPasswordPath(loginPath)} replace state={{ loginPath }} />
   }
 
   const handleCodeChange = (event) => {
@@ -59,7 +66,7 @@ function VerifyCode() {
     setIsSubmitting(true)
     try {
       await verifyResetCode({ email, code })
-      navigate('/reset-password', { state: { email, code } })
+      navigate('/reset-password', { state: { email, code, loginPath } })
     } catch (err) {
       setNotice({
         type: 'error',
@@ -90,9 +97,12 @@ function VerifyCode() {
   }
 
   const isBusy = isSubmitting || isResending
+  // A flow started from /admin/forgot-password shows the Admin design (Admin
+  // hero, same form); otherwise the Venue Owner design is unchanged.
+  const isAdminFlow = loginPath === ROLE_LOGIN[ROLES.ADMIN]
 
   return (
-    <AuthLayout>
+    <AuthLayout hero={isAdminFlow ? <AdminAuthHero /> : undefined}>
       <AuthStep title={t('verifyCode.title')} subtitle={t('verifyCode.subtitle')}>
         {/* noValidate: validation messages are our own translated ones. */}
         <form className="auth-step-form" onSubmit={handleSubmit} noValidate>

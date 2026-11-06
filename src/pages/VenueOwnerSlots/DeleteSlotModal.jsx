@@ -1,18 +1,47 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import './DeleteSlotModal.css'
 
 // "Delete time slot?" confirmation (Figma), opened from "Delete" on an
-// available slot. There is no confirmed backend endpoint for deleting a
-// time slot yet, so the "Delete" button has no action: nothing is removed
-// from the slot list. "Cancel" and Escape close the dialog.
+// available slot. Nothing is deleted until "Delete" is pressed here: it calls
+// `onConfirm` (the page sends DELETE /venue_owner/owner/time-slots/{id}),
+// shows "Deleting…" meanwhile, and the page closes the dialog only after the
+// backend confirmed the deletion. A failed request keeps the dialog open
+// and says why: the slot has a booking (409), it is not yours (403), it no
+// longer exists (404), no connection, or another server error. "Cancel"
+// and Escape close the dialog (not while deleting).
 //
 // Same native <dialog> pattern as EditSlotModal (showModal: centered,
 // focus kept inside, backdrop, Escape).
-function DeleteSlotModal({ slot, timeRange, onClose }) {
+// Request error -> message key (venueOwnerSlots.deleteSlot.errors.*).
+function errorKey(error) {
+  if (error?.status === 409) return 'conflict'
+  if (error?.status === 403) return 'forbidden'
+  if (error?.status === 404) return 'notFound'
+  if (error?.status === 0) return 'network'
+  return 'server'
+}
+
+function DeleteSlotModal({ slot, timeRange, onClose, onConfirm }) {
   const { t } = useTranslation()
   const dialogRef = useRef(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  // null | 'conflict' | 'forbidden' | 'notFound' | 'network' | 'server'
+  const [error, setError] = useState(null)
+
+  const confirm = async () => {
+    if (!onConfirm || isDeleting) return
+    setError(null)
+    setIsDeleting(true)
+    try {
+      await onConfirm()
+    } catch (requestError) {
+      setIsDeleting(false)
+      // 401: the page signs out; nothing to show here.
+      if (requestError?.status !== 401) setError(errorKey(requestError))
+    }
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -28,7 +57,7 @@ function DeleteSlotModal({ slot, timeRange, onClose }) {
       aria-describedby="dsm-message"
       onCancel={(event) => {
         event.preventDefault()
-        onClose()
+        if (!isDeleting) onClose()
       }}
     >
       <div className="dsm-body">
@@ -52,13 +81,18 @@ function DeleteSlotModal({ slot, timeRange, onClose }) {
         </div>
       </div>
 
+      {error && (
+        <p className="dsm-error" role="alert">
+          {t(`venueOwnerSlots.deleteSlot.errors.${error}`)}
+        </p>
+      )}
+
       <footer className="dsm-footer">
-        <button type="button" className="dsm-button dsm-cancel" onClick={onClose}>
+        <button type="button" className="dsm-button dsm-cancel" onClick={onClose} disabled={isDeleting}>
           {t('venueOwnerSlots.deleteSlot.cancel')}
         </button>
-        {/* No slot-delete endpoint yet: "Delete" is UI only. */}
-        <button type="button" className="dsm-button dsm-delete">
-          {t('venueOwnerSlots.delete')}
+        <button type="button" className="dsm-button dsm-delete" onClick={confirm} disabled={isDeleting}>
+          {isDeleting ? t('venueOwnerSlots.deleteSlot.deleting') : t('venueOwnerSlots.delete')}
         </button>
       </footer>
     </dialog>

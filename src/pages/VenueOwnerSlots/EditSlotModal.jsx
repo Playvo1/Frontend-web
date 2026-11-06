@@ -17,9 +17,15 @@ import './EditSlotModal.css'
 // it moves the date to the next date (from the current one) on that day,
 // and changing the date updates the day. The day and date are read-only
 // when editing an existing slot.
-// Changes stay in this dialog only: there are no confirmed backend
-// endpoints for editing or creating a time slot yet, so the submit button
-// has no action and nothing is written to the slot list.
+// Saving: with `onSubmit` (API mode) the form is checked (both times, end
+// after start, a price) and the values are sent through it; the dialog
+// shows "Saving…" meanwhile and closes only when the page reports success.
+// A failed save keeps every typed value and shows why: the slot already
+// exists or is booked (409), invalid fields (422, with the backend's
+// field messages), not the owner's venue / slot (403), no connection, or
+// another server error. Without
+// `onSubmit` (demo mode) the submit button has no action, as before, and
+// nothing is written to the slot list.
 //
 // Uses the native <dialog> (showModal): it centers itself, traps focus,
 // shows a backdrop and closes on Escape.
@@ -47,7 +53,16 @@ function minutesOf(time) {
   return match ? Number(match[1]) * 60 + Number(match[2]) : null
 }
 
-function EditSlotModal({ mode = 'edit', slot, emphasizeDate = false, onClose }) {
+// Backend field messages from a 422 (Laravel `errors`), first one per field.
+function fieldMessages(error) {
+  const errors = error?.errors
+  if (!errors || typeof errors !== 'object') return []
+  return Object.values(errors)
+    .map((messages) => (Array.isArray(messages) ? messages[0] : messages))
+    .filter((message) => typeof message === 'string' && message)
+}
+
+function EditSlotModal({ mode = 'edit', slot, emphasizeDate = false, onClose, onSubmit }) {
   const textKey = mode === 'create' ? 'venueOwnerSlots.createSlotModal' : 'venueOwnerSlots.editSlot'
   const { t, i18n } = useTranslation()
   const dialogRef = useRef(null)
@@ -57,6 +72,50 @@ function EditSlotModal({ mode = 'edit', slot, emphasizeDate = false, onClose }) 
   const [slotDate, setSlotDate] = useState(slot.slot_date)
   // The date can be changed only when creating from "Create time slot".
   const isDateEditable = mode === 'create' && !emphasizeDate
+  const [isSaving, setIsSaving] = useState(false)
+  // Why the last save did not happen: { key, details: [] } or null.
+  const [formError, setFormError] = useState(null)
+
+  const submit = async () => {
+    if (!onSubmit || isSaving) return
+    const from = minutesOf(startTime)
+    const to = minutesOf(endTime)
+    if (!slotDate || from == null || to == null) {
+      setFormError({ key: 'venueOwnerSlots.form.errors.required', details: [] })
+      return
+    }
+    if (to <= from) {
+      setFormError({ key: 'venueOwnerSlots.form.errors.endBeforeStart', details: [] })
+      return
+    }
+    if (price === '') {
+      setFormError({ key: 'venueOwnerSlots.form.errors.price', details: [] })
+      return
+    }
+    setFormError(null)
+    setIsSaving(true)
+    try {
+      await onSubmit({
+        slot_date: slotDate,
+        start_time: startTime.slice(0, 5),
+        end_time: endTime.slice(0, 5),
+        hourly_price: Number(price),
+      })
+    } catch (error) {
+      setIsSaving(false)
+      if (error?.status === 409) {
+        setFormError({ key: `venueOwnerSlots.form.errors.conflict.${mode}`, details: [] })
+      } else if (error?.status === 422) {
+        setFormError({ key: 'venueOwnerSlots.form.errors.invalid', details: fieldMessages(error) })
+      } else if (error?.status === 403) {
+        setFormError({ key: 'venueOwnerSlots.form.errors.forbidden', details: [] })
+      } else if (error?.status === 0) {
+        setFormError({ key: 'venueOwnerSlots.form.errors.network', details: [] })
+      } else if (error?.status !== 401) {
+        setFormError({ key: 'venueOwnerSlots.form.errors.server', details: [] })
+      }
+    }
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -230,12 +289,27 @@ function EditSlotModal({ mode = 'edit', slot, emphasizeDate = false, onClose }) 
         </div>
       </div>
 
+      {formError && (
+        <div className="esm-error" role="alert">
+          <p>{t(formError.key)}</p>
+          {formError.details.length > 0 && (
+            <ul>
+              {formError.details.map((message) => (
+                <li key={message}>
+                  <bdi>{message}</bdi>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <footer className="esm-footer">
-        {/* No slot edit/create endpoint yet: the submit button is UI only. */}
-        <button type="button" className="esm-button esm-save">
-          {t(`${textKey}.submit`)}
+        {/* Saves through `onSubmit` (API mode); demo mode: no action. */}
+        <button type="button" className="esm-button esm-save" onClick={submit} disabled={isSaving}>
+          {isSaving ? t('venueOwnerSlots.form.saving') : t(`${textKey}.submit`)}
         </button>
-        <button type="button" className="esm-button esm-cancel" onClick={onClose}>
+        <button type="button" className="esm-button esm-cancel" onClick={onClose} disabled={isSaving}>
           {t('venueOwnerSlots.editSlot.cancel')}
         </button>
       </footer>

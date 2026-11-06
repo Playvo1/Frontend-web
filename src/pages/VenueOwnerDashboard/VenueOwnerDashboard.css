@@ -86,6 +86,21 @@
   color: var(--color-orange);
 }
 
+/* API mode: a period the backend does not support (listed, not selectable). */
+.vo-period-option-unsupported,
+.vo-period-option-unsupported.vo-period-option-active {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.vo-period-option-note {
+  font-size: 11px;
+}
+
 /* Statistics cards */
 .vo-stats {
   display: grid;
@@ -182,6 +197,25 @@
 .vo-badge-booked {
   background: rgba(252, 75, 1, 0.1);
   color: var(--color-orange);
+}
+
+/* API mode: a slot closed by the owner (same grays as the Time slots page). */
+.vo-dot-blocked {
+  background: #a3adb8; /* Gray 400 */
+}
+
+.vo-badge-blocked {
+  background: #f1f4f6; /* Gray 100 */
+  color: #5b6773;
+}
+
+/* No data from the backend (empty day, chart not connected): same text style
+   as the Analytics page's "not connected" panels. */
+.vo-panel-unavailable {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
 }
 
 /* Chart legends */

@@ -7,11 +7,14 @@ import { useTranslation } from 'react-i18next'
 // The whole button — text and chevron — toggles the list; it closes on
 // selection, outside click/tap, Escape or Tab.
 //
-// Only the selected period is kept here: the mock data is weekly, so the
-// dashboard numbers do not change yet (no backend endpoint for other periods).
+// Only the selected period is kept here; the dashboard loads its numbers for
+// it. `unsupported` (API mode: periods the backend does not accept) are still
+// listed, marked "not supported yet" and cannot be selected, so no number is
+// ever shown for them. Demo mode passes none (the mock data is the same for
+// every period).
 const PERIODS = ['today', 'week', 'month', 'lastMonth']
 
-function PeriodSelect({ value, onChange }) {
+function PeriodSelect({ value, onChange, unsupported = [] }) {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(PERIODS.indexOf(value))
@@ -45,8 +48,11 @@ function PeriodSelect({ value, onChange }) {
     if (returnFocus) buttonRef.current?.focus()
   }
 
+  const isUnsupported = (period) => unsupported.includes(period)
+
   const select = (period) => {
-    onChange(period)
+    if (isUnsupported(period)) return
+    if (period !== value) onChange(period)
     close()
   }
 
@@ -128,11 +134,15 @@ function PeriodSelect({ value, onChange }) {
               id={optionId(period)}
               role="option"
               aria-selected={period === value}
-              className={`vo-period-option ${index === activeIndex ? 'vo-period-option-active' : ''}`}
+              aria-disabled={isUnsupported(period) || undefined}
+              className={`vo-period-option ${index === activeIndex ? 'vo-period-option-active' : ''} ${isUnsupported(period) ? 'vo-period-option-unsupported' : ''}`}
               onPointerEnter={() => setActiveIndex(index)}
               onClick={() => select(period)}
             >
               {t(`venueOwnerDashboard.period.${period}`)}
+              {isUnsupported(period) && (
+                <span className="vo-period-option-note">{t('venueOwnerDashboard.period.unsupported')}</span>
+              )}
             </li>
           ))}
         </ul>

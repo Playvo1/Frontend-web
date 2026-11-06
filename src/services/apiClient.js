@@ -6,6 +6,8 @@ import { API_BASE_URL, API_PREFIX, IS_API_ENABLED } from '../config/api.js'
 // - Sends Accept/Content-Type: application/json on every request. The
 //   backend needs "Accept: application/json" to return JSON for validation
 //   (422) and auth (401) errors instead of redirects.
+// - A FormData body (file upload) is sent as is: the browser sets the
+//   multipart Content-Type with its boundary; Accept stays JSON.
 // - Adds "Authorization: Bearer <token>" when a token is passed (Sanctum).
 // - Resolves with the parsed body on success; throws ApiError otherwise.
 //
@@ -43,9 +45,10 @@ export async function apiRequest(path, { method = 'GET', body, token } = {}) {
     throw new ApiError({ status: 0, message: 'API base URL is not configured' })
   }
 
-  const headers = {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
+  const headers = { Accept: 'application/json' }
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json'
   }
   if (token) {
     headers.Authorization = `Bearer ${token}`
@@ -56,7 +59,7 @@ export async function apiRequest(path, { method = 'GET', body, token } = {}) {
     response = await fetch(`${API_BASE_URL}${API_PREFIX}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
     })
   } catch {
     throw new ApiError({ status: 0, message: 'Network error' })

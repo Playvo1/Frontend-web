@@ -970,3 +970,95 @@
     margin-block-start: 28px;
   }
 }
+
+/* ============================================================
+ * API mode: saving, photos the server cannot serve, unsupported actions.
+ * ============================================================ */
+
+/* A photo whose file cannot be loaded (VenuePhoto): same box, a note. */
+.vof-photo-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  background: #f1f4f6; /* Gray 100 */
+  color: #7a8793; /* Gray 500 */
+  text-align: center;
+}
+
+.vof-photo-missing-text {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* "Changes were saved" under the information card's header. */
+.vof-info-note-success {
+  color: var(--color-success);
+}
+
+/* Edit form: which fields the backend saves. */
+.vofe-api-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.vofe-input:disabled,
+.vofe-price:has(.vofe-price-input:disabled) {
+  background: var(--color-background-secondary);
+  cursor: not-allowed;
+}
+
+.vofe-price-input:disabled {
+  background: transparent;
+  cursor: not-allowed;
+}
+
+.vofe-save:disabled,
+.vofe-cancel:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.vofe-save-error {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--color-error);
+}
+
+/* Photos view: what the backend supports, and upload results. */
+.vofp-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 24px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.vofp-messages {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--color-success);
+}
+
+.vofp-message-error {
+  color: var(--color-error);
+}
+
+.vofp-upload:disabled {
+  cursor: progress;
+}

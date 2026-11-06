@@ -276,3 +276,33 @@ input[type='date'].esm-input-editable {
     gap: 12px;
   }
 }
+
+/* Why the last save did not happen (API mode). */
+.esm-error {
+  margin-block-start: 28px;
+  padding: 12px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-error);
+}
+
+.esm-error p {
+  margin: 0;
+}
+
+.esm-error ul {
+  margin: 4px 0 0;
+  padding-inline-start: 18px;
+}
+
+.esm-error + .esm-footer {
+  margin-block-start: 28px;
+}
+
+.esm-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

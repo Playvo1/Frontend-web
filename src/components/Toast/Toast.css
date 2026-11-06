@@ -1,0 +1,74 @@
+/*
+ * Dashboard toast (ToastHost): navy message at the bottom center, above the
+ * page. Logical properties so it works in RTL and LTR.
+ */
+.pv-toast-region {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: 24px;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pv-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 480px;
+  padding-block: 12px;
+  padding-inline: 16px 12px;
+  border-radius: 10px;
+  background: var(--color-navy);
+  color: var(--color-white);
+  box-shadow: 0 8px 24px rgb(1 33 61 / 24%);
+  pointer-events: auto;
+  animation: pv-toast-in 160ms ease-out;
+}
+
+.pv-toast-icon {
+  flex-shrink: 0;
+  color: var(--color-orange);
+}
+
+.pv-toast-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.pv-toast-close {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+}
+
+.pv-toast-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pv-toast-close:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+@keyframes pv-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv-toast {
+    animation: none;
+  }
+}

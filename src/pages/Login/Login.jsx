@@ -6,6 +6,7 @@ import AuthLayout from '../../components/AuthLayout/AuthLayout.jsx'
 import Button from '../../components/Button/Button.jsx'
 import Input from '../../components/Input/Input.jsx'
 import LanguageSwitcher from '../../components/LanguageSwitcher/LanguageSwitcher.jsx'
+import { ROLES, ROLE_FORGOT_PASSWORD, ROLE_LOGIN } from '../../constants/roles.js'
 import { useAuth } from '../../context/useAuth.js'
 import { AUTH_ERRORS } from '../../services/authService.js'
 import { isValidEmail } from '../../utils/validation.js'
@@ -19,10 +20,24 @@ import './Login.css'
 // panel + hero panel) with the login form as its content.
 //
 // Notes on scope:
-// - "Forgot password?" opens /forgot-password.
+// - "Forgot password?" opens /forgot-password (/admin/forgot-password
+//   from the Admin login).
 // - Authentication goes through AuthProvider -> authService, which is a
 //   MOCK for now (no Laravel backend yet). After a successful login,
 //   GuestRoute redirects to the user's role dashboard.
+//
+// Each role has its own login page with this same form: /login (Venue
+// Owner, the default) and /admin/login (AdminLogin.jsx), set through props:
+// - requiredRole: the only role accepted here; another role is refused with
+//   a message and no session is kept (AuthProvider).
+// - subtitleKey / noteKey: the subtitle, and a note under the button.
+// - hero: the hero text block (see AuthLayout).
+// - className: extra class on the content column (page-specific styles).
+// - fieldErrorKeys: page-specific texts for the field errors
+//   ({ 'login.errors.emailRequired': '...' }); others keep their key.
+// - formErrorKeys: the same for the form-level error (failed login).
+// - formErrorAtTop: show that error above the fields (Admin design) instead
+//   of above the button.
 
 // Maps AuthError codes from authService to translation keys.
 const AUTH_ERROR_KEYS = {
@@ -30,6 +45,12 @@ const AUTH_ERROR_KEYS = {
   [AUTH_ERRORS.ACCOUNT_LOCKED]: 'login.errors.accountLocked',
   [AUTH_ERRORS.ACCOUNT_INACTIVE]: 'login.errors.accountInactive',
   [AUTH_ERRORS.ROLE_NOT_ALLOWED]: 'login.errors.roleNotAllowed',
+}
+
+// ROLE_MISMATCH: the account belongs to the other login page.
+const ROLE_MISMATCH_KEYS = {
+  [ROLES.ADMIN]: 'adminLogin.errors.notAdmin',
+  [ROLES.VENUE_OWNER]: 'login.errors.notVenueOwner',
 }
 
 // Returns translation keys (not text) so messages re-translate instantly if
@@ -47,7 +68,16 @@ function validate({ email, password }) {
   return errors
 }
 
-function Login() {
+function Login({
+  requiredRole = ROLES.VENUE_OWNER,
+  subtitleKey = 'login.welcomeSubtitle',
+  noteKey,
+  hero,
+  className = '',
+  fieldErrorKeys = {},
+  formErrorKeys = {},
+  formErrorAtTop = false,
+}) {
   const { t } = useTranslation()
   const { login } = useAuth()
 
@@ -82,17 +112,26 @@ function Login() {
 
     setIsSubmitting(true)
     try {
-      await login({ email: email.trim(), password })
+      await login({ email: email.trim(), password }, { requiredRole })
       // No navigate() here: GuestRoute sees the new session and redirects.
     } catch (error) {
-      setFormError(AUTH_ERROR_KEYS[error?.code] ?? 'login.errors.generic')
+      const errorKey =
+        error?.code === AUTH_ERRORS.ROLE_MISMATCH ? ROLE_MISMATCH_KEYS[requiredRole] : AUTH_ERROR_KEYS[error?.code]
+      setFormError(errorKey ?? 'login.errors.generic')
       setIsSubmitting(false)
     }
   }
 
+  // Failed login (wrong credentials, other role, server/network error).
+  const formErrorMessage = formError && (
+    <p className="login-form-error" role="alert">
+      {t(formErrorKeys[formError] ?? formError)}
+    </p>
+  )
+
   return (
-    <AuthLayout>
-      <div className="login-form-content">
+    <AuthLayout hero={hero}>
+      <div className={`login-form-content ${className}`.trim()}>
         <LanguageSwitcher />
 
         <h2 className="login-welcome-title">{t('login.welcomeTitle')}</h2>
@@ -101,10 +140,18 @@ function Login() {
           <span className="login-wordmark-navy">PLAY</span>
           <span className="login-wordmark-orange">VO</span>
         </p>
-        <p className="login-welcome-subtitle">{t('login.welcomeSubtitle')}</p>
+        <p className="login-welcome-subtitle">{t(subtitleKey)}</p>
 
         {/* noValidate: validation messages are our own translated ones. */}
-        <form className="login-form" onSubmit={handleSubmit} noValidate>
+        {/* login-form-invalid: some field shows an error (page styles may
+            tighten the spacing then). */}
+        <form
+          className={`login-form ${fieldErrors.email || fieldErrors.password ? 'login-form-invalid' : ''}`.trim()}
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          {formErrorAtTop && formErrorMessage}
+
           <Input
             icon={Mail}
             type="email"
@@ -114,7 +161,7 @@ function Login() {
             placeholder={t('login.emailPlaceholder')}
             autoComplete="email"
             disabled={isSubmitting}
-            error={fieldErrors.email && t(fieldErrors.email)}
+            error={fieldErrors.email && t(fieldErrorKeys[fieldErrors.email] ?? fieldErrors.email)}
           />
           <Input
             icon={Key}
@@ -125,22 +172,26 @@ function Login() {
             placeholder={t('login.passwordPlaceholder')}
             autoComplete="current-password"
             disabled={isSubmitting}
-            error={fieldErrors.password && t(fieldErrors.password)}
+            error={fieldErrors.password && t(fieldErrorKeys[fieldErrors.password] ?? fieldErrors.password)}
           />
 
-          <Link to="/forgot-password" className="login-forgot-password">
+          {/* This role's recovery page; the later steps return to this login
+              page (route state). */}
+          <Link
+            to={ROLE_FORGOT_PASSWORD[requiredRole]}
+            state={{ loginPath: ROLE_LOGIN[requiredRole] }}
+            className="login-forgot-password"
+          >
             {t('login.forgotPassword')}
           </Link>
 
-          {formError && (
-            <p className="login-form-error" role="alert">
-              {t(formError)}
-            </p>
-          )}
+          {!formErrorAtTop && formErrorMessage}
 
           <Button type="submit" fullWidth disabled={isSubmitting} aria-busy={isSubmitting}>
             {isSubmitting ? t('login.submitting') : t('login.submit')}
           </Button>
+
+          {noteKey && <p className="login-note">{t(noteKey)}</p>}
         </form>
       </div>
     </AuthLayout>

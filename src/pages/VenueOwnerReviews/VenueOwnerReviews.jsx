@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ArrowRight, CircleAlert, Star, WifiOff } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CircleAlert, Star, User, WifiOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.jsx'
+import { IS_API_ENABLED } from '../../config/api.js'
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
 import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
+import { FACILITY_MULTIPLE, FACILITY_NONE } from '../../services/facilityService.js'
 import { getVenueOwnerReviews } from '../../services/reviewsService.js'
-import { isConnectionFailure } from '../../utils/requestErrors.js'
+import { isConnectionFailure, isNotConnected } from '../../utils/requestErrors.js'
 import { formatDate, numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import emptyIllustration from '../../assets/empty-state-illustration.svg'
 import '../../styles/skeleton.css'
@@ -24,7 +26,14 @@ import './VenueOwnerReviews.css'
 // and card layout with placeholder bars (no text), so nothing jumps when the
 // data arrives. Loaded data then shows the reviews, or the empty state.
 //
-// Data comes from reviewsService (MOCK for now — see that file).
+// Data comes from reviewsService: mock data in demo mode; in API mode the
+// owner's venue ratings (GET /venue_owner/owner/venues/{id}/ratings, see
+// that file): average, total, per-star counts and each review's player
+// name. A review without a player name is labelled with its real booking
+// (linked to the booking details page); without per-star counts the summary
+// says the star breakdown is not provided instead of drawing bars. The list
+// holds the loaded pages (10 per page); the footer button loads the next one.
+// No venue / more than one venue linked: a notice, as on the other pages.
 
 const STAR_LEVELS = [5, 4, 3, 2, 1]
 
@@ -68,15 +77,22 @@ function VenueOwnerReviews() {
   const { t, i18n } = useTranslation()
   const [venue, setVenue] = useState(null)
   const [data, setData] = useState(null)
-  const { logout } = useAuth()
+  const { token, logout } = useAuth()
   // null (no error) | 'network' (no connection) | 'server' (any other
-  // failure) — same handling as the Bookings page.
+  // failure) — same handling as the Bookings page — | 'unavailable' (no
+  // backend source wired; shown without "Try again") | 'noVenue' /
+  // 'multipleVenues' (API mode: no venue, or more than one, linked to the
+  // account; shown without "Try again").
   const [errorKind, setErrorKind] = useState(null)
   const hasError = errorKind !== null
   // Incremented by "Try again" to run the reviews request once more.
   const [attempt, setAttempt] = useState(0)
   // "View all reviews" pressed: every loaded review is listed.
   const [showAllReviews, setShowAllReviews] = useState(false)
+  // API mode, "More reviews": the next page is loading / failed to load
+  // (null | 'network' | 'server'; the loaded reviews stay on screen).
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [moreError, setMoreError] = useState(null)
 
   // Sidebar venue card / top-bar subtitle: same source as the other
   // Venue Owner pages.
@@ -94,7 +110,7 @@ function VenueOwnerReviews() {
   // (as on the Bookings page).
   useEffect(() => {
     let isActive = true
-    getVenueOwnerReviews()
+    getVenueOwnerReviews(token)
       .then((reviewsData) => isActive && setData(reviewsData))
       .catch((error) => {
         if (!isActive) return
@@ -102,12 +118,25 @@ function VenueOwnerReviews() {
           logout()
           return
         }
+        if (error?.code === FACILITY_NONE) {
+          setErrorKind('noVenue')
+          return
+        }
+        if (error?.code === FACILITY_MULTIPLE) {
+          setErrorKind('multipleVenues')
+          return
+        }
+        // API mode, no backend endpoint wired: "not available", not an error.
+        if (isNotConnected(error)) {
+          setErrorKind('unavailable')
+          return
+        }
         setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
       })
     return () => {
       isActive = false
     }
-  }, [attempt, logout])
+  }, [attempt, logout, token])
 
   // "Try again": back to the loading state and one new request. The error
   // block (and its button) is replaced by the loading state right away, so
@@ -115,8 +144,36 @@ function VenueOwnerReviews() {
   const retry = () => {
     setErrorKind(null)
     setShowAllReviews(false)
+    setMoreError(null)
     setData(null)
     setAttempt((count) => count + 1)
+  }
+
+  // API mode: load the next page of reviews and add it under the list.
+  const loadMore = () => {
+    if (!data || isLoadingMore) return
+    setIsLoadingMore(true)
+    setMoreError(null)
+    getVenueOwnerReviews(token, data.page.current + 1)
+      .then((next) => {
+        setData((current) => ({
+          summary: next.summary,
+          // A review already listed (a new one moved the pages) is not repeated.
+          reviews: [
+            ...current.reviews,
+            ...next.reviews.filter((review) => !current.reviews.some((item) => item.id === review.id)),
+          ],
+          page: next.page,
+        }))
+      })
+      .catch((error) => {
+        if (error?.status === 401) {
+          logout()
+          return
+        }
+        setMoreError(isConnectionFailure(error) ? 'network' : 'server')
+      })
+      .finally(() => setIsLoadingMore(false))
   }
 
   const layoutVenue = venue
@@ -125,15 +182,21 @@ function VenueOwnerReviews() {
 
   const summary = data?.summary
   const reviews = data?.reviews ?? []
-  const visibleReviews = showAllReviews ? reviews : reviews.slice(0, INITIAL_VISIBLE_REVIEWS)
+  // API mode lists every loaded review (the pages are the backend's); demo
+  // mode keeps the design's first 8 and "View all reviews".
+  const visibleReviews = IS_API_ENABLED || showAllReviews ? reviews : reviews.slice(0, INITIAL_VISIBLE_REVIEWS)
+  const canLoadMore = IS_API_ENABLED && Boolean(data) && data.page.current < data.page.last
   // Loaded reviews that are not on screen; the button shows only while some
   // exist, and pressing it lists them all (none hidden → no button).
   const hiddenReviewsCount = reviews.length - visibleReviews.length
   const canShowAllReviews = hiddenReviewsCount > 0
-  const maxCount = summary ? Math.max(...STAR_LEVELS.map((level) => summary.distribution[level] ?? 0), 1) : 1
+  const distribution = summary?.distribution ?? null
+  const maxCount = distribution ? Math.max(...STAR_LEVELS.map((level) => distribution[level] ?? 0), 1) : 1
+  const average = summary?.avg_rating ?? null
   const ratingLabel = (value) => t('venueOwnerReviews.ratingLabel', { value })
   const isLoading = data === null && !hasError
   const isEmpty = Boolean(data) && reviews.length === 0
+  const isNotice = errorKind === 'unavailable' || errorKind === 'noVenue' || errorKind === 'multipleVenues'
   const ForwardIcon = i18n.dir() === 'rtl' ? ArrowLeft : ArrowRight
 
   // Error state (design): centered like the empty state, no page title.
@@ -145,7 +208,14 @@ function VenueOwnerReviews() {
         venue={layoutVenue}
         roleLabelKey="dashboardLayout.roles.venueOwner"
       >
-        <section className="vor-empty-state" role="alert" aria-labelledby="vor-error-title">
+        <section
+          className="vor-empty-state"
+          role={isNotice ? 'status' : 'alert'}
+          aria-labelledby="vor-error-title"
+        >
+          {(errorKind === 'noVenue' || errorKind === 'multipleVenues') && (
+            <img className="vor-empty-illustration" src={emptyIllustration} alt="" />
+          )}
           {errorKind === 'network' && (
             <WifiOff className="vor-error-icon" size={100} strokeWidth={2.25} aria-hidden="true" />
           )}
@@ -153,18 +223,23 @@ function VenueOwnerReviews() {
             {errorKind === 'server' && (
               <CircleAlert className="vor-error-alert" size={20} aria-hidden="true" />
             )}
-            {t('venueOwnerReviews.errorState.title')}
+            {t(isNotice ? 'venueOwnerReviews.unavailable' : 'venueOwnerReviews.errorState.title')}
           </h1>
           <p className="vor-empty-text">
             {t(
-              errorKind === 'network'
-                ? 'venueOwnerReviews.errorState.networkMessage'
-                : 'venueOwnerReviews.errorState.serverMessage',
+              {
+                unavailable: 'common.notConnected',
+                noVenue: 'venueOwnerFacility.noVenue',
+                multipleVenues: 'venueOwnerFacility.multipleVenues',
+                network: 'venueOwnerReviews.errorState.networkMessage',
+              }[errorKind] ?? 'venueOwnerReviews.errorState.serverMessage',
             )}
           </p>
-          <button type="button" className="vor-empty-button" onClick={retry}>
-            {t('venueOwnerReviews.errorState.retry')}
-          </button>
+          {!isNotice && (
+            <button type="button" className="vor-empty-button" onClick={retry}>
+              {t('venueOwnerReviews.errorState.retry')}
+            </button>
+          )}
         </section>
       </DashboardLayout>
     )
@@ -243,8 +318,12 @@ function VenueOwnerReviews() {
         <div className="vor-grid">
           {/* Start side: rating summary. */}
           <section className="vor-card vor-summary" aria-label={t('venueOwnerReviews.summaryLabel')}>
-            <p className="vor-average">{summary.avg_rating.toFixed(1)}</p>
-            <Stars filled={Math.floor(summary.avg_rating)} size={18} label={ratingLabel(summary.avg_rating)} />
+            <p className="vor-average">{average === null ? '—' : average.toFixed(1)}</p>
+            <Stars
+              filled={average === null ? 0 : Math.floor(average)}
+              size={18}
+              label={average === null ? t('venueOwnerReviews.noAverage') : ratingLabel(average)}
+            />
             <p className="vor-total">
               {t('venueOwnerReviews.reviewsCount', {
                 count: summary.total,
@@ -252,26 +331,31 @@ function VenueOwnerReviews() {
               })}
             </p>
 
-            <ul className="vor-bars">
-              {STAR_LEVELS.map((level) => {
-                const count = summary.distribution[level] ?? 0
-                return (
-                  <li key={level} className={`vor-bar-row vor-bar-row-${level}`}>
-                    <span className="vor-bar-level">
-                      {level}
-                      <Star size={11} className="vor-star vor-star-filled" aria-hidden="true" />
-                    </span>
-                    <span className="vor-bar-track" aria-hidden="true">
-                      <span className="vor-bar-fill" style={{ width: `${(count / maxCount) * 100}%` }} />
-                    </span>
-                    <span className="vor-bar-count">
-                      <span className="vor-visually-hidden">{t('venueOwnerReviews.starsLevel', { count: level })}: </span>
-                      {numberFormat.format(count)}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
+            {/* Per-star bars: only with per-star counts. */}
+            {distribution ? (
+              <ul className="vor-bars">
+                {STAR_LEVELS.map((level) => {
+                  const count = distribution[level] ?? 0
+                  return (
+                    <li key={level} className={`vor-bar-row vor-bar-row-${level}`}>
+                      <span className="vor-bar-level">
+                        {level}
+                        <Star size={11} className="vor-star vor-star-filled" aria-hidden="true" />
+                      </span>
+                      <span className="vor-bar-track" aria-hidden="true">
+                        <span className="vor-bar-fill" style={{ width: `${(count / maxCount) * 100}%` }} />
+                      </span>
+                      <span className="vor-bar-count">
+                        <span className="vor-visually-hidden">{t('venueOwnerReviews.starsLevel', { count: level })}: </span>
+                        {numberFormat.format(count)}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <p className="vor-summary-note">{t('venueOwnerReviews.distributionUnavailable')}</p>
+            )}
           </section>
 
           {/* End side: all reviews. */}
@@ -291,29 +375,60 @@ function VenueOwnerReviews() {
                     style={{ background: AVATAR_COLORS[index % AVATAR_COLORS.length] }}
                     aria-hidden="true"
                   >
-                    {initials(review.player_name)}
+                    {review.player_name ? initials(review.player_name) : <User size={16} />}
                   </span>
                   <div className="vor-review-body">
                     <div className="vor-review-top">
                       <p className="vor-review-name">
-                        <bdi>{review.player_name}</bdi>
+                        {review.player_name ? (
+                          <bdi>{review.player_name}</bdi>
+                        ) : review.booking_id !== null ? (
+                          <Link className="vor-review-booking" to={`/venue-owner/bookings/${review.booking_id}`}>
+                            {t('venueOwnerReviews.bookingRef')} <bdi dir="ltr">#PV-{review.booking_id}</bdi>
+                          </Link>
+                        ) : (
+                          <span>{t('venueOwnerReviews.unknownPlayer')}</span>
+                        )}
                         <Stars filled={review.rating} size={12} label={ratingLabel(review.rating)} />
                       </p>
                       <time className="vor-review-date" dateTime={review.created_at}>
                         <bdi>{formatDate(review.created_at)}</bdi>
                       </time>
                     </div>
-                    {review.comment && (
+                    {review.comment ? (
                       <p className="vor-review-comment" dir="auto">
                         {review.comment}
                       </p>
+                    ) : (
+                      <p className="vor-review-comment vor-review-no-comment">{t('venueOwnerReviews.noComment')}</p>
                     )}
                   </div>
                 </li>
               ))}
             </ul>
 
-            {canShowAllReviews ? (
+            {canLoadMore ? (
+              <div className="vor-list-footer vor-load-more">
+                {moreError && (
+                  <p className="vor-load-more-error" role="alert">
+                    {t(
+                      moreError === 'network'
+                        ? 'venueOwnerReviews.errorState.networkMessage'
+                        : 'venueOwnerReviews.errorState.serverMessage',
+                    )}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  className="vor-show-all"
+                  onClick={loadMore}
+                  disabled={isLoadingMore}
+                  aria-busy={isLoadingMore || undefined}
+                >
+                  {t(isLoadingMore ? 'venueOwnerReviews.loadingMore' : moreError ? 'venueOwnerReviews.errorState.retry' : 'venueOwnerReviews.loadMore')}
+                </button>
+              </div>
+            ) : canShowAllReviews ? (
               <button type="button" className="vor-list-footer vor-show-all" onClick={() => setShowAllReviews(true)}>
                 {t('venueOwnerReviews.showAll')}
               </button>

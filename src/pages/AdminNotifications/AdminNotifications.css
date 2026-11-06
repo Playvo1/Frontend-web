@@ -1,0 +1,431 @@
+/*
+ * Admin "Notifications" page (design reference). Logical properties
+ * (inline-start / end) so the same rules work in RTL and LTR. Gray tints
+ * are the same values as the Venue Owner notifications page.
+ */
+
+.adn-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-block-end: 24px;
+}
+
+.adn-heading {
+  min-width: 0;
+}
+
+.adn-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.adn-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+/* "2 unread" pill next to the title. */
+.adn-unread-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff1ea; /* light tint of the brand orange */
+  color: var(--color-orange);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.adn-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* "Mark all as read" (design: orange button). */
+.adn-mark-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-orange);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.adn-mark-all:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* All / Unread / Read — segmented control. */
+.adn-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-block-end: 16px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #e9eef2; /* gray track */
+}
+
+.adn-tab {
+  min-width: 96px;
+  padding: 6px 20px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.adn-tab-active {
+  background: var(--color-white);
+  font-weight: 600;
+  color: var(--color-navy);
+  box-shadow: 0 1px 2px rgb(1 33 61 / 6%);
+}
+
+/* Tabs are links (one page per tab). */
+a.adn-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+}
+
+/* Unread count in the tab (design: orange). */
+.adn-tab-count {
+  color: var(--color-orange);
+}
+
+/* "Read" design: the selected tab has a light border. */
+.adn-tab-active-read {
+  box-shadow: inset 0 0 0 1px #d4d9de, 0 1px 2px rgb(1 33 61 / 6%);
+}
+
+.adn-mark-error {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+/* ---- Cards ---- */
+.adn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adn-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+}
+
+/* Unread (design): navy border and a soft shadow. */
+.adn-card-unread {
+  border-color: var(--color-navy);
+  box-shadow: 0 4px 12px rgb(1 33 61 / 10%);
+  cursor: pointer;
+}
+
+/* "Mark as read" request running for this card. */
+.adn-card-pending {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.adn-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #edf2f6; /* read: gray tile */
+  color: var(--color-text-secondary);
+}
+
+.adn-icon-unread {
+  background: #fff1ea;
+  color: var(--color-orange);
+}
+
+.adn-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.adn-card-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.adn-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-orange);
+}
+
+.adn-card-body {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.adn-card-time {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #7a8793; /* Gray 500 */
+}
+
+/* Action: navy for unread notifications, outlined for read ones. */
+.adn-action {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--color-navy);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.adn-action-primary {
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.adn-action-secondary {
+  border-color: var(--color-input-border);
+  background: var(--color-white);
+  color: var(--color-navy);
+}
+
+.adn-mark-all:focus-visible,
+.adn-tab:focus-visible,
+.adn-action:focus-visible,
+.adn-card:focus-visible,
+.adn-error-retry:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+/* ---- Loading placeholders ---- */
+/* Placeholder card: same box as a notification card (so nothing moves when
+   the list arrives), not interactive. The shimmer stops for users who ask
+   for reduced motion (skeleton.css). */
+.adn-card-skeleton {
+  min-height: 110px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.adn-skeleton {
+  display: block;
+  border-radius: 6px;
+  background-color: #eef2f5;
+}
+
+.adn-skeleton-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.adn-skeleton-title {
+  width: 24%;
+  height: 12px;
+}
+
+.adn-skeleton-body {
+  width: 64%;
+  height: 10px;
+  margin-block-start: 10px;
+}
+
+.adn-skeleton-time {
+  width: 14%;
+  height: 8px;
+  margin-block-start: 10px;
+}
+
+/* ---- Error ---- */
+.adn-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 88px 16px;
+  text-align: center;
+}
+
+.adn-error-icon {
+  margin-block-end: 12px;
+  color: #a3adb8;
+}
+
+.adn-error-icon-server {
+  color: var(--color-error);
+}
+
+.adn-error-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.adn-error-text {
+  max-width: 420px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #7a8793;
+}
+
+.adn-error-retry {
+  margin-block-start: 16px;
+  min-width: 160px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-navy);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---- Empty ---- */
+.adn-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 72px 24px 88px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+  text-align: center;
+}
+
+.adn-empty-illustration {
+  width: 200px;
+  max-width: 60%;
+  height: auto;
+  margin-block-end: 20px;
+}
+
+.adn-empty-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.adn-empty-text {
+  max-width: 440px;
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.adn-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Small screens ---- */
+@media (max-width: 600px) {
+  .adn-title {
+    font-size: 20px;
+  }
+
+  .adn-mark-all {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .adn-tabs {
+    display: flex;
+  }
+
+  .adn-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  .adn-card {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .adn-content {
+    flex-basis: calc(100% - 54px);
+  }
+
+  /* Cards here wrap their action button onto a second row. */
+  .adn-card-skeleton {
+    min-height: 148px;
+  }
+
+  .adn-action {
+    margin-inline-start: auto;
+  }
+
+  .adn-error-state {
+    padding-block: 64px;
+  }
+
+  .adn-empty-card {
+    padding: 48px 16px 56px;
+  }
+
+  .adn-empty-illustration {
+    width: 160px;
+  }
+}
