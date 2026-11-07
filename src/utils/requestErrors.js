@@ -9,3 +9,19 @@ export function isConnectionFailure(error) {
   const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false
   return error?.status === 0 || isOffline
 }
+
+// API mode (VITE_API_BASE_URL set): a service whose data has no backend
+// endpoint wired yet rejects with this code instead of returning the demo
+// (mock) data, so demo values are never shown as real ones. Pages show their
+// "not available" state for it (no retry: retrying cannot help).
+export const NOT_CONNECTED = 'NOT_CONNECTED'
+
+export function notConnectedError(what) {
+  const error = new Error(`${what} is not connected to the backend yet.`)
+  error.code = NOT_CONNECTED
+  return error
+}
+
+export function isNotConnected(error) {
+  return error?.code === NOT_CONNECTED
+}

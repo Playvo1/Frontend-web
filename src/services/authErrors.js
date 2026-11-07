@@ -7,6 +7,9 @@ export const AUTH_ERRORS = {
   // Backend 403 on login: account not active, or email not verified.
   ACCOUNT_INACTIVE: 'ACCOUNT_INACTIVE',
   ROLE_NOT_ALLOWED: 'ROLE_NOT_ALLOWED',
+  // Valid web account, but not the role this login page is for (e.g. a
+  // Venue Owner on /admin/login). The session is not kept.
+  ROLE_MISMATCH: 'ROLE_MISMATCH',
   INVALID_RESET_CODE: 'INVALID_RESET_CODE',
   // Backend 422 with field errors (see AuthError.fieldErrors).
   VALIDATION_ERROR: 'VALIDATION_ERROR',

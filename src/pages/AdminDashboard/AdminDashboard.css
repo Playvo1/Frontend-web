@@ -1,0 +1,601 @@
+/*
+ * Admin dashboard (/admin/dashboard). Sizes read off the design and scaled
+ * to the 1440px frame (sidebar 256px). Colors use the tokens in index.css;
+ * the navy card's muted text, lines and tiles are white at reduced opacity.
+ */
+
+.ad-page-header {
+  margin-block-end: 28px;
+}
+
+.ad-page-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.ad-page-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* ------------------------------------------------------------------ */
+/* "Platform performance" navy card                                     */
+/* ------------------------------------------------------------------ */
+
+.ad-hero {
+  position: relative;
+  overflow: hidden;
+  margin-block-end: 28px;
+  padding: 32px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0a3156 0%, var(--color-navy) 100%);
+  box-shadow: 0 8px 24px rgba(1, 33, 61, 0.18);
+  color: var(--color-white);
+}
+
+/* Faint ring at the card's end side (design). */
+.ad-hero::before {
+  content: '';
+  position: absolute;
+  inset-inline-end: 22%;
+  top: -60%;
+  width: 360px;
+  height: 360px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ad-hero-header {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 28px;
+}
+
+.ad-hero-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.ad-hero-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ad-hero-updated {
+  flex-shrink: 0;
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ad-hero-stats {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 64px;
+}
+
+.ad-stat {
+  min-width: 0;
+  min-height: 128px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ad-stat-highlight {
+  border-color: var(--color-orange);
+  background: rgba(252, 75, 1, 0.06);
+}
+
+.ad-stat-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+}
+
+.ad-stat-highlight .ad-stat-icon {
+  background: var(--color-orange);
+  box-shadow: 0 6px 16px rgba(252, 75, 1, 0.35);
+}
+
+.ad-stat-text {
+  min-width: 0;
+}
+
+.ad-stat-label {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ad-stat-value {
+  margin: 8px 0 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ------------------------------------------------------------------ */
+/* Lists: most booked venues, most active cities                       */
+/* ------------------------------------------------------------------ */
+
+.ad-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.ad-card {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-white);
+  box-shadow: 0 2px 10px rgba(1, 33, 61, 0.06);
+}
+
+.ad-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 20px;
+}
+
+/* Venues card: the header is separated from the list by a line. */
+.ad-card-header-divided {
+  margin-inline: -24px;
+  padding: 4px 24px 24px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.ad-card-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-navy);
+}
+
+.ad-card-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ad-card-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-block-start: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-orange);
+}
+
+.ad-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Empty data (design): illustration, title and message, centered. The
+   full-size version fills the single card shown when the response has
+   nothing at all; the compact one sits inside a list card. */
+.ad-card-empty,
+.ad-card-state {
+  min-height: 576px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 400px;
+  margin-inline: auto;
+  padding-block: 24px;
+  text-align: center;
+}
+
+.ad-empty-illustration {
+  display: block;
+  width: 212px;
+  max-width: 100%;
+  height: auto;
+  margin-block-end: 40px;
+}
+
+.ad-empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-navy);
+}
+
+.ad-empty-text {
+  margin: 16px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.ad-empty-compact .ad-empty-illustration {
+  width: 140px;
+  margin-block-end: 20px;
+}
+
+/* Rank badge: the first place is orange, the others light gray. */
+.ad-rank {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--color-background-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.ad-rank-first {
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+.ad-venue {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 76px;
+  padding-block: 12px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.ad-venue:last-child {
+  border-block-end: none;
+  padding-block-end: 0;
+}
+
+.ad-venue-image {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.ad-venue-image-empty {
+  display: grid;
+  place-items: center;
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+}
+
+.ad-venue-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ad-venue-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+
+.ad-venue-city {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ad-venue-count {
+  flex-shrink: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: end;
+}
+
+.ad-venue-count-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.ad-venue-count-unit {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.ad-city + .ad-city {
+  margin-block-start: 20px;
+}
+
+.ad-city-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ad-city-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.ad-city-count {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* Bar from the start side (right in RTL), share of the busiest city. */
+.ad-city-track {
+  display: flex;
+  height: 6px;
+  margin-block-start: 10px;
+  border-radius: 999px;
+  background: var(--color-background-secondary);
+  overflow: hidden;
+}
+
+.ad-city-bar {
+  display: block;
+  border-radius: 999px;
+  background: var(--color-navy);
+}
+
+/* ------------------------------------------------------------------ */
+/* Loading placeholders (loading design)                               */
+/* ------------------------------------------------------------------ */
+
+/* Tile: icon at the top start corner, the label bar beside it and the
+   value bar under the label, set a little further in. */
+.ad-stat-skeleton {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-rows: 44px auto;
+  align-items: center;
+  column-gap: 24px;
+  row-gap: 14px;
+  padding: 22px 28px 20px;
+}
+
+.ad-skeleton {
+  display: block;
+  border-radius: 4px;
+}
+
+/* Placeholders on the navy card: white at 48% opacity (design). */
+.ad-skeleton-dark {
+  background-color: rgba(255, 255, 255, 0.48);
+}
+
+.ad-skeleton-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.ad-skeleton-label {
+  width: 112px;
+  max-width: 100%;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.ad-skeleton-value {
+  grid-column: 2;
+  width: 92px;
+  max-width: calc(100% - 20px);
+  height: 32px;
+  margin-inline-start: 20px;
+  border-radius: 8px;
+}
+
+/* List cards: one light block filling the card. */
+.ad-skeleton-panel {
+  display: block;
+  height: 396px;
+  border-radius: 12px;
+  background-color: var(--color-background-secondary);
+}
+
+/* ------------------------------------------------------------------ */
+/* Error state (error design): icon, title, message and "Retry" in one */
+/* card under the navy card's header — same card as the empty state.  */
+/* ------------------------------------------------------------------ */
+
+.ad-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 420px;
+  margin-inline: auto;
+  padding-block: 24px;
+  text-align: center;
+}
+
+.ad-error-icon {
+  margin-block-end: 36px;
+  color: #a3adb8; /* Gray 400, as on the Venue Owner error states */
+}
+
+.ad-error-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-navy);
+}
+
+.ad-error-text {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.ad-error-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 172px;
+  height: 44px;
+  margin-block-start: 20px;
+  padding-inline: 24px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #01213d 0%, #023d70 100%);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+  cursor: pointer;
+}
+
+.ad-error-button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 1280px) {
+  .ad-hero-stats {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .ad-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 860px) {
+  .ad-hero-stats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .ad-stat {
+    min-height: 96px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ad-page-header {
+    margin-block-end: 20px;
+  }
+
+  .ad-page-title {
+    font-size: 24px;
+  }
+
+  .ad-hero {
+    margin-block-end: 20px;
+    padding: 20px 16px;
+  }
+
+  .ad-hero-header {
+    flex-direction: column;
+    gap: 8px;
+    margin-block-end: 20px;
+  }
+
+  .ad-hero-title {
+    font-size: 20px;
+  }
+
+  .ad-stat {
+    padding: 16px;
+  }
+
+  .ad-stat-value {
+    font-size: 26px;
+  }
+
+  .ad-card {
+    padding: 16px;
+  }
+
+  .ad-card-header-divided {
+    margin-inline: -16px;
+    padding: 0 16px 16px;
+  }
+
+  .ad-venue {
+    gap: 12px;
+  }
+
+  .ad-venue-image {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ad-stat-skeleton {
+    padding: 16px;
+  }
+
+  .ad-skeleton-panel {
+    height: 280px;
+  }
+
+  .ad-card-empty,
+  .ad-card-state {
+    min-height: 420px;
+  }
+
+  .ad-error-icon {
+    width: 80px;
+    height: 80px;
+    margin-block-end: 28px;
+  }
+
+  .ad-empty-illustration {
+    width: 170px;
+    margin-block-end: 28px;
+  }
+}

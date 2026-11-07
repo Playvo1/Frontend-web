@@ -2,9 +2,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, CirclePlus, Clock, Plus, SquarePen, Trash2, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout.jsx'
+import { showToast } from '../../components/Toast/toast.js'
+import { IS_API_ENABLED } from '../../config/api.js'
 import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
+import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
-import { getVenueOwnerSlots } from '../../services/slotsService.js'
+import {
+  createVenueOwnerSlot,
+  deleteVenueOwnerSlot,
+  getSlotCreation,
+  getVenueOwnerDaySlots,
+  getVenueOwnerSlots,
+  updateVenueOwnerSlot,
+} from '../../services/slotsService.js'
+import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import DeleteSlotModal from './DeleteSlotModal.jsx'
 import EditSlotModal from './EditSlotModal.jsx'
@@ -13,15 +24,29 @@ import './VenueOwnerSlots.css'
 
 // Venue Owner schedule (route: /venue-owner/slots), built from the Figma
 // reference: a month calendar (end side) and the selected day's time slots
-// (start side). Data comes from slotsService (MOCK for now — no backend
-// endpoint exists yet). Choosing a day and changing month are local UI
-// only; "Create time slot", "Add", "Edit" and "Delete" have no action until
-// the backend provides the time-slot endpoints.
+// (start side). Data comes from slotsService (see there for the endpoints):
+// - API mode: all of the owner's slots (calendar dots) and, for the
+//   selected day, the backend's date filter (?date=), with its own loading
+//   and error state in the day card. Statuses: available, booked, blocked.
+//   On the backend "blocked" is a slot held by a booking that awaits payment
+//   (BookingController@store; released when it expires or the receipt is
+//   rejected, "booked" once verified) — shown as "Pending payment". Like a
+//   booked slot it cannot be edited (the backend refuses a slot that has a
+//   booking), so it gets the locked note instead of Edit / Delete.
+//   "Edit" saves through PUT, "Create time slot" / "Add" through POST and
+//   "Delete" (after the confirmation dialog) through DELETE; then both lists
+//   are read again from the backend, and a short message confirms a
+//   creation / deletion only after the backend accepted it. Creating needs
+//   the venue's sport (sport_id, from the venue's own data): without exactly
+//   one sport on the venue the create buttons are disabled and the page says
+//   why. A slot with any booking cannot be deleted (409): the dialog says so.
+// - Demo mode: the mock list; the dialogs open but save nothing, and
+//   "Delete" stays disabled (nothing can be deleted).
+// Booked slots cannot be edited (the backend refuses them).
 //
 // While the slots load, the day card and the calendar are shown as
 // placeholder blocks (no text) under the page title, as on the Reviews and
-// Analytics pages. All slots arrive in one request, so choosing another day
-// or month shows the loaded data at once (no new loading state).
+// Analytics pages.
 
 // As in the design, the calendar runs Monday → Sunday, left to right, in
 // both languages.
@@ -67,16 +92,32 @@ function to12Hour(time) {
 
 function VenueOwnerSlots() {
   const { t, i18n } = useTranslation()
+  const { token, logout } = useAuth()
   const isRtl = i18n.dir() === 'rtl'
   const language = i18n.language
+  // All slots (calendar dots), or null while loading.
   const [slots, setSlots] = useState(null)
-  const [hasError, setHasError] = useState(false)
-  // Available slot whose "Edit" dialog is open (UI only, see EditSlotModal).
+  // Loading all slots failed: null | 'network' | 'server'.
+  const [errorKind, setErrorKind] = useState(null)
+  const [attempt, setAttempt] = useState(0)
+  // API mode, selected day: { date, slots } from the date filter, its
+  // loading / error state and a counter to read it again.
+  const [dayData, setDayData] = useState(null)
+  // { key: 'date|attempt', kind } — applies only to that date and attempt.
+  const [dayErrorState, setDayError] = useState(null)
+  const [dayAttempt, setDayAttempt] = useState(0)
+  // Reading the lists again after a save failed (the old lists stay).
+  const [refreshFailed, setRefreshFailed] = useState(false)
+  // API mode: { venueId, sportId } or { reason } (see getSlotCreation).
+  const [creation, setCreation] = useState(null)
+  // Slot whose "Edit" dialog is open.
   const [editingSlot, setEditingSlot] = useState(null)
-  // Available slot whose "Delete" confirmation is open (UI only, see DeleteSlotModal).
+  // Slot whose "Delete" confirmation is open.
   const [deletingSlot, setDeletingSlot] = useState(null)
-  // "Create time slot" dialog (UI only, see EditSlotModal in create mode).
-  const [isCreating, setIsCreating] = useState(false)
+  // "Create time slot" dialog: null (closed) | 'header' ("Create time
+  // slot") | 'day' ("Add" in the selected day's card, where the day and
+  // date are shown emphasized).
+  const [createSource, setCreateSource] = useState(null)
   const [venue, setVenue] = useState(null)
   const [selected, setSelected] = useState(() => toIso(new Date()))
   const [view, setView] = useState(() => {
@@ -84,20 +125,130 @@ function VenueOwnerSlots() {
     return { year: today.getFullYear(), month: today.getMonth() }
   })
   const todayIso = toIso(new Date())
-  const isLoading = slots === null && !hasError
+  const isLoading = slots === null && !errorKind
 
   useEffect(() => {
     let isActive = true
     getVenueOwnerVenue()
       .then((venueData) => isActive && setVenue(venueData))
       .catch(() => {})
-    getVenueOwnerSlots()
-      .then((list) => isActive && setSlots(list))
-      .catch(() => isActive && setHasError(true))
     return () => {
       isActive = false
     }
   }, [])
+
+  // All slots: loading → loaded, or → error ("Try again" runs it again).
+  useEffect(() => {
+    let isActive = true
+    getVenueOwnerSlots(token)
+      .then((list) => isActive && setSlots(list))
+      .catch((error) => {
+        if (!isActive) return
+        if (error?.status === 401) {
+          logout()
+          return
+        }
+        setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
+      })
+    return () => {
+      isActive = false
+    }
+  }, [attempt, token, logout])
+
+  // API mode: the selected day's slots from the backend's date filter.
+  useEffect(() => {
+    if (!IS_API_ENABLED) return undefined
+    let isActive = true
+    const key = `${selected}|${dayAttempt}`
+    getVenueOwnerDaySlots(selected, token)
+      .then((list) => isActive && setDayData({ date: selected, slots: list }))
+      .catch((error) => {
+        if (!isActive) return
+        if (error?.status === 401) {
+          logout()
+          return
+        }
+        setDayError({ key, kind: isConnectionFailure(error) ? 'network' : 'server' })
+      })
+    return () => {
+      isActive = false
+    }
+  }, [selected, dayAttempt, token, logout])
+
+  // API mode: can slots be created (the venue's sport)?
+  useEffect(() => {
+    if (!IS_API_ENABLED) return undefined
+    let isActive = true
+    getSlotCreation(token).then((result) => isActive && setCreation(result))
+    return () => {
+      isActive = false
+    }
+  }, [token])
+
+  const retry = () => {
+    setErrorKind(null)
+    setSlots(null)
+    setAttempt((count) => count + 1)
+  }
+
+  // After a save: read both lists again from the backend.
+  const refresh = async () => {
+    setRefreshFailed(false)
+    setDayAttempt((count) => count + 1)
+    try {
+      setSlots(await getVenueOwnerSlots(token))
+    } catch (error) {
+      if (error?.status === 401) logout()
+      else setRefreshFailed(true)
+    }
+  }
+
+  // Saves; a 401 signs out, other errors go back to the dialog.
+  const save = async (request) => {
+    try {
+      await request()
+    } catch (error) {
+      if (error?.status === 401) logout()
+      throw error
+    }
+  }
+
+  const submitEdit = async (fields) => {
+    await save(() => updateVenueOwnerSlot(editingSlot.id, fields, token))
+    setEditingSlot(null)
+    await refresh()
+  }
+
+  const submitCreate = async (fields) => {
+    await save(() =>
+      createVenueOwnerSlot({ venueId: creation.venueId, sportId: creation.sportId, ...fields }, token),
+    )
+    setCreateSource(null)
+    setSelected(fields.slot_date)
+    showToast(t('venueOwnerSlots.created'))
+    await refresh()
+  }
+
+  // Delete (confirmed in the dialog). Success: close, confirm, read the lists
+  // again. 404 (already gone): the lists are read again so it disappears;
+  // the dialog still says why nothing was deleted.
+  const submitDelete = async () => {
+    try {
+      await save(() => deleteVenueOwnerSlot(deletingSlot.id, token))
+    } catch (error) {
+      if (error?.status === 404) refresh()
+      throw error
+    }
+    setDeletingSlot(null)
+    showToast(t('venueOwnerSlots.deleted'))
+    await refresh()
+  }
+
+  // Create buttons: always in demo mode (dialog only, as before); in API
+  // mode only with the venue's sport. Otherwise the reason is shown.
+  const canCreate = !IS_API_ENABLED || Boolean(creation?.sportId)
+  const createBlockedReason =
+    IS_API_ENABLED && creation && !creation.sportId ? t(`venueOwnerSlots.createUnavailable.${creation.reason}`) : null
 
   // Statuses present on each date, for the calendar dots.
   const statusesByDate = useMemo(() => {
@@ -109,16 +260,21 @@ function VenueOwnerSlots() {
     return map
   }, [slots])
 
-  const daySlots = useMemo(
-    () =>
-      (slots ?? [])
-        .filter((slot) => slot.slot_date === selected)
-        .sort((a, b) => a.start_time.localeCompare(b.start_time)),
-    [slots, selected],
-  )
-  const isEmptyDay = daySlots.length === 0
+  // The selected day's list: the date filter's answer (API mode) or the
+  // loaded list (demo mode).
+  const dayError = dayErrorState?.key === `${selected}|${dayAttempt}` ? dayErrorState.kind : null
+  const isDayLoading = IS_API_ENABLED && !dayError && dayData?.date !== selected
+  const daySlots = useMemo(() => {
+    const list = IS_API_ENABLED
+      ? dayData?.date === selected
+        ? dayData.slots
+        : []
+      : (slots ?? []).filter((slot) => slot.slot_date === selected)
+    return [...list].sort((a, b) => a.start_time.localeCompare(b.start_time))
+  }, [slots, dayData, selected])
+  const isEmptyDay = daySlots.length === 0 && !isDayLoading && !dayError
   const bookedCount = daySlots.filter((slot) => slot.status === 'booked').length
-  const availableCount = daySlots.length - bookedCount
+  const availableCount = daySlots.filter((slot) => slot.status === 'available').length
 
   // Day title in the design's form ("الجمعة، ١٨ سبتمبر ٢٠٢٦"); the month
   // title uses Latin digits ("سبتمبر 2026"), as in the design.
@@ -164,17 +320,38 @@ function VenueOwnerSlots() {
         <header>
           <h1 className="vos-title">{t('venueOwnerSlots.title')}</h1>
           <p className="vos-subtitle">{t('venueOwnerSlots.subtitle')}</p>
+          {createBlockedReason && (
+            <p id="vos-create-note" className="vos-create-note">
+              {createBlockedReason}
+            </p>
+          )}
         </header>
-        {/* Opens the create dialog; no create-slot endpoint yet, so it is UI only. */}
-        <button type="button" className="vos-create" onClick={() => setIsCreating(true)}>
+        <button
+          type="button"
+          className="vos-create"
+          onClick={() => setCreateSource('header')}
+          disabled={!canCreate}
+          aria-describedby={createBlockedReason ? 'vos-create-note' : undefined}
+        >
           <Plus size={14} aria-hidden="true" />
           {t('venueOwnerSlots.createSlot')}
         </button>
       </div>
 
-      {hasError && (
+      {errorKind && (
+        <div className="vos-message vos-load-error" role="alert">
+          <p>
+            {t(errorKind === 'network' ? 'venueOwnerSlots.errors.network' : 'venueOwnerSlots.loadError')}
+          </p>
+          <button type="button" className="vos-retry" onClick={retry}>
+            {t('venueOwnerSlots.retry')}
+          </button>
+        </div>
+      )}
+
+      {refreshFailed && (
         <p className="vos-message" role="alert">
-          {t('venueOwnerSlots.loadError')}
+          {t('venueOwnerSlots.errors.refresh')}
         </p>
       )}
 
@@ -249,8 +426,15 @@ function VenueOwnerSlots() {
                   </p>
                 )}
               </div>
-              {/* The empty-state design shows "Add" as an outlined button. */}
-              <button type="button" className={isEmptyDay ? 'vos-add vos-add-outlined' : 'vos-add'}>
+              {/* The empty-state design shows "Add" as an outlined button.
+                  Opens the create dialog for this day. */}
+              <button
+                type="button"
+                className={isEmptyDay ? 'vos-add vos-add-outlined' : 'vos-add'}
+                onClick={() => setCreateSource('day')}
+                disabled={!canCreate}
+                aria-describedby={createBlockedReason ? 'vos-create-note' : undefined}
+              >
                 {isEmptyDay ? (
                   <Plus size={12} aria-hidden="true" />
                 ) : (
@@ -260,7 +444,30 @@ function VenueOwnerSlots() {
               </button>
             </header>
 
-            {isEmptyDay ? (
+            {isDayLoading ? (
+              /* API mode: the day's slots are being read (date filter). */
+              <ul className="vos-slots" aria-busy="true" aria-label={t('venueOwnerSlots.loadingDay')}>
+                {Array.from({ length: 3 }, (_, row) => (
+                  <li key={row} className="vos-slot vos-skeleton-slot" aria-hidden="true">
+                    <span className="vos-skeleton-lines">
+                      <span className="vos-skeleton pv-shimmer vos-skeleton-time" />
+                      <span className="vos-skeleton pv-shimmer vos-skeleton-status" />
+                      <span className="vos-skeleton pv-shimmer vos-skeleton-meta" />
+                    </span>
+                    <span className="vos-skeleton pv-shimmer vos-skeleton-action" />
+                  </li>
+                ))}
+              </ul>
+            ) : dayError ? (
+              <div className="vos-empty vos-day-error" role="alert">
+                <p className="vos-empty-title">
+                  {t(dayError === 'network' ? 'venueOwnerSlots.errors.network' : 'venueOwnerSlots.errors.day')}
+                </p>
+                <button type="button" className="vos-retry" onClick={() => setDayAttempt((count) => count + 1)}>
+                  {t('venueOwnerSlots.retry')}
+                </button>
+              </div>
+            ) : isEmptyDay ? (
               /* Empty state (Figma). */
               <div className="vos-empty">
                 <Clock className="vos-empty-icon" size={32} strokeWidth={1.5} aria-hidden="true" />
@@ -276,7 +483,9 @@ function VenueOwnerSlots() {
                       <span className={`vos-slot-status vos-slot-status-${slot.status}`}>
                         {t(`venueOwnerSlots.status.${slot.status}`)}
                       </span>
-                      {slot.status === 'booked' ? (
+                      {/* The player's name when the data has it (demo); the
+                          backend's slots carry no name, so the price shows. */}
+                      {slot.status === 'booked' && slot.captain_name ? (
                         <span className="vos-slot-meta">
                           <User size={12} aria-hidden="true" />
                           <bdi>{slot.captain_name}</bdi>
@@ -291,11 +500,13 @@ function VenueOwnerSlots() {
                         </span>
                       )}
                     </div>
-                    {slot.status === 'booked' ? (
-                      /* Booked-slot design (Figma): no edit/delete, a muted note instead. */
+                    {slot.status === 'booked' || slot.status === 'blocked' ? (
+                      /* Booked-slot design (Figma): no edit/delete, a muted note
+                         instead — also for a slot held by a pending booking. */
                       <span className="vos-slot-locked">{t('venueOwnerSlots.editUnavailable')}</span>
                     ) : (
-                      /* No edit/delete endpoints yet: UI only. */
+                      /* Edit: saved through PUT (API mode). Delete: asks for
+                         confirmation, then DELETE (API mode only). */
                       <div className="vos-slot-actions">
                         <button
                           type="button"
@@ -308,7 +519,15 @@ function VenueOwnerSlots() {
                         <button
                           type="button"
                           className="vos-action vos-action-delete"
-                          onClick={() => setDeletingSlot(slot)}
+                          onClick={IS_API_ENABLED ? () => setDeletingSlot(slot) : undefined}
+                          disabled={!IS_API_ENABLED}
+                          title={IS_API_ENABLED ? undefined : t('venueOwnerSlots.deleteUnavailable')}
+                          aria-haspopup={IS_API_ENABLED ? 'dialog' : undefined}
+                          aria-label={
+                            IS_API_ENABLED
+                              ? undefined
+                              : `${t('venueOwnerSlots.delete')} — ${t('venueOwnerSlots.deleteUnavailable')}`
+                          }
                         >
                           <Trash2 size={13} aria-hidden="true" />
                           {t('venueOwnerSlots.delete')}
@@ -371,6 +590,7 @@ function VenueOwnerSlots() {
                       <span className="vos-day-dots" aria-hidden="true">
                         {statuses.has('available') && <span className="vos-dot vos-dot-available" />}
                         {statuses.has('booked') && <span className="vos-dot vos-dot-booked" />}
+                        {statuses.has('blocked') && <span className="vos-dot vos-dot-blocked" />}
                       </span>
                     )}
                   </button>
@@ -386,6 +606,10 @@ function VenueOwnerSlots() {
               <span className="vos-legend-item">
                 <span className="vos-dot vos-dot-available" aria-hidden="true" />
                 {t('venueOwnerSlots.legend.available')}
+              </span>
+              <span className="vos-legend-item">
+                <span className="vos-dot vos-dot-blocked" aria-hidden="true" />
+                {t('venueOwnerSlots.legend.blocked')}
               </span>
               <span className="vos-legend-item">
                 <span className="vos-legend-today" aria-hidden="true" />
@@ -404,23 +628,8 @@ function VenueOwnerSlots() {
         <EditSlotModal
           key={editingSlot.id}
           slot={editingSlot}
-          formatTime={(time) => {
-            const { time: clock, period } = to12Hour(time)
-            return `${clock} ${periodLabel(period)}`
-          }}
           onClose={() => setEditingSlot(null)}
-        />
-      )}
-
-      {isCreating && (
-        <EditSlotModal
-          mode="create"
-          slot={{ slot_date: selected, start_time: '08:00', end_time: '09:00', hourly_price: null }}
-          formatTime={(time) => {
-            const { time: clock, period } = to12Hour(time)
-            return `${clock} ${periodLabel(period)}`
-          }}
-          onClose={() => setIsCreating(false)}
+          onSubmit={IS_API_ENABLED ? submitEdit : undefined}
         />
       )}
 
@@ -430,6 +639,17 @@ function VenueOwnerSlots() {
           slot={deletingSlot}
           timeRange={formatRange(deletingSlot.start_time, deletingSlot.end_time)}
           onClose={() => setDeletingSlot(null)}
+          onConfirm={submitDelete}
+        />
+      )}
+
+      {createSource && (
+        <EditSlotModal
+          mode="create"
+          emphasizeDate={createSource === 'day'}
+          slot={{ slot_date: selected, start_time: '08:00', end_time: '09:00', hourly_price: null }}
+          onClose={() => setCreateSource(null)}
+          onSubmit={IS_API_ENABLED && canCreate ? submitCreate : undefined}
         />
       )}
     </DashboardLayout>

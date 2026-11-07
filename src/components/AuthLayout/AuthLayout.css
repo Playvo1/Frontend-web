@@ -251,6 +251,25 @@ html[lang='en'] .auth-policy-actions {
   cursor: pointer;
 }
 
+/* Mail link variant (admin inbox configured): same look as the button. */
+a.auth-policy-request {
+  text-decoration: none;
+}
+
+/* Note under the actions after "Request facility registration". Empty
+   (and collapsed) until the button is used. */
+.auth-policy-note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+  overflow-wrap: anywhere;
+}
+
+.auth-policy-note:not(:empty) {
+  margin-block-start: 10px;
+}
+
 .auth-policy-separator {
   width: 4px;
   height: 4px;

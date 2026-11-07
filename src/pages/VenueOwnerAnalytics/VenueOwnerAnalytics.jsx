@@ -7,7 +7,7 @@ import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
 import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerAnalytics } from '../../services/analyticsService.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
-import { isConnectionFailure } from '../../utils/requestErrors.js'
+import { isConnectionFailure, isNotConnected } from '../../utils/requestErrors.js'
 import { numberFormat } from '../VenueOwnerBookings/bookingFormat.js'
 import AnalyticsTrendChart from './AnalyticsTrendChart.jsx'
 import emptyIllustration from '../../assets/empty-state-illustration.svg'
@@ -25,7 +25,10 @@ import './VenueOwnerAnalytics.css'
 // While the data loads, the cards and charts are shown as static placeholder
 // blocks (loading design, no text) under the page title.
 //
-// Data comes from analyticsService (MOCK for now — see that file).
+// Data comes from analyticsService: mock data in demo mode; in API mode the
+// owner's analytics endpoint (this month). The backend returns the three
+// summary totals only, so in API mode the two charts show "not connected"
+// inside their cards (trend / peak_hours are null — see that file).
 
 // Chart axes, as in the design.
 const BOOKINGS_AXIS = { max: 28, step: 7 }
@@ -49,9 +52,10 @@ function VenueOwnerAnalytics() {
   const isRtl = i18n.dir() === 'rtl'
   const [venue, setVenue] = useState(null)
   const [data, setData] = useState(null)
-  const { logout } = useAuth()
+  const { token, logout } = useAuth()
   // null (no error) | 'network' (no connection) | 'server' (any other
-  // failure) — same handling as the Bookings page.
+  // failure) — same handling as the Bookings page — | 'unavailable' (API
+  // mode: not connected to the backend yet; shown without "Try again").
   const [errorKind, setErrorKind] = useState(null)
   const hasError = errorKind !== null
   // Incremented by "Try again" to run the analytics request once more.
@@ -73,7 +77,7 @@ function VenueOwnerAnalytics() {
   // (as on the Bookings page).
   useEffect(() => {
     let isActive = true
-    getVenueOwnerAnalytics()
+    getVenueOwnerAnalytics(token)
       .then((analyticsData) => isActive && setData(analyticsData))
       .catch((error) => {
         if (!isActive) return
@@ -81,12 +85,17 @@ function VenueOwnerAnalytics() {
           logout()
           return
         }
+        // API mode, no backend endpoint wired: "not available", not an error.
+        if (isNotConnected(error)) {
+          setErrorKind('unavailable')
+          return
+        }
         setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
       })
     return () => {
       isActive = false
     }
-  }, [attempt, logout])
+  }, [attempt, token, logout])
 
   // "Try again": back to the loading state and one new request. The error
   // block (and its button) is replaced by the loading state right away, so
@@ -109,21 +118,25 @@ function VenueOwnerAnalytics() {
         {
           key: 'occupancy',
           icon: ChartPie,
-          value: `${data.summary.occupancy_percent}%`,
+          value: `${numberFormat.format(data.summary.occupancy_percent)}%`,
         },
         { key: 'revenue', icon: DollarSign, value: money(data.summary.revenue) },
         { key: 'bookings', icon: CalendarDays, value: numberFormat.format(data.summary.bookings_count) },
       ]
     : []
 
-  const trend = data
+  // null: the backend has no data for that chart (API mode).
+  const hasTrend = Array.isArray(data?.trend)
+  const hasPeakHours = Array.isArray(data?.peak_hours)
+
+  const trend = hasTrend
     ? data.trend.map((point) => ({
         ...point,
         label: dateLabel.format(new Date(`${point.date}T00:00:00Z`)),
       }))
     : []
 
-  const peakMax = data ? Math.max(...data.peak_hours.map((hour) => hour.bookings), 1) : 1
+  const peakMax = hasPeakHours ? Math.max(...data.peak_hours.map((hour) => hour.bookings), 1) : 1
   const isLoading = data === null && !hasError
   const isEmpty = Boolean(data) && hasNoAnalytics(data)
   const ForwardIcon = isRtl ? ArrowLeft : ArrowRight
@@ -146,7 +159,11 @@ function VenueOwnerAnalytics() {
           and no cards or charts. Connection failures show the Wi-Fi icon;
           server errors the alert icon. */}
       {hasError && (
-        <section className="voa-empty-state" role="alert" aria-labelledby="voa-error-title">
+        <section
+          className="voa-empty-state"
+          role={errorKind === 'unavailable' ? 'status' : 'alert'}
+          aria-labelledby="voa-error-title"
+        >
           {errorKind === 'network' && (
             <WifiOff className="voa-error-icon" size={100} strokeWidth={2.25} aria-hidden="true" />
           )}
@@ -154,18 +171,22 @@ function VenueOwnerAnalytics() {
             {errorKind === 'server' && (
               <CircleAlert className="voa-error-alert" size={20} aria-hidden="true" />
             )}
-            {t('venueOwnerAnalytics.errorState.title')}
+            {t(errorKind === 'unavailable' ? 'venueOwnerAnalytics.unavailable' : 'venueOwnerAnalytics.errorState.title')}
           </h1>
           <p className="voa-empty-text">
             {t(
-              errorKind === 'network'
-                ? 'venueOwnerAnalytics.errorState.networkMessage'
-                : 'venueOwnerAnalytics.errorState.serverMessage',
+              errorKind === 'unavailable'
+                ? 'common.notConnected'
+                : errorKind === 'network'
+                  ? 'venueOwnerAnalytics.errorState.networkMessage'
+                  : 'venueOwnerAnalytics.errorState.serverMessage',
             )}
           </p>
-          <button type="button" className="voa-empty-button voa-retry-button" onClick={retry}>
-            {t('venueOwnerAnalytics.errorState.retry')}
-          </button>
+          {errorKind !== 'unavailable' && (
+            <button type="button" className="voa-empty-button voa-retry-button" onClick={retry}>
+              {t('venueOwnerAnalytics.errorState.retry')}
+            </button>
+          )}
         </section>
       )}
 
@@ -227,7 +248,10 @@ function VenueOwnerAnalytics() {
             ))}
           </section>
 
-          <section className="voa-card voa-panel voa-panel-trend" aria-labelledby="voa-trend-title">
+          <section
+            className={`voa-card voa-panel voa-panel-trend${hasTrend ? '' : ' voa-panel-no-data'}`}
+            aria-labelledby="voa-trend-title"
+          >
             <header className="voa-panel-header">
               <div>
                 <h2 id="voa-trend-title" className="voa-panel-title">
@@ -235,28 +259,37 @@ function VenueOwnerAnalytics() {
                 </h2>
                 <p className="voa-panel-subtitle">{t('venueOwnerAnalytics.thisMonth')}</p>
               </div>
-              <ul className="voa-legend">
-                <li className="voa-legend-item">
-                  <span className="voa-legend-dot voa-legend-dot-bookings" aria-hidden="true" />
-                  {t('venueOwnerAnalytics.trend.bookings')}
-                </li>
-                <li className="voa-legend-item">
-                  <span className="voa-legend-dot voa-legend-dot-revenue" aria-hidden="true" />
-                  {t('venueOwnerAnalytics.trend.revenue')}
-                </li>
-              </ul>
+              {hasTrend && (
+                <ul className="voa-legend">
+                  <li className="voa-legend-item">
+                    <span className="voa-legend-dot voa-legend-dot-bookings" aria-hidden="true" />
+                    {t('venueOwnerAnalytics.trend.bookings')}
+                  </li>
+                  <li className="voa-legend-item">
+                    <span className="voa-legend-dot voa-legend-dot-revenue" aria-hidden="true" />
+                    {t('venueOwnerAnalytics.trend.revenue')}
+                  </li>
+                </ul>
+              )}
             </header>
-            <AnalyticsTrendChart
-              data={trend}
-              bookingsAxis={BOOKINGS_AXIS}
-              revenueAxis={REVENUE_AXIS}
-              formatRevenue={(value) => `₪${value}`}
-              isRtl={isRtl}
-              ariaLabel={t('venueOwnerAnalytics.trend.title')}
-            />
+            {hasTrend ? (
+              <AnalyticsTrendChart
+                data={trend}
+                bookingsAxis={BOOKINGS_AXIS}
+                revenueAxis={REVENUE_AXIS}
+                formatRevenue={(value) => `₪${value}`}
+                isRtl={isRtl}
+                ariaLabel={t('venueOwnerAnalytics.trend.title')}
+              />
+            ) : (
+              <p className="voa-panel-unavailable">{t('common.notConnected')}</p>
+            )}
           </section>
 
-          <section className="voa-card voa-panel voa-panel-peak" aria-labelledby="voa-peak-title">
+          <section
+            className={`voa-card voa-panel voa-panel-peak${hasPeakHours ? '' : ' voa-panel-no-data'}`}
+            aria-labelledby="voa-peak-title"
+          >
             <header className="voa-panel-header">
               <div>
                 <h2 id="voa-peak-title" className="voa-panel-title">
@@ -265,26 +298,30 @@ function VenueOwnerAnalytics() {
                 <p className="voa-panel-subtitle">{t('venueOwnerAnalytics.peak.subtitle')}</p>
               </div>
             </header>
-            <ul className="voa-bars">
-              {data.peak_hours.map(({ hour, bookings }) => {
-                const ratio = bookings / peakMax
-                const level = ratio === 1 ? 'top' : ratio >= HIGH_DEMAND_RATIO ? 'high' : 'low'
-                return (
-                  <li key={hour} className={`voa-bar-item voa-bar-${level}`}>
-                    <span className="voa-bar-track" aria-hidden="true">
-                      <span className="voa-bar" style={{ height: `${ratio * 100}%` }} />
-                    </span>
-                    <span className="voa-bar-hour">
-                      <bdi>{hour}</bdi>
-                    </span>
-                    <span className="voa-bar-count">
-                      <span className="voa-visually-hidden">{t('venueOwnerAnalytics.peak.bookingsLabel')}: </span>
-                      {numberFormat.format(bookings)}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
+            {hasPeakHours ? (
+              <ul className="voa-bars">
+                {data.peak_hours.map(({ hour, bookings }) => {
+                  const ratio = bookings / peakMax
+                  const level = ratio === 1 ? 'top' : ratio >= HIGH_DEMAND_RATIO ? 'high' : 'low'
+                  return (
+                    <li key={hour} className={`voa-bar-item voa-bar-${level}`}>
+                      <span className="voa-bar-track" aria-hidden="true">
+                        <span className="voa-bar" style={{ height: `${ratio * 100}%` }} />
+                      </span>
+                      <span className="voa-bar-hour">
+                        <bdi>{hour}</bdi>
+                      </span>
+                      <span className="voa-bar-count">
+                        <span className="voa-visually-hidden">{t('venueOwnerAnalytics.peak.bookingsLabel')}: </span>
+                        {numberFormat.format(bookings)}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <p className="voa-panel-unavailable">{t('common.notConnected')}</p>
+            )}
           </section>
         </>
       )}

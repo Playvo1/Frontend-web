@@ -139,3 +139,24 @@ export const requestPasswordReset = (params) => impl.requestPasswordReset(params
 export const verifyResetCode = (params) => impl.verifyResetCode(params)
 export const resetPassword = (params) => impl.resetPassword(params)
 export const logout = (token) => impl.logout(token)
+
+// ---- Change password (signed-in user) — NOT CONNECTED ----------------------
+//
+// Venue owners get their first password from an admin and change it later
+// from the Profile page with: current password, new password, confirmation.
+// There is no endpoint for that yet: the backend (main @ 0d2ff90) has only
+// the signed-out reset flow (forgot-password / verify-reset-otp /
+// reset-password) and nothing that checks a current password. So this makes
+// NO request and always rejects with code CHANGE_PASSWORD_NOT_AVAILABLE; the
+// Profile page then says the password was not changed. When the backend team
+// adds the endpoint, implement the request here (path, field names and
+// errors as they confirm — e.g. a wrong current password) and resolve.
+//
+// changePassword({ currentPassword, password, passwordConfirmation }) -> Promise<void>
+export const CHANGE_PASSWORD_NOT_AVAILABLE = 'CHANGE_PASSWORD_NOT_AVAILABLE'
+
+export async function changePassword(_params) {
+  const error = new Error('Changing the password of a signed-in user is not available yet.')
+  error.code = CHANGE_PASSWORD_NOT_AVAILABLE
+  throw error
+}

@@ -6,12 +6,26 @@ import './EditSlotModal.css'
 // Time-slot form dialog (Figma), in two modes that share one layout:
 // - "edit": opened from "Edit" on an available slot; shows that slot's
 //   current values from the existing slot data.
-// - "create": opened from "Create time slot"; the day/date are the day
-//   selected in the calendar, the times start at the values shown in the
-//   design (08:00 – 09:00) and the price is empty (design value as hint).
-// Changes stay in this dialog only: there are no confirmed backend
-// endpoints for editing or creating a time slot yet, so the submit button
-// has no action and nothing is written to the slot list.
+// - "create": opened from "Create time slot" or from "Add" in the selected
+//   day's card; the date starts at the day selected in the calendar, the
+//   times start at the values shown in the design (08:00 – 09:00) and the
+//   price is empty (design value as hint). From "Create time slot" the date
+//   can be changed; from "Add" (emphasizeDate) it stays that day's date,
+//   read-only and shown darker.
+// The start / end times and the price can be typed (the arrows still move a
+// time by one hour). From "Create time slot" the day can also be picked:
+// it moves the date to the next date (from the current one) on that day,
+// and changing the date updates the day. The day and date are read-only
+// when editing an existing slot.
+// Saving: with `onSubmit` (API mode) the form is checked (both times, end
+// after start, a price) and the values are sent through it; the dialog
+// shows "Saving…" meanwhile and closes only when the page reports success.
+// A failed save keeps every typed value and shows why: the slot already
+// exists or is booked (409), invalid fields (422, with the backend's
+// field messages), not the owner's venue / slot (403), no connection, or
+// another server error. Without
+// `onSubmit` (demo mode) the submit button has no action, as before, and
+// nothing is written to the slot list.
 //
 // Uses the native <dialog> (showModal): it centers itself, traps focus,
 // shows a backdrop and closes on Escape.
@@ -25,13 +39,83 @@ function withHour(time, hour) {
   return `${String(hour).padStart(2, '0')}:${minutes}`
 }
 
-function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
+// Day picker order, as the calendar (Monday first); values are getDay().
+const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0]
+
+function toIsoDate(date) {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+// "HH:mm" -> minutes since midnight, or null when empty / invalid.
+function minutesOf(time) {
+  const match = /^(\d{2}):(\d{2})/.exec(time ?? '')
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null
+}
+
+// Backend field messages from a 422 (Laravel `errors`), first one per field.
+function fieldMessages(error) {
+  const errors = error?.errors
+  if (!errors || typeof errors !== 'object') return []
+  return Object.values(errors)
+    .map((messages) => (Array.isArray(messages) ? messages[0] : messages))
+    .filter((message) => typeof message === 'string' && message)
+}
+
+function EditSlotModal({ mode = 'edit', slot, emphasizeDate = false, onClose, onSubmit }) {
   const textKey = mode === 'create' ? 'venueOwnerSlots.createSlotModal' : 'venueOwnerSlots.editSlot'
   const { t, i18n } = useTranslation()
   const dialogRef = useRef(null)
   const [startTime, setStartTime] = useState(slot.start_time)
   const [endTime, setEndTime] = useState(slot.end_time)
   const [price, setPrice] = useState(slot.hourly_price == null ? '' : String(slot.hourly_price))
+  const [slotDate, setSlotDate] = useState(slot.slot_date)
+  // The date can be changed only when creating from "Create time slot".
+  const isDateEditable = mode === 'create' && !emphasizeDate
+  const [isSaving, setIsSaving] = useState(false)
+  // Why the last save did not happen: { key, details: [] } or null.
+  const [formError, setFormError] = useState(null)
+
+  const submit = async () => {
+    if (!onSubmit || isSaving) return
+    const from = minutesOf(startTime)
+    const to = minutesOf(endTime)
+    if (!slotDate || from == null || to == null) {
+      setFormError({ key: 'venueOwnerSlots.form.errors.required', details: [] })
+      return
+    }
+    if (to <= from) {
+      setFormError({ key: 'venueOwnerSlots.form.errors.endBeforeStart', details: [] })
+      return
+    }
+    if (price === '') {
+      setFormError({ key: 'venueOwnerSlots.form.errors.price', details: [] })
+      return
+    }
+    setFormError(null)
+    setIsSaving(true)
+    try {
+      await onSubmit({
+        slot_date: slotDate,
+        start_time: startTime.slice(0, 5),
+        end_time: endTime.slice(0, 5),
+        hourly_price: Number(price),
+      })
+    } catch (error) {
+      setIsSaving(false)
+      if (error?.status === 409) {
+        setFormError({ key: `venueOwnerSlots.form.errors.conflict.${mode}`, details: [] })
+      } else if (error?.status === 422) {
+        setFormError({ key: 'venueOwnerSlots.form.errors.invalid', details: fieldMessages(error) })
+      } else if (error?.status === 403) {
+        setFormError({ key: 'venueOwnerSlots.form.errors.forbidden', details: [] })
+      } else if (error?.status === 0) {
+        setFormError({ key: 'venueOwnerSlots.form.errors.network', details: [] })
+      } else if (error?.status !== 401) {
+        setFormError({ key: 'venueOwnerSlots.form.errors.server', details: [] })
+      }
+    }
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -39,18 +123,31 @@ function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
     return () => dialog.close()
   }, [])
 
-  const [year, month, day] = slot.slot_date.split('-').map(Number)
+  const [year, month, day] = (slotDate || slot.slot_date).split('-').map(Number)
   const date = new Date(year, month - 1, day)
-  const weekday = new Intl.DateTimeFormat(i18n.language, { weekday: 'long' }).format(date)
-  const dateLabel = `${day}-${month}-${year}` // "18-9-2026", as in the design
+  const weekdayFormat = new Intl.DateTimeFormat(i18n.language, { weekday: 'long' })
+  const weekday = weekdayFormat.format(date)
 
-  const hours = hourOf(endTime) - hourOf(startTime)
+  // Picking a day: the next date on that weekday, from the current date.
+  const pickWeekday = (target) => {
+    const next = new Date(date)
+    next.setDate(date.getDate() + ((target - date.getDay() + 7) % 7))
+    setSlotDate(toIsoDate(next))
+  }
+  const dateLabel = `${day}-${month}-${year}` // "18-9-2026", as in the design
+  const dateInputClass = emphasizeDate ? 'esm-control esm-input esm-input-locked' : 'esm-control esm-input'
+
+  // Duration from the typed times (whole or fractional hours).
+  const start = minutesOf(startTime)
+  const end = minutesOf(endTime)
+  const hours = start != null && end != null && end > start ? Math.round(((end - start) / 60) * 100) / 100 : 0
   const duration = hours > 0 ? t('venueOwnerSlots.editSlot.hours', { count: hours }) : '—'
 
   // Up/down arrows move a time by one hour (the slots are hourly).
   const step = (time, setTime, delta) => {
-    const hour = hourOf(time) + delta
-    if (hour >= 0 && hour <= 23) setTime(withHour(time, hour))
+    const base = minutesOf(time) == null ? '08:00' : time
+    const hour = hourOf(base) + delta
+    if (hour >= 0 && hour <= 23) setTime(withHour(base, hour))
   }
 
   const timeField = (id, labelKey, time, setTime) => (
@@ -58,10 +155,15 @@ function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
       <label className="esm-label" htmlFor={id}>
         {t(labelKey)} <span className="esm-required">*</span>
       </label>
-      <div className="esm-control">
-        <output id={id} className="esm-value">
-          <bdi>{formatTime(time)}</bdi>
-        </output>
+      <div className="esm-control esm-time">
+        <input
+          id={id}
+          type="time"
+          className="esm-input esm-input-editable esm-time-input"
+          value={time}
+          onChange={(event) => setTime(event.target.value)}
+          required
+        />
         <span className="esm-stepper">
           <button
             type="button"
@@ -116,13 +218,46 @@ function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
           <label className="esm-label" htmlFor="esm-day">
             {t('venueOwnerSlots.editSlot.day')}
           </label>
-          <input id="esm-day" className="esm-control esm-input" value={weekday} readOnly />
+          {isDateEditable ? (
+            <div className="esm-control esm-select">
+              <select
+                id="esm-day"
+                className="esm-input esm-input-editable esm-select-input"
+                value={date.getDay()}
+                onChange={(event) => pickWeekday(Number(event.target.value))}
+              >
+                {WEEKDAY_ORDER.map((value) => {
+                  // 2024-01-01 was a Monday: offset to get each weekday's name.
+                  const sample = new Date(2024, 0, value === 0 ? 7 : value)
+                  return (
+                    <option key={value} value={value}>
+                      {weekdayFormat.format(sample)}
+                    </option>
+                  )
+                })}
+              </select>
+              <ChevronDown size={14} className="esm-select-icon" aria-hidden="true" />
+            </div>
+          ) : (
+            <input id="esm-day" className={dateInputClass} value={weekday} readOnly />
+          )}
         </div>
         <div className="esm-field">
           <label className="esm-label" htmlFor="esm-date">
             {t('venueOwnerSlots.editSlot.date')}
           </label>
-          <input id="esm-date" className="esm-control esm-input" value={dateLabel} readOnly />
+          {isDateEditable ? (
+            <input
+              id="esm-date"
+              type="date"
+              className="esm-control esm-input esm-input-editable"
+              value={slotDate}
+              onChange={(event) => setSlotDate(event.target.value)}
+              required
+            />
+          ) : (
+            <input id="esm-date" className={dateInputClass} value={dateLabel} readOnly />
+          )}
         </div>
 
         {timeField('esm-start', 'venueOwnerSlots.editSlot.startTime', startTime, setStartTime)}
@@ -144,7 +279,7 @@ function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
             </span>
             <input
               id="esm-price"
-              className="esm-input esm-price-input"
+              className="esm-input esm-input-editable esm-price-input"
               inputMode="numeric"
               value={price}
               placeholder="50"
@@ -154,12 +289,27 @@ function EditSlotModal({ mode = 'edit', slot, formatTime, onClose }) {
         </div>
       </div>
 
+      {formError && (
+        <div className="esm-error" role="alert">
+          <p>{t(formError.key)}</p>
+          {formError.details.length > 0 && (
+            <ul>
+              {formError.details.map((message) => (
+                <li key={message}>
+                  <bdi>{message}</bdi>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <footer className="esm-footer">
-        {/* No slot edit/create endpoint yet: the submit button is UI only. */}
-        <button type="button" className="esm-button esm-save">
-          {t(`${textKey}.submit`)}
+        {/* Saves through `onSubmit` (API mode); demo mode: no action. */}
+        <button type="button" className="esm-button esm-save" onClick={submit} disabled={isSaving}>
+          {isSaving ? t('venueOwnerSlots.form.saving') : t(`${textKey}.submit`)}
         </button>
-        <button type="button" className="esm-button esm-cancel" onClick={onClose}>
+        <button type="button" className="esm-button esm-cancel" onClick={onClose} disabled={isSaving}>
           {t('venueOwnerSlots.editSlot.cancel')}
         </button>
       </footer>

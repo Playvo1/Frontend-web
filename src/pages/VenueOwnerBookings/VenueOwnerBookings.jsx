@@ -9,6 +9,7 @@ import { VENUE_OWNER_NAV } from '../../constants/venueOwnerNav.js'
 import { useAuth } from '../../context/useAuth.js'
 import { getVenueOwnerBookings } from '../../services/bookingsService.js'
 import { getVenueOwnerVenue } from '../../services/dashboardService.js'
+import { FACILITY_MULTIPLE, FACILITY_NONE } from '../../services/facilityService.js'
 import { isConnectionFailure } from '../../utils/requestErrors.js'
 import { formatDate, formatTimeRange, initials, numberFormat } from './bookingFormat.js'
 import DateFilter from './DateFilter.jsx'
@@ -16,9 +17,10 @@ import StatusFilter from './StatusFilter.jsx'
 import './VenueOwnerBookings.css'
 
 // Venue Owner bookings list (route: /venue-owner/bookings), built from the
-// Figma reference. Bookings come from bookingsService (the backend's
-// GET /owner/bookings when the API is configured, mock otherwise); search,
-// filters and pagination run on the loaded list in the browser.
+// Figma reference. Bookings come from bookingsService (API mode: every page
+// of GET /venue_owner/owner/bookings for the owner's venue; demo mode: the
+// mock list); search, filters and pagination run on the loaded list in the
+// browser.
 
 const PAGE_SIZE = 8
 
@@ -34,7 +36,9 @@ function VenueOwnerBookings() {
   const isRtl = i18n.dir() === 'rtl'
   const [bookings, setBookings] = useState(null)
   const [venue, setVenue] = useState(null)
-  // null (no error) | 'network' (no connection) | 'server' (any other failure).
+  // null (no error) | 'network' (no connection) | 'server' (any other
+  // failure) | 'noVenue' / 'multipleVenues' (API mode: no venue, or more than
+  // one, linked to the account — shown without "Try again").
   const [errorKind, setErrorKind] = useState(null)
   const hasError = errorKind !== null
   const [search, setSearch] = useState('')
@@ -70,6 +74,14 @@ function VenueOwnerBookings() {
         if (!isActive) return
         if (error?.status === 401) {
           logout()
+          return
+        }
+        if (error?.code === FACILITY_NONE) {
+          setErrorKind('noVenue')
+          return
+        }
+        if (error?.code === FACILITY_MULTIPLE) {
+          setErrorKind('multipleVenues')
           return
         }
         setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
@@ -190,10 +202,14 @@ function VenueOwnerBookings() {
                     </span>
                   </td>
                   <td className="vob-center vob-muted">
-                    <bdi dir="ltr">{formatDate(booking.slot_date)}</bdi>
+                    <bdi dir="ltr">{booking.slot_date ? formatDate(booking.slot_date) : '—'}</bdi>
                   </td>
                   <td className="vob-center vob-muted">
-                    <bdi dir="ltr">{formatTimeRange(booking.start_time, booking.end_time)}</bdi>
+                    <bdi dir="ltr">
+                      {booking.start_time && booking.end_time
+                        ? formatTimeRange(booking.start_time, booking.end_time)
+                        : '—'}
+                    </bdi>
                   </td>
                   <td className="vob-center vob-amount">
                     <bdi dir="ltr">₪{numberFormat.format(booking.total_price)}</bdi>
@@ -237,7 +253,16 @@ function VenueOwnerBookings() {
 
         {/* Error state (Figma): replaces the rows when loading fails. */}
         {/* Connection failures show the no-connection design (Wi-Fi icon). */}
-        {hasError && (
+        {/* No venue / more than one venue linked to the account (API mode). */}
+        {(errorKind === 'noVenue' || errorKind === 'multipleVenues') && (
+          <div className="vob-error" role="status">
+            <p className="vob-error-title">
+              {t(errorKind === 'noVenue' ? 'venueOwnerFacility.noVenue' : 'venueOwnerFacility.multipleVenues')}
+            </p>
+          </div>
+        )}
+
+        {(errorKind === 'network' || errorKind === 'server') && (
           <div className="vob-error" role="alert">
             {errorKind === 'network' && (
               <WifiOff className="vob-error-illustration" size={56} strokeWidth={2.25} aria-hidden="true" />

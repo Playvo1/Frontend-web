@@ -1,0 +1,153 @@
+/*
+ * Admin hero text block (AdminAuthHero.jsx), shown on the Admin login and
+ * Admin forgot-password pages inside AuthLayout's hero (photo, overlay and
+ * logo come from AuthLayout.css). Moved unchanged from AdminLogin.css.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Hero text block                                                     */
+/* ------------------------------------------------------------------ */
+
+/* Sits a little below the middle, as in the design. Doubled class: wins over
+   AuthLayout's .auth-hero-body whatever the stylesheet order. */
+.auth-hero-body.admin-login-hero-body {
+  margin-block: auto 96px;
+}
+
+.admin-login-hero-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--color-white);
+}
+
+/* English (Poppins) runs wider than Arabic (wide screens only: the smaller
+   sizes below already fit). */
+@media (min-width: 1200px) {
+  html[lang='en'] .admin-login-hero-title {
+    font-size: 40px;
+  }
+}
+
+.admin-login-hero-description {
+  margin: 48px 0 0;
+  max-width: 420px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 2.2;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Translucent pill with an orange dot. */
+.admin-login-hero-badge {
+  margin: 40px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.admin-login-hero-badge-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-orange);
+}
+
+/* Features row at the bottom of the hero, separated by small dots. */
+.admin-login-hero-features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 0;
+  margin-block-end: 40px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.admin-login-hero-feature {
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin-login-hero-feature + .admin-login-hero-feature::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  margin-inline: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive (same breakpoints as AuthLayout.css)                     */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 1199px) {
+  .admin-login-hero-title {
+    font-size: 38px;
+  }
+}
+
+/* Mobile: the hero is a card under the form. */
+@media (max-width: 860px) {
+  .auth-hero-body.admin-login-hero-body {
+    margin-block: 32px 0;
+  }
+
+  .admin-login-hero-title {
+    font-size: 30px;
+  }
+
+  .admin-login-hero-description {
+    margin-block-start: 20px;
+    font-size: 14px;
+  }
+
+  .admin-login-hero-badge {
+    margin-block-start: 24px;
+  }
+
+  .admin-login-hero-features {
+    margin-block: 32px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-login-hero-title {
+    font-size: 26px;
+  }
+
+  .admin-login-hero-description {
+    font-size: 13px;
+    line-height: 2;
+  }
+
+  .admin-login-hero-badge {
+    font-size: 12px;
+    padding: 7px 14px;
+  }
+
+  .admin-login-hero-features {
+    margin-block-start: 24px;
+    font-size: 11px;
+  }
+
+  .admin-login-hero-feature + .admin-login-hero-feature::before {
+    margin-inline: 10px;
+  }
+}

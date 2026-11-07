@@ -2,7 +2,11 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Route, Routes } from 'react-router-dom'
 import { ROLES } from './constants/roles.js'
-import DashboardPlaceholder from './pages/DashboardPlaceholder/DashboardPlaceholder.jsx'
+import AdminDashboard from './pages/AdminDashboard/AdminDashboard.jsx'
+import AdminForgotPassword from './pages/AdminForgotPassword/AdminForgotPassword.jsx'
+import AdminLogin from './pages/AdminLogin/AdminLogin.jsx'
+import AdminNotifications from './pages/AdminNotifications/AdminNotifications.jsx'
+import AdminProfile from './pages/AdminProfile/AdminProfile.jsx'
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword.jsx'
 import Login from './pages/Login/Login.jsx'
 import ResetPassword from './pages/ResetPassword/ResetPassword.jsx'
@@ -11,6 +15,8 @@ import VenueOwnerBookingDetails from './pages/VenueOwnerBookingDetails/VenueOwne
 import VenueOwnerBookings from './pages/VenueOwnerBookings/VenueOwnerBookings.jsx'
 import VenueOwnerDashboard from './pages/VenueOwnerDashboard/VenueOwnerDashboard.jsx'
 import VenueOwnerFacility from './pages/VenueOwnerFacility/VenueOwnerFacility.jsx'
+import VenueOwnerNotifications from './pages/VenueOwnerNotifications/VenueOwnerNotifications.jsx'
+import VenueOwnerProfile from './pages/VenueOwnerProfile/VenueOwnerProfile.jsx'
 import VenueOwnerReviews from './pages/VenueOwnerReviews/VenueOwnerReviews.jsx'
 import VenueOwnerSlots from './pages/VenueOwnerSlots/VenueOwnerSlots.jsx'
 import VerifyCode from './pages/VerifyCode/VerifyCode.jsx'
@@ -53,11 +59,31 @@ function App() {
         }
       />
 
+      {/* Admin login: same auth as /login, admin accounts only. */}
+      <Route
+        path="/admin/login"
+        element={
+          <GuestRoute>
+            <AdminLogin />
+          </GuestRoute>
+        }
+      />
+
       <Route
         path="/forgot-password"
         element={
           <GuestRoute>
             <ForgotPassword />
+          </GuestRoute>
+        }
+      />
+
+      {/* Admin recovery step 1 (own design); steps 2-3 are shared. */}
+      <Route
+        path="/admin/forgot-password"
+        element={
+          <GuestRoute>
+            <AdminForgotPassword />
           </GuestRoute>
         }
       />
@@ -144,10 +170,64 @@ function App() {
       />
 
       <Route
+        path="/venue-owner/profile"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
+            <VenueOwnerProfile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/venue-owner/notifications"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.VENUE_OWNER]}>
+            <VenueOwnerNotifications />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/dashboard"
         element={
-          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
-            <DashboardPlaceholder titleKey="dashboard.adminTitle" />
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/notifications"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminNotifications />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/notifications/unread"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminNotifications view="unread" />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/notifications/read"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminNotifications view="read" />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/profile"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminProfile />
           </ProtectedRoute>
         }
       />

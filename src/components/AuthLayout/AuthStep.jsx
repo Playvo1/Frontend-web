@@ -1,6 +1,7 @@
 import { ChevronLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { getRecoveryLoginPath } from '../../utils/recoveryFlow.js'
 import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher.jsx'
 import './AuthStep.css'
 
@@ -9,13 +10,19 @@ import './AuthStep.css'
 // a top bar with the "Back to login" link (start edge — right in RTL, left
 // in LTR) and the language switcher (end edge), then a vertically centered
 // block with the step's title, subtitle and form (`children`).
-function AuthStep({ title, subtitle, children }) {
+//
+// "Back to login" returns to the login page the flow started from (/login or
+// /admin/login): the `loginPath` prop when the page is role-specific, else
+// the recovery flow's one (route state, or remembered for the tab).
+function AuthStep({ title, subtitle, loginPath: fixedLoginPath, children }) {
   const { t } = useTranslation()
+  const stateLoginPath = useLocation().state?.loginPath
+  const loginPath = fixedLoginPath ?? getRecoveryLoginPath(stateLoginPath)
 
   return (
     <div className="auth-step-content">
       <div className="auth-step-topbar">
-        <Link to="/login" className="auth-step-back">
+        <Link to={loginPath} className="auth-step-back">
           <ChevronLeft className="auth-step-back-icon" size={16} aria-hidden="true" />
           {t('auth.backToLogin')}
         </Link>

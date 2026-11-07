@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Bell, LogOut, Menu, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
+import logoMark from '../../assets/log1.png'
+import { IS_API_ENABLED } from '../../config/api.js'
+import { ROLES, getPrimaryRole } from '../../constants/roles.js'
 import { useAuth } from '../../context/useAuth.js'
+import { getVenueOwnerFacility, peekVenueOwnerFacility } from '../../services/facilityService.js'
+import { UNREAD_EVENT, getUnreadNotificationsCount } from '../../services/notificationsService.js'
+import ToastHost from '../Toast/ToastHost.jsx'
 import './DashboardLayout.css'
 
 // Shared shell for the signed-in dashboards (Figma: Venue Owner dashboard):
@@ -14,12 +20,65 @@ import './DashboardLayout.css'
 // matchNested: also highlight the item on its sub-pages (e.g. a details page).
 // venue: { name, statusKey } | null — the sidebar venue card.
 // roleLabelKey: translation key of the user's role (accessible name of the avatar button).
+// subtitle (optional): text under the greeting when there is no venue (the
+//   Admin dashboard shows the role there).
+// Venue Owner, API mode: when the page passes no venue, the venue name under
+// the greeting is read from the owner's own venue
+// (GET /venue_owner/owner/myvenues, via facilityService) in the current
+// language. Nothing is shown while it loads or if it cannot be read (no
+// venue, more than one, request error): no fixed or demo name is used. The
+// sidebar venue card is not affected. The venue read on a previous page (or
+// by this page) is shown at once and shared with the page's own request
+// (facilityService keeps it briefly; see there).
+// brandMark (optional): show the provided logo mark before the wordmark
+//   (Admin design).
 // On screens ≤ 1024px the sidebar becomes an off-canvas drawer opened from
 // the top bar.
-function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
-  const { t } = useTranslation()
-  const { user, logout } = useAuth()
+// Bell: opens the notifications page of the signed-in role (Venue Owner:
+// /venue-owner/notifications, Admin: /admin/notifications).
+// Bell dot (API mode): shown only when the user has unread notifications
+// (notificationsService.getUnreadNotificationsCount), never as a fixed
+// decoration; demo mode keeps the design's dot over the demo list.
+function DashboardLayout({ navItems, venue, roleLabelKey, subtitle, brandMark = false, children }) {
+  const { t, i18n } = useTranslation()
+  const { user, token, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const isVenueOwner = getPrimaryRole(user) === ROLES.VENUE_OWNER
+  const isAdmin = getPrimaryRole(user) === ROLES.ADMIN
+  const notificationsPath = isVenueOwner ? '/venue-owner/notifications' : isAdmin ? '/admin/notifications' : null
+  // { name_ar, name_en } of the owner's venue (API mode only), or null.
+  const [ownerVenue, setOwnerVenue] = useState(() =>
+    IS_API_ENABLED && isVenueOwner && !venue ? peekVenueOwnerFacility({ token }) : null,
+  )
+
+  useEffect(() => {
+    if (!IS_API_ENABLED || !isVenueOwner || venue || !token) return undefined
+    let isActive = true
+    getVenueOwnerFacility({ token })
+      .then((facility) => isActive && setOwnerVenue(facility))
+      .catch(() => isActive && setOwnerVenue(null))
+    return () => {
+      isActive = false
+    }
+  }, [isVenueOwner, venue, token])
+
+  // Unread notifications (Venue Owner / Admin, API mode): null until known.
+  const [unreadCount, setUnreadCount] = useState(null)
+
+  useEffect(() => {
+    if (!IS_API_ENABLED || !notificationsPath || !token) return undefined
+    let isActive = true
+    getUnreadNotificationsCount(token)
+      .then((count) => isActive && setUnreadCount(count))
+      .catch(() => isActive && setUnreadCount(null))
+    const onUnread = (event) => setUnreadCount(event.detail)
+    window.addEventListener(UNREAD_EVENT, onUnread)
+    return () => {
+      isActive = false
+      window.removeEventListener(UNREAD_EVENT, onUnread)
+    }
+  }, [notificationsPath, token])
+  const showBellDot = !IS_API_ENABLED || unreadCount > 0
 
   // Close the drawer with Escape.
   useEffect(() => {
@@ -34,6 +93,31 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
   const fullName = user?.name ?? ''
   const firstName = fullName.split(' ')[0]
   const initial = fullName.trim().charAt(0).toUpperCase()
+  // The user's photo (session user's profile_image, set by the Profile page
+  // from the backend); the initial when there is none or it cannot load.
+  const [brokenPhoto, setBrokenPhoto] = useState(null)
+  const photo = user?.profile_image && user.profile_image !== brokenPhoto ? user.profile_image : null
+  const avatar = photo ? (
+    <img
+      className="dashboard-avatar dashboard-avatar-image"
+      src={photo}
+      alt=""
+      aria-hidden="true"
+      onError={() => setBrokenPhoto(photo)}
+    />
+  ) : (
+    <span className="dashboard-avatar" aria-hidden="true">
+      {initial}
+    </span>
+  )
+  // The avatar opens the role's profile page.
+  const profilePath = isVenueOwner ? '/venue-owner/profile' : isAdmin ? '/admin/profile' : null
+  const isArabic = i18n.language?.startsWith('ar')
+  const ownerVenueName = ownerVenue
+    ? (isArabic ? ownerVenue.name_ar || ownerVenue.name_en : ownerVenue.name_en || ownerVenue.name_ar) || null
+    : null
+  const greetingSubtitle = venue ? venue.name : ownerVenueName || subtitle
+  const avatarLabel = [fullName, roleLabelKey && t(roleLabelKey)].filter(Boolean).join(' — ')
 
   return (
     <div className="dashboard-layout">
@@ -44,9 +128,12 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
       >
         <div className="dashboard-sidebar-brand">
           {/* PLAYVO wordmark (text logo): Baloo, white "PLAY" + orange "VO". */}
-          <span className="dashboard-wordmark" dir="ltr" aria-label="PLAYVO">
-            <span className="dashboard-wordmark-light">PLAY</span>
-            <span className="dashboard-wordmark-accent">VO</span>
+          <span className="dashboard-brand" dir="ltr">
+            {brandMark && <img className="dashboard-brand-mark" src={logoMark} alt="" />}
+            <span className="dashboard-wordmark" aria-label="PLAYVO">
+              <span className="dashboard-wordmark-light">PLAY</span>
+              <span className="dashboard-wordmark-accent">VO</span>
+            </span>
           </span>
           <button
             type="button"
@@ -76,6 +163,8 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
                     {t(labelKey)}
                   </NavLink>
                 ) : (
+                  // Page not built yet (Admin: venues, payment receipts,
+                  // admin accounts): shown without an action.
                   <span className="dashboard-nav-item" aria-disabled="true">
                     <Icon className="dashboard-nav-icon" size={18} aria-hidden="true" />
                     {t(labelKey)}
@@ -122,39 +211,52 @@ function DashboardLayout({ navItems, venue, roleLabelKey, children }) {
             >
               <Menu size={20} aria-hidden="true" />
             </button>
-            {/* Profile button (avatar only, next to the greeting, as in the
-                design): placeholder for the future profile menu, so it has no
-                action and opens nothing for now. */}
-            <button
-              type="button"
-              className="dashboard-user"
-              aria-label={[fullName, roleLabelKey && t(roleLabelKey)].filter(Boolean).join(' — ')}
-            >
-              <span className="dashboard-avatar" aria-hidden="true">
-                {initial}
-              </span>
-            </button>
+            {/* Avatar (next to the greeting, as in the design): opens the
+                user's profile page when the role has one; otherwise it keeps
+                no action. */}
+            {profilePath ? (
+              <Link to={profilePath} className="dashboard-user" aria-label={avatarLabel}>
+                {avatar}
+              </Link>
+            ) : (
+              <button type="button" className="dashboard-user" aria-label={avatarLabel}>
+                {avatar}
+              </button>
+            )}
             <div className="dashboard-greeting">
               <p className="dashboard-greeting-title">
                 {t('dashboardLayout.greeting', { name: firstName })} <span aria-hidden="true">👋</span>
               </p>
-              {venue && <p className="dashboard-greeting-subtitle">{venue.name}</p>}
+              {greetingSubtitle && <p className="dashboard-greeting-subtitle">{greetingSubtitle}</p>}
             </div>
           </div>
 
           <div className="dashboard-topbar-end">
-            <button
-              type="button"
-              className="dashboard-bell"
-              aria-label={t('dashboardLayout.notifications')}
-            >
-              <Bell size={18} aria-hidden="true" />
-              <span className="dashboard-bell-dot" aria-hidden="true" />
-            </button>
+            {/* The bell opens the role's notifications page. */}
+            {notificationsPath ? (
+              <Link
+                to={notificationsPath}
+                className="dashboard-bell"
+                aria-label={t('dashboardLayout.notifications')}
+              >
+                <Bell size={18} aria-hidden="true" />
+                {showBellDot && <span className="dashboard-bell-dot" aria-hidden="true" />}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="dashboard-bell"
+                aria-label={t('dashboardLayout.notifications')}
+              >
+                <Bell size={18} aria-hidden="true" />
+                <span className="dashboard-bell-dot" aria-hidden="true" />
+              </button>
+            )}
           </div>
         </header>
 
         <main className="dashboard-content">{children}</main>
+        <ToastHost />
       </div>
     </div>
   )

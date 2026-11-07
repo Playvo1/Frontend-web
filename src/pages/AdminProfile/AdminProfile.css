@@ -1,0 +1,584 @@
+/*
+ * Admin "Profile" page (design reference): title, account header card,
+ * "Personal information" + "Security & password" side by side, then
+ * "Account information". Logical properties so RTL and LTR share the rules.
+ * Same card / badge / gray values as the other dashboard pages.
+ */
+
+.adp-header {
+  margin-block-end: 24px;
+}
+
+.adp-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.adp-subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #7a8793; /* Gray 500 */
+}
+
+.adp-card {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+  box-shadow: 0 1px 3px rgb(1 33 61 / 6%);
+}
+
+/* ---- Account header ---- */
+.adp-account {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 28px;
+}
+
+.adp-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.adp-avatar {
+  width: 88px;
+  height: 88px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-navy);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+/* Camera button on the avatar's lower corner (design). */
+.adp-photo-button {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-white);
+  border-radius: 50%;
+  background: #e3edf2; /* Navy 100 */
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.adp-photo-button:disabled {
+  cursor: progress;
+}
+
+.adp-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.adp-account-text {
+  min-width: 0;
+}
+
+.adp-account-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.adp-account-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+
+.adp-account-email {
+  margin: 6px 0 10px;
+  font-size: 13px;
+  color: #7a8793;
+  overflow-wrap: anywhere;
+}
+
+.adp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.adp-badge-role {
+  background: #fff1ea; /* light tint of the brand orange */
+  color: var(--color-orange);
+}
+
+.adp-badge-success {
+  background: #f0fdf4; /* light green, as on the other pages */
+  color: var(--color-success);
+}
+
+.adp-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---- Panels ---- */
+.adp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 20px;
+  margin-block: 20px;
+}
+
+.adp-panel {
+  padding: 24px;
+}
+
+.adp-panel-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-block-end: 20px;
+}
+
+.adp-panel-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #edf2f6; /* gray tile */
+  color: var(--color-navy);
+}
+
+.adp-panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.adp-panel-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7a8793;
+}
+
+.adp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.adp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.adp-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.adp-input,
+.adp-password {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  background: var(--color-white);
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.adp-input {
+  padding-inline: 14px;
+}
+
+.adp-input:focus,
+.adp-password:focus-within {
+  border-color: var(--color-navy);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(1 33 61 / 8%);
+}
+
+/* Email / phone are typed left-to-right but keep the page's alignment. */
+[dir='rtl'] .adp-input-ltr {
+  text-align: right;
+}
+
+.adp-input-invalid,
+.adp-input-invalid:focus,
+.adp-password.adp-input-invalid:focus-within {
+  border-color: var(--color-error);
+}
+
+/* Password: input + show/hide eye (design: eye on the end side). */
+.adp-password {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline: 14px 6px;
+}
+
+.adp-password-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+[dir='rtl'] .adp-password-input {
+  text-align: right;
+}
+
+.adp-eye {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #7a8793;
+  cursor: pointer;
+}
+
+.adp-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+.adp-notice {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.adp-notice-error {
+  background: #fdecec;
+  color: var(--color-error);
+}
+
+.adp-notice-info {
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+}
+
+.adp-notice-success {
+  background: #f0fdf4;
+  color: var(--color-success);
+}
+
+.adp-account .adp-notice {
+  margin-block-start: 10px;
+}
+
+.adp-submit {
+  margin-block-start: 8px;
+  height: 46px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-navy);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgb(1 33 61 / 18%);
+}
+
+.adp-submit:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.adp-photo-button:focus-visible,
+.adp-eye:focus-visible,
+.adp-submit:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+/* Push both forms' buttons to the bottom so they line up (design). */
+.adp-grid .adp-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.adp-grid .adp-form {
+  flex: 1 1 auto;
+}
+
+.adp-grid .adp-submit {
+  margin-block-start: auto;
+}
+
+/* ---- Account information ---- */
+.adp-info .adp-panel-title {
+  margin-block-end: 20px;
+}
+
+.adp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.adp-info-item {
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--color-background-secondary);
+}
+
+.adp-info-item dt {
+  font-size: 11px;
+  color: #7a8793;
+}
+
+.adp-info-item dd {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+
+.adp-info-item .adp-info-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-success);
+}
+
+/* ---- Loading (design) ---- */
+.adp-skeleton-card {
+  pointer-events: none;
+  user-select: none;
+}
+
+.adp-skeleton,
+.adp-skeleton-avatar {
+  display: block;
+  border-radius: 6px;
+  background-color: #eef2f5; /* placeholder gray (as on the other pages) */
+}
+
+.adp-skeleton-avatar {
+  border-radius: 50%;
+  background-color: #d6dde3;
+}
+
+.adp-skeleton-badge {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-white);
+  border-radius: 50%;
+  background: #e3edf2;
+  color: var(--color-navy);
+}
+
+.adp-skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.adp-skeleton-name {
+  width: 18%;
+  min-width: 80px;
+  height: 14px;
+}
+
+.adp-skeleton-email {
+  width: 34%;
+  min-width: 140px;
+  height: 12px;
+}
+
+.adp-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-block-start: 20px;
+}
+
+.adp-skeleton-column {
+  display: grid;
+  gap: 20px;
+}
+
+.adp-skeleton-panel {
+  min-height: 240px;
+  padding: 24px;
+}
+
+.adp-skeleton-tall {
+  min-height: 500px;
+}
+
+.adp-skeleton-title {
+  width: 52%;
+  height: 12px;
+}
+
+.adp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Error: no connection / server (design) ---- */
+.adp-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 96px 16px;
+  text-align: center;
+}
+
+.adp-error-icon {
+  margin-block-end: 12px;
+  color: #a3adb8; /* Gray 400 */
+}
+
+.adp-error-icon-server {
+  color: var(--color-error);
+}
+
+.adp-error-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.adp-error-text {
+  max-width: 420px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #7a8793;
+}
+
+.adp-error-retry {
+  margin-block-start: 16px;
+  min-width: 240px;
+  height: 44px;
+  padding-inline: 24px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #01213d 0%, #023d70 100%); /* as the primary buttons */
+  color: var(--color-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adp-error-retry:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1100px) {
+  .adp-grid,
+  .adp-skeleton-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adp-skeleton-tall {
+    min-height: 360px;
+  }
+}
+
+@media (max-width: 600px) {
+  .adp-title {
+    font-size: 20px;
+  }
+
+  .adp-account {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 16px;
+  }
+
+  .adp-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 24px;
+  }
+
+  .adp-panel {
+    padding: 20px 16px;
+  }
+
+  .adp-info-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .adp-error-state {
+    padding-block: 64px;
+  }
+
+  .adp-error-retry {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* 16px prevents iOS Safari from zooming into the field on focus. */
+  .adp-input,
+  .adp-password-input {
+    font-size: 16px;
+  }
+}

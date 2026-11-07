@@ -101,6 +101,19 @@
   padding-block-end: 50px;
 }
 
+/* API mode: the backend has no data for this chart — the card keeps its
+ * title and shows a short "not connected" line instead (no empty room). */
+.voa-panel.voa-panel-no-data {
+  padding-block-end: 32px;
+}
+
+.voa-panel-unavailable {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
 .voa-panel-trend .voa-panel-header {
   margin-block-end: 12px; /* the plot starts close under the subtitle */
 }

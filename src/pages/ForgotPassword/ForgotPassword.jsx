@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Mail } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -6,7 +6,9 @@ import AuthLayout from '../../components/AuthLayout/AuthLayout.jsx'
 import AuthStep from '../../components/AuthLayout/AuthStep.jsx'
 import Button from '../../components/Button/Button.jsx'
 import Input from '../../components/Input/Input.jsx'
+import { ROLES, ROLE_LOGIN } from '../../constants/roles.js'
 import { requestPasswordReset } from '../../services/authService.js'
+import { rememberRecoveryLoginPath } from '../../utils/recoveryFlow.js'
 import { isValidEmail } from '../../utils/validation.js'
 
 // Forgot Password — step 1 (enter email), route: /forgot-password.
@@ -17,9 +19,18 @@ import { isValidEmail } from '../../utils/validation.js'
 // The request goes through authService.requestPasswordReset, a MOCK of
 // POST /api/v1/auth/forgot-password. On success the user continues to
 // /verify-code (step 2); the email travels in the route state.
-function ForgotPassword() {
+// Each role has its own step-1 page: /forgot-password (Venue Owner, this
+// component with no props) and /admin/forgot-password (AdminForgotPassword
+// .jsx: own hero, `loginPath` /admin/login). That login path is passed in
+// the route state to the shared steps 2-3, and remembered for the tab
+// (utils/recoveryFlow.js), so the flow returns to the right login page.
+function ForgotPassword({ hero, loginPath = ROLE_LOGIN[ROLES.VENUE_OWNER] }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    rememberRecoveryLoginPath(loginPath)
+  }, [loginPath])
 
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState(null)
@@ -50,7 +61,7 @@ function ForgotPassword() {
     setIsSubmitting(true)
     try {
       const { email: requestedEmail } = await requestPasswordReset({ email })
-      navigate('/verify-code', { state: { email: requestedEmail } })
+      navigate('/verify-code', { state: { email: requestedEmail, loginPath } })
     } catch {
       setFormError('forgotPassword.errors.generic')
       setIsSubmitting(false)
@@ -58,8 +69,8 @@ function ForgotPassword() {
   }
 
   return (
-    <AuthLayout>
-      <AuthStep title={t('forgotPassword.title')} subtitle={t('forgotPassword.subtitle')}>
+    <AuthLayout hero={hero}>
+      <AuthStep title={t('forgotPassword.title')} subtitle={t('forgotPassword.subtitle')} loginPath={loginPath}>
         {/* noValidate: validation messages are our own translated ones. */}
         <form className="auth-step-form" onSubmit={handleSubmit} noValidate>
           <Input

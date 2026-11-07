@@ -5,20 +5,27 @@ import AuthLayout from '../../components/AuthLayout/AuthLayout.jsx'
 import AuthStep from '../../components/AuthLayout/AuthStep.jsx'
 import Button from '../../components/Button/Button.jsx'
 import Input from '../../components/Input/Input.jsx'
+import { ROLES, ROLE_LOGIN, toForgotPasswordPath } from '../../constants/roles.js'
 import { AUTH_ERRORS, requestPasswordReset, resetPassword } from '../../services/authService.js'
+import { clearRecoveryLoginPath, getRecoveryLoginPath } from '../../utils/recoveryFlow.js'
 import { PASSWORD_MIN_LENGTH } from '../../utils/validation.js'
+import AdminAuthHero from '../AdminLogin/AdminAuthHero.jsx'
 import './ResetPassword.css'
 
 // Reset Password — password recovery step 3 (final), route: /reset-password.
-// Reached from /verify-code, which passes the email and the verified code in
-// the route state; opening this page directly (or after a reload, which
-// clears that state) sends the user back to step 1, like /verify-code does.
+// Reached from /verify-code, which passes the email, the verified code and
+// the flow's login page in the route state; that state survives a reload.
+// Opening this page without it sends the user back to the flow's step 1,
+// like /verify-code does. Shared by both roles: an Admin flow shows the Admin
+// hero (Admin design), a Venue Owner flow the default one — the form is the
+// same.
 //
 // Matches the Figma reference: new password + confirmation fields (no
 // visibility toggle in the design), the "Didn't receive a code? Resend"
 // link, and the "Set password" button. The reset is a MOCK
 // (authService.resetPassword). On success a confirmation is shown and the
-// user is sent to /login after a short delay.
+// user is sent to the flow's login page (/login or /admin/login) after a
+// short delay.
 //
 // Frontend checks: both fields required, at least PASSWORD_MIN_LENGTH (8)
 // characters — the backend's min:8 rule — and matching. The confirmation is
@@ -32,6 +39,8 @@ function ResetPassword() {
   const navigate = useNavigate()
   const email = location.state?.email
   const code = location.state?.code
+  // Login page of this recovery flow (route state, or remembered for the tab).
+  const loginPath = getRecoveryLoginPath(location.state?.loginPath)
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -41,15 +50,17 @@ function ResetPassword() {
   const [isResending, setIsResending] = useState(false)
   const [isDone, setIsDone] = useState(false)
 
-  // After a successful reset, show the confirmation briefly, then go to login.
+  // After a successful reset, show the confirmation briefly, then go to the
+  // login page the flow started from (/login or /admin/login).
   useEffect(() => {
     if (!isDone) return undefined
-    const timer = setTimeout(() => navigate('/login', { replace: true }), REDIRECT_DELAY_MS)
+    clearRecoveryLoginPath()
+    const timer = setTimeout(() => navigate(loginPath, { replace: true }), REDIRECT_DELAY_MS)
     return () => clearTimeout(timer)
-  }, [isDone, navigate])
+  }, [isDone, navigate, loginPath])
 
   if (!email || !code) {
-    return <Navigate to="/forgot-password" replace />
+    return <Navigate to={toForgotPasswordPath(loginPath)} replace state={{ loginPath }} />
   }
 
   const handlePasswordChange = (event) => {
@@ -109,7 +120,7 @@ function ResetPassword() {
     setFormError(null)
     try {
       await requestPasswordReset({ email })
-      navigate('/verify-code', { state: { email } })
+      navigate('/verify-code', { state: { email, loginPath } })
     } catch {
       setFormError('resetPassword.errors.generic')
       setIsResending(false)
@@ -117,9 +128,10 @@ function ResetPassword() {
   }
 
   const isBusy = isSubmitting || isResending || isDone
+  const isAdminFlow = loginPath === ROLE_LOGIN[ROLES.ADMIN]
 
   return (
-    <AuthLayout>
+    <AuthLayout hero={isAdminFlow ? <AdminAuthHero /> : undefined}>
       <AuthStep title={t('resetPassword.title')} subtitle={t('resetPassword.subtitle')}>
         {/* noValidate: validation messages are our own translated ones. */}
         <form className="auth-step-form reset-password-form" onSubmit={handleSubmit} noValidate>

@@ -33,6 +33,11 @@
   color: var(--color-error);
 }
 
+/* "Not available" (API mode, not connected yet): information, not an error. */
+.vos-message-muted {
+  color: var(--color-text-secondary);
+}
+
 .vos-create {
   flex-shrink: 0;
   display: inline-flex;
@@ -42,7 +47,7 @@
   padding-inline: 16px;
   border: none;
   border-radius: 6px;
-  background: var(--color-orange);
+  background: var(--color-navy);
   font: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -624,4 +629,102 @@
    black at 50%, as in the Figma prototype. */
 .vos-modal::backdrop {
   background: rgba(0, 0, 0, 0.5);
+}
+
+/* ---- API mode: blocked slots, unavailable actions, load errors ---- */
+.vos-dot-blocked {
+  background: #a3adb8; /* Gray 400 */
+}
+
+.vos-slot-blocked {
+  align-items: flex-start;
+  margin-inline: -8px;
+  padding-block: 18px;
+  padding-inline: 20px 23px;
+  border-block-end-color: #f1f4f6; /* Gray 100 */
+}
+
+.vos-slot-blocked .vos-slot-info {
+  position: relative;
+  gap: 7px;
+  padding-inline-start: 20px;
+  border-inline-start: none;
+}
+
+.vos-slot-blocked .vos-slot-info::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  border-radius: 2px;
+  background: #a3adb8;
+}
+
+.vos-slot-blocked .vos-slot-time,
+.vos-slot-blocked .vos-slot-meta {
+  line-height: 15px;
+}
+
+.vos-slot-blocked .vos-slot-status {
+  align-self: flex-start;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #f1f4f6;
+  line-height: 18px;
+  color: #5b6773;
+}
+
+.vos-slot-blocked .vos-slot-meta {
+  gap: 6px;
+  font-size: 12px;
+}
+
+.vos-action:disabled,
+.vos-create:disabled,
+.vos-add:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.vos-create-note {
+  max-width: 520px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #7a8793; /* Gray 500 */
+}
+
+.vos-load-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.vos-load-error p {
+  margin: 0;
+}
+
+.vos-retry {
+  height: 32px;
+  padding-inline: 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-navy);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vos-retry:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+.vos-day-error {
+  gap: 12px;
 }

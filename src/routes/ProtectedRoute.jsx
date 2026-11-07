@@ -7,12 +7,13 @@ import { useAuth } from '../context/useAuth.js'
 // - Signed in, wrong role -> that user's own dashboard
 // UI-level guard only; the backend still enforces roles on every request
 // (Guidelines §2.4: never trust a role value from the client).
-function ProtectedRoute({ allowedRoles, children }) {
+// loginPath: where signed-out users go (Admin pages use /admin/login).
+function ProtectedRoute({ allowedRoles, loginPath = '/login', children }) {
   const { isAuthenticated, user } = useAuth()
   const location = useLocation()
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />
+    return <Navigate to={loginPath} replace state={{ from: location }} />
   }
 
   const role = getPrimaryRole(user)

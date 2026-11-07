@@ -4,9 +4,18 @@ import { useTranslation } from 'react-i18next'
 
 // "Edit venue details" view of the My venue page (design), opened from the
 // "Edit" button of the venue information card. The form starts from the
-// current facility data (mock); "Save changes" hands the edited copy back to
-// the page (local state only — no backend request), "Cancel" / "Back"
-// discard it.
+// current facility data; "Save changes" hands the edited copy to the page's
+// onSave, which returns a promise: demo mode keeps it in the page's state,
+// API mode saves it on the backend (see VenueOwnerFacility). While it runs
+// the button says "Saving…"; a rejection keeps the form open with a message
+// (connection / server / the backend's field errors). "Cancel" / "Back"
+// discard the edits.
+//
+// editableFields (API mode): the fields the backend can save
+// (facilityService.FACILITY_EDITABLE_FIELDS: name, description, area,
+// address, surface, dimensions, capacity, morning / evening prices). The
+// other fields (owner, status, sport) are shown disabled with a note, are not
+// validated and are not changed. null (demo mode): every field, as before.
 //
 // Text fields edit the current language's value (e.g. name_ar in Arabic).
 
@@ -46,12 +55,43 @@ function parseDimensions(text) {
   return { length: Number(match[1]), width: Number(match[2]), format: match[3]?.trim() ?? '' }
 }
 
-function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) {
+// Backend field errors (422) -> the form field they belong to. The form
+// edits the current language's values only: an error on the other
+// language's value (e.g. address_en while editing in Arabic) cannot be fixed
+// here, so it is reported as 'otherLanguage' instead of marking the field
+// on screen.
+const SERVER_FIELDS = {
+  name_ar: 'name',
+  name_en: 'name',
+  description_ar: 'description',
+  description_en: 'description',
+  address_ar: 'address',
+  address_en: 'address',
+  area_ar: 'area',
+  area_en: 'area',
+  surface_ar: 'surface',
+  surface_en: 'surface',
+  capacity_ar: 'capacity',
+  capacity_en: 'capacity',
+  length_m: 'dimensions',
+  width_m: 'dimensions',
+  morning_hourly_price: 'morningPrice',
+  evening_hourly_price: 'eveningPrice',
+}
+
+function VenueOwnerFacilityEdit({ facility, dimensionsText, editableFields = null, onCancel, onSave }) {
   const { t, i18n } = useTranslation()
   const isRtl = i18n.dir() === 'rtl'
   const suffix = i18n.language === 'ar' ? 'ar' : 'en'
   const [form, setForm] = useState(() => toForm(facility, suffix, dimensionsText))
+  // { [field]: true (required) | 'invalidDimensions' | 'server' }
   const [errors, setErrors] = useState({})
+  const [isSaving, setIsSaving] = useState(false)
+  // null | 'network' | 'server' | 'location' (the venue has no map position:
+  // the backend cannot save it) | 'fields' (see errors) | 'otherLanguage'
+  // (a value of the other language is missing / invalid on the backend)
+  const [saveError, setSaveError] = useState(null)
+  const isEditable = (field) => editableFields === null || editableFields.includes(field)
 
   const BackIcon = isRtl ? ChevronRight : ChevronLeft
 
@@ -68,16 +108,30 @@ function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) 
 
   const handleSubmit = (event) => {
     event.preventDefault()
+    if (isSaving) return
     const missing = Object.fromEntries(
-      REQUIRED_FIELDS.filter((field) => !String(form[field]).trim()).map((field) => [field, true]),
+      REQUIRED_FIELDS.filter((field) => isEditable(field) && !String(form[field]).trim()).map((field) => [
+        field,
+        true,
+      ]),
     )
+    const dimensions = parseDimensions(form.dimensions)
+    // Saved on the backend: a dimensions text that cannot be read is an
+    // error, not silently dropped.
+    if (editableFields !== null && form.dimensions.trim() && !dimensions) {
+      missing.dimensions = 'invalidDimensions'
+    }
     if (Object.keys(missing).length > 0) {
       setErrors(missing)
       return
     }
 
-    const dimensions = parseDimensions(form.dimensions)
-    onSave({
+    // API mode: an emptied dimensions field clears them.
+    const clearsDimensions = editableFields !== null && !form.dimensions.trim()
+    setIsSaving(true)
+    setSaveError(null)
+    Promise.resolve(
+      onSave({
       ...facility,
       [`name_${suffix}`]: form.name.trim(),
       owner_name: form.owner.trim(),
@@ -92,8 +146,38 @@ function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) 
         width_m: dimensions.width,
         [`team_format_${suffix}`]: dimensions.format,
       }),
+      ...(clearsDimensions && { length_m: null, width_m: null }),
       morning_hourly_price: form.morningPrice === '' ? facility.morning_hourly_price : Number(form.morningPrice),
       evening_hourly_price: form.eveningPrice === '' ? facility.evening_hourly_price : Number(form.eveningPrice),
+      }),
+    ).catch((error) => {
+      // A 401 is handled by the page (sign out); nothing to show here.
+      if (error?.status === 401) return
+      setIsSaving(false)
+      if (error?.status === 0) {
+        setSaveError('network')
+        return
+      }
+      if (error?.status === 422 && error.errors && typeof error.errors === 'object') {
+        const fields = {}
+        const otherSuffix = suffix === 'ar' ? 'en' : 'ar'
+        let isOtherLanguage = false
+        for (const key of Object.keys(error.errors)) {
+          if (!SERVER_FIELDS[key]) continue
+          if (key.endsWith(`_${otherSuffix}`)) isOtherLanguage = true
+          else fields[SERVER_FIELDS[key]] = 'server'
+        }
+        if (error.errors.latitude || error.errors.longitude) {
+          setSaveError('location')
+        } else if (Object.keys(fields).length > 0) {
+          setSaveError('fields')
+        } else {
+          setSaveError(isOtherLanguage ? 'otherLanguage' : 'server')
+        }
+        setErrors(fields)
+        return
+      }
+      setSaveError('server')
     })
   }
 
@@ -112,18 +196,25 @@ function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) 
   const errorText = (field) =>
     errors[field] && (
       <p className="vofe-error" role="alert">
-        {t('venueOwnerFacility.editForm.required')}
+        {t(
+          errors[field] === 'invalidDimensions'
+            ? 'venueOwnerFacility.editForm.invalidDimensions'
+            : errors[field] === 'server'
+              ? 'venueOwnerFacility.editForm.serverInvalid'
+              : 'venueOwnerFacility.editForm.required',
+        )}
       </p>
     )
 
   const textField = (field, { required = true } = {}) => (
     <div className="vofe-field">
-      {label(field, `vofe-${field}`, required)}
+      {label(field, `vofe-${field}`, required && isEditable(field))}
       <input
         id={`vofe-${field}`}
         className={errors[field] ? 'vofe-input vofe-input-invalid' : 'vofe-input'}
         value={form[field]}
         onChange={update(field)}
+        disabled={!isEditable(field)}
         aria-invalid={errors[field] ? true : undefined}
       />
       {errorText(field)}
@@ -143,6 +234,7 @@ function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) 
           inputMode="decimal"
           value={form[field]}
           onChange={updatePrice(field)}
+          disabled={!isEditable(field)}
         />
       </div>
     </div>
@@ -179,6 +271,12 @@ function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) 
             {t('venueOwnerFacility.editForm.requiredNote')}{' '}
             <span className="vofe-required">*</span> {t('venueOwnerFacility.editForm.requiredNoteEnd')}
           </p>
+          {editableFields !== null && (
+            <p className="vofe-api-note" role="note">
+              <Info className="vofe-info-icon" size={14} aria-hidden="true" />
+              <span>{t('venueOwnerFacility.editForm.apiEditableNote')}</span>
+            </p>
+          )}
         </header>
 
         <div className="vofe-body">
@@ -197,31 +295,39 @@ function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) 
                 </span>
               </legend>
               <div className="vofe-sport-grid">
-                {SPORTS.map(({ key, emoji, available }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    className={available ? 'vofe-sport vofe-sport-selected' : 'vofe-sport'}
-                    aria-pressed={available}
-                    disabled={!available}
-                  >
-                    {!available && <span className="vofe-sport-soon">{t('venueOwnerFacility.editForm.soon')}</span>}
-                    <span className="vofe-sport-icon" aria-hidden="true">
-                      {emoji}
-                    </span>
-                    <span className="vofe-sport-name">{t(`venueOwnerFacility.editForm.sports.${key}`)}</span>
-                  </button>
-                ))}
+                {SPORTS.map(({ key, emoji, available }) => {
+                  // API mode: selected only when the backend lists it.
+                  const selected =
+                    editableFields === null
+                      ? available
+                      : String(facility.sport_en ?? '').toLowerCase().includes(key)
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      className={selected ? 'vofe-sport vofe-sport-selected' : 'vofe-sport'}
+                      aria-pressed={selected}
+                      disabled={!available || !isEditable('sport')}
+                    >
+                      {!available && <span className="vofe-sport-soon">{t('venueOwnerFacility.editForm.soon')}</span>}
+                      <span className="vofe-sport-icon" aria-hidden="true">
+                        {emoji}
+                      </span>
+                      <span className="vofe-sport-name">{t(`venueOwnerFacility.editForm.sports.${key}`)}</span>
+                    </button>
+                  )
+                })}
               </div>
             </fieldset>
 
             <div className="vofe-field vofe-span">
-              {label('description', 'vofe-description', true)}
+              {label('description', 'vofe-description', isEditable('description'))}
               <textarea
                 id="vofe-description"
                 className="vofe-input vofe-textarea"
                 value={form.description}
                 onChange={update('description')}
+                disabled={!isEditable('description')}
                 placeholder={t('venueOwnerFacility.editForm.descriptionPlaceholder')}
               />
             </div>
@@ -233,8 +339,14 @@ function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) 
             {textField('area')}
             {textField('address')}
             <div className="vofe-field">
-              {label('status', 'vofe-status', true)}
-              <select id="vofe-status" className="vofe-input" value={form.status} onChange={update('status')}>
+              {label('status', 'vofe-status', isEditable('status'))}
+              <select
+                id="vofe-status"
+                className="vofe-input"
+                value={form.status}
+                onChange={update('status')}
+                disabled={!isEditable('status')}
+              >
                 <option value="active">{t('venueOwnerFacility.status.active')}</option>
                 <option value="inactive">{t('venueOwnerFacility.status.inactive')}</option>
               </select>
@@ -257,12 +369,18 @@ function VenueOwnerFacilityEdit({ facility, dimensionsText, onCancel, onSave }) 
         </div>
       </section>
 
+      {saveError && (
+        <p className="vofe-save-error" role="alert">
+          {t(`venueOwnerFacility.editForm.saveErrors.${saveError}`)}
+        </p>
+      )}
+
       <footer className="vofe-footer">
-        <button type="button" className="vofe-cancel" onClick={onCancel}>
+        <button type="button" className="vofe-cancel" onClick={onCancel} disabled={isSaving}>
           {t('venueOwnerFacility.editForm.cancel')}
         </button>
-        <button type="submit" className="vofe-save">
-          {t('venueOwnerFacility.editForm.save')}
+        <button type="submit" className="vofe-save" disabled={isSaving} aria-busy={isSaving || undefined}>
+          {t(isSaving ? 'venueOwnerFacility.editForm.saving' : 'venueOwnerFacility.editForm.save')}
         </button>
       </footer>
     </form>
