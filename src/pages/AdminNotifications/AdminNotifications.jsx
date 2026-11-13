@@ -62,12 +62,11 @@ const TYPE_ICONS = {
 }
 
 // Action of each kind: label key + the page it opens. `to: null` = that
-// Admin page is not built yet (payment receipts /payments, venues /venues,
-// admin accounts /admins): the button only marks the notification as read.
-// Set `to` when the page is added.
+// Admin page is not linked yet (venues, admin accounts /admins): the button
+// only marks the notification as read. Set `to` when the page is linked.
 const ACTION_ROUTES = {
-  payment_receipt_uploaded: { labelKey: 'adminNotifications.actions.reviewReceipt', to: null },
-  payment_receipts_pending: { labelKey: 'adminNotifications.actions.viewReceipts', to: null },
+  payment_receipt_uploaded: { labelKey: 'adminNotifications.actions.reviewReceipt', to: '/admin/payments' },
+  payment_receipts_pending: { labelKey: 'adminNotifications.actions.viewReceipts', to: '/admin/payments' },
   venue_created: { labelKey: 'adminNotifications.actions.viewVenues', to: null },
   admin_created: { labelKey: 'adminNotifications.actions.viewAccounts', to: null },
 }

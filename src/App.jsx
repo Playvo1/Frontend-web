@@ -5,6 +5,7 @@ import { ROLES } from './constants/roles.js'
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard.jsx'
 import AdminAddVenue from './pages/AdminVenues/AdminAddVenue.jsx'
 import AdminVenueDetails from './pages/AdminVenues/AdminVenueDetails.jsx'
+import AdminPayments from './pages/AdminPayments/AdminPayments.jsx'
 import AdminVenues from './pages/AdminVenues/AdminVenues.jsx'
 import AdminForgotPassword from './pages/AdminForgotPassword/AdminForgotPassword.jsx'
 import AdminLogin from './pages/AdminLogin/AdminLogin.jsx'
@@ -222,6 +223,15 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
             <AdminVenueDetails />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/payments"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminPayments />
           </ProtectedRoute>
         }
       />

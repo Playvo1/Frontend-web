@@ -6,6 +6,6 @@ import { LayoutGrid, ReceiptText, UserPlus, Warehouse } from 'lucide-react'
 export const ADMIN_NAV = [
   { key: 'dashboard', labelKey: 'dashboardLayout.nav.adminDashboard', icon: LayoutGrid, to: '/admin/dashboard' },
   { key: 'venues', labelKey: 'dashboardLayout.nav.venuesManagement', icon: Warehouse, to: '/admin/venues', matchNested: true },
-  { key: 'payments', labelKey: 'dashboardLayout.nav.paymentReceipts', icon: ReceiptText },
+  { key: 'payments', labelKey: 'dashboardLayout.nav.paymentReceipts', icon: ReceiptText, to: '/admin/payments' },
   { key: 'admins', labelKey: 'dashboardLayout.nav.adminAccounts', icon: UserPlus },
 ]
