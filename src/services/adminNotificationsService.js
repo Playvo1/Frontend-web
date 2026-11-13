@@ -1,5 +1,4 @@
 import { IS_API_ENABLED } from '../config/api.js'
-import { createMockAdminNotifications } from '../mocks/mockAdminNotifications.js'
 import { getNotifications, markNotificationRead } from './notificationsService.js'
 
 // Notifications of the signed-in Admin (Admin Notifications page).
@@ -18,7 +17,9 @@ import { getNotifications, markNotificationRead } from './notificationsService.j
 // getAdminNotifications(token) -> Promise<[{ id, type, title, body,
 //   titleKey?, bodyKey?, is_read, created_at, booking_id }]>  (newest first)
 export function getAdminNotifications(token) {
-  if (!IS_API_ENABLED) return Promise.resolve(createMockAdminNotifications())
+  if (!IS_API_ENABLED) {
+    return import('../mocks/mockAdminNotifications.js').then((mocks) => mocks.createMockAdminNotifications())
+  }
   return getNotifications(token)
 }
 

@@ -3,6 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Route, Routes } from 'react-router-dom'
 import { ROLES } from './constants/roles.js'
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard.jsx'
+import AdminAddVenue from './pages/AdminVenues/AdminAddVenue.jsx'
+import AdminVenueDetails from './pages/AdminVenues/AdminVenueDetails.jsx'
+import AdminVenues from './pages/AdminVenues/AdminVenues.jsx'
 import AdminForgotPassword from './pages/AdminForgotPassword/AdminForgotPassword.jsx'
 import AdminLogin from './pages/AdminLogin/AdminLogin.jsx'
 import AdminNotifications from './pages/AdminNotifications/AdminNotifications.jsx'
@@ -192,6 +195,33 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/venues"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminVenues />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/venues/new"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminAddVenue />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/venues/:venueId"
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} loginPath="/admin/login">
+            <AdminVenueDetails />
           </ProtectedRoute>
         }
       />

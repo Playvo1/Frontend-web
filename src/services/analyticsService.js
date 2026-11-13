@@ -1,5 +1,4 @@
 import { IS_API_ENABLED } from '../config/api.js'
-import { MOCK_VENUE_OWNER_ANALYTICS } from '../mocks/mockVenueOwnerAnalytics.js'
 import { apiRequest } from './apiClient.js'
 
 // Venue Owner analytics service.
@@ -37,7 +36,10 @@ function toNumber(value) {
 }
 
 export async function getVenueOwnerAnalytics(token) {
-  if (!IS_API_ENABLED) return structuredClone(MOCK_VENUE_OWNER_ANALYTICS)
+  if (!IS_API_ENABLED) {
+    const { MOCK_VENUE_OWNER_ANALYTICS } = await import('../mocks/mockVenueOwnerAnalytics.js')
+    return structuredClone(MOCK_VENUE_OWNER_ANALYTICS)
+  }
 
   const body = await apiRequest('/venue_owner/owner/analytics?period=month', { token })
   const data = body?.data

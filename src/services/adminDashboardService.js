@@ -1,5 +1,4 @@
 import { IS_API_ENABLED } from '../config/api.js'
-import { MOCK_ADMIN_DASHBOARD } from '../mocks/mockAdminDashboard.js'
 import { apiRequest } from './apiClient.js'
 import { absoluteUrl } from './facilityService.js'
 
@@ -80,7 +79,10 @@ function toDashboard(data) {
 }
 
 export async function getAdminDashboard(token) {
-  if (!IS_API_ENABLED) return structuredClone(MOCK_ADMIN_DASHBOARD)
+  if (!IS_API_ENABLED) {
+    const { MOCK_ADMIN_DASHBOARD } = await import('../mocks/mockAdminDashboard.js')
+    return structuredClone(MOCK_ADMIN_DASHBOARD)
+  }
   const body = await apiRequest('/admin/dashboard', { token })
   return toDashboard(body?.data)
 }

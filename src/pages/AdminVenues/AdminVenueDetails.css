@@ -1,0 +1,517 @@
+/*
+ * Admin "Venue details" page — layout from the design: title + status badge
+ * and subtitle with "Remove venue" / "Back to venues"; a wide venue card
+ * (cover with name and location, three fact tiles, description) beside the
+ * owner card; then the full-width photos card. Colors use the tokens in
+ * index.css; spacing follows the 8pt grid.
+ */
+
+/* Header */
+.avd-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 24px;
+}
+
+.avd-heading {
+  min-width: 0;
+}
+
+.avd-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.avd-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+
+.avd-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.avd-status {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.avd-status-active {
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--color-success);
+}
+
+.avd-status-inactive {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--color-warning);
+}
+
+.avd-header-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avd-remove,
+.avd-back,
+.avd-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding-inline: 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.avd-remove {
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  background: var(--color-white);
+  color: var(--color-error);
+}
+
+.avd-remove:hover {
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.avd-back {
+  border: 1px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-navy);
+}
+
+.avd-back:hover {
+  background: var(--color-background-secondary);
+}
+
+.avd-retry {
+  border: none;
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.avd-retry:hover {
+  background: #0b3557; /* Navy 700 */
+}
+
+.avd-remove:focus-visible,
+.avd-back:focus-visible,
+.avd-retry:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+/* Cards */
+.avd-card {
+  border-radius: 12px;
+  background: var(--color-white);
+  box-shadow: 0 2px 10px rgba(1, 33, 61, 0.06);
+}
+
+.avd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-block-end: 16px;
+}
+
+/* Venue card */
+.avd-main {
+  overflow: hidden;
+}
+
+.avd-cover-wrap {
+  position: relative;
+}
+
+.avd-cover {
+  display: block;
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  background-color: var(--color-border);
+}
+
+.avd-cover-text {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  padding: 48px 24px 16px;
+  background: linear-gradient(to top, rgba(1, 33, 61, 0.85), rgba(1, 33, 61, 0));
+  color: var(--color-white);
+}
+
+.avd-cover-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.avd-cover-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.avd-cover-location svg {
+  flex-shrink: 0;
+}
+
+.avd-main-body {
+  padding: 24px;
+}
+
+.avd-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+
+.avd-fact {
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+}
+
+.avd-fact dt {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.avd-fact dd {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.avd-about {
+  margin-block-start: 24px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.avd-section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.avd-about-text {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.avd-muted {
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+}
+
+/* Owner card */
+.avd-owner {
+  padding: 24px;
+}
+
+.avd-owner-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-block-end: 16px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.avd-owner-head > div {
+  min-width: 0;
+}
+
+.avd-avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-navy);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+.avd-label {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.avd-owner-name {
+  margin: 2px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+
+.avd-owner-row {
+  margin-block-start: 16px;
+}
+
+.avd-owner-value {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+  overflow-wrap: anywhere;
+}
+
+[dir='rtl'] .avd-owner-value[dir='ltr'] {
+  text-align: right;
+}
+
+.avd-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(62, 74, 85, 0.1);
+  color: var(--color-text-secondary);
+}
+
+.avd-account-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.avd-account-active {
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--color-success);
+}
+
+.avd-account-locked {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-error);
+}
+
+.avd-account-unverified {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+
+.avd-owner-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 24px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.avd-owner-note svg {
+  flex-shrink: 0;
+  margin-block-start: 3px;
+}
+
+/* Photos card */
+.avd-photos {
+  padding: 24px;
+}
+
+.avd-photos-count {
+  margin: 2px 0 16px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.avd-gallery {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-rows: 140px;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.avd-gallery-item {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.avd-gallery-main {
+  grid-row: span 2;
+}
+
+.avd-gallery-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: var(--color-border);
+}
+
+.avd-no-photos {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Photo that could not be loaded. */
+.avd-photo-missing {
+  display: grid;
+  place-items: center;
+  color: var(--color-text-secondary);
+}
+
+/* Error / not found */
+.avd-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.avd-state-icon {
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+.avd-state-title {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.avd-state-text {
+  max-width: 480px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+}
+
+/* Loading placeholders */
+.avd-skeleton,
+.avd-skeleton-block {
+  display: block;
+  border-radius: 4px;
+  background-color: var(--color-border);
+}
+
+.avd-skeleton-title {
+  width: 240px;
+  height: 32px;
+}
+
+.avd-skeleton-line {
+  width: 70%;
+  height: 12px;
+  margin-block-end: 16px;
+}
+
+.avd-fact-skeleton {
+  height: 64px;
+  border-radius: 8px;
+}
+
+/* Tablet: the owner card goes under the venue card. */
+@media (max-width: 1024px) {
+  .avd-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Phone */
+@media (max-width: 767px) {
+  .avd-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .avd-title {
+    font-size: 24px;
+  }
+
+  .avd-header-actions {
+    flex-wrap: wrap;
+  }
+
+  .avd-header-actions > button {
+    flex: 1 1 auto;
+  }
+
+  .avd-cover {
+    height: 200px;
+  }
+
+  .avd-cover-text {
+    padding: 40px 16px 12px;
+  }
+
+  .avd-main-body,
+  .avd-owner,
+  .avd-photos {
+    padding: 16px;
+  }
+
+  .avd-facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .avd-fact {
+    padding: 12px 16px;
+  }
+
+  .avd-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 120px;
+    gap: 8px;
+  }
+
+  .avd-gallery-main {
+    grid-column: 1 / -1;
+    grid-row: span 2;
+  }
+}

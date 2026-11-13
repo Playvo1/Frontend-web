@@ -1,5 +1,4 @@
 import { IS_API_ENABLED } from '../config/api.js'
-import { MOCK_VENUE_OWNER_DASHBOARD } from '../mocks/mockVenueOwnerDashboard.js'
 import { apiRequest } from './apiClient.js'
 import { getVenueOwnerFacility } from './facilityService.js'
 import { getVenueOwnerDaySlots } from './slotsService.js'
@@ -117,6 +116,7 @@ async function playerNamesFor(bookedSlotIds, venueId, token) {
 // }>
 export async function getVenueOwnerDashboard(token) {
   if (!IS_API_ENABLED) {
+    const { MOCK_VENUE_OWNER_DASHBOARD } = await import('../mocks/mockVenueOwnerDashboard.js')
     const { venue, todaySchedule, weeklyBookings, weeklyRevenue } = structuredClone(MOCK_VENUE_OWNER_DASHBOARD)
     return { venue, todaySchedule, weeklyBookings, weeklyRevenue }
   }
@@ -194,6 +194,7 @@ async function readAnalytics(period, token) {
 // period: 'today' | 'week' | 'month' | 'lastMonth'.
 export async function getVenueOwnerDashboardStats(period, token) {
   if (!IS_API_ENABLED) {
+    const { MOCK_VENUE_OWNER_DASHBOARD } = await import('../mocks/mockVenueOwnerDashboard.js')
     const stats = structuredClone(MOCK_VENUE_OWNER_DASHBOARD.stats)
     return { ...stats, revenue: stats.weekRevenue, range: null, weekRange: null }
   }
@@ -229,5 +230,6 @@ export async function getVenueOwnerDashboardStats(period, token) {
 // is wired to the owner's venue.
 export async function getVenueOwnerVenue() {
   if (IS_API_ENABLED) return null
+  const { MOCK_VENUE_OWNER_DASHBOARD } = await import('../mocks/mockVenueOwnerDashboard.js')
   return structuredClone(MOCK_VENUE_OWNER_DASHBOARD.venue)
 }

@@ -1,5 +1,4 @@
 import { IS_API_ENABLED } from '../config/api.js'
-import { createMockNotifications } from '../mocks/mockNotifications.js'
 import { apiRequest } from './apiClient.js'
 
 // Notifications of the signed-in user.
@@ -65,7 +64,10 @@ function toNotification(item) {
 }
 
 export async function getNotifications(token) {
-  if (!IS_API_ENABLED) return createMockNotifications()
+  if (!IS_API_ENABLED) {
+    const { createMockNotifications } = await import('../mocks/mockNotifications.js')
+    return createMockNotifications()
+  }
   const { notifications, unreadCount } = await fetchAllNotifications(token)
   storeUnread(token, unreadCount ?? notifications.filter((item) => !item.is_read).length)
   return notifications

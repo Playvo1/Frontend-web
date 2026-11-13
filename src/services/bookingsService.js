@@ -1,6 +1,4 @@
 import { IS_API_ENABLED } from '../config/api.js'
-import { MOCK_VENUE_OWNER_BOOKINGS } from '../mocks/mockVenueOwnerBookings.js'
-import { MOCK_VENUE_OWNER_BOOKING_TIMELINE } from '../mocks/mockVenueOwnerBookingTimeline.js'
 import { apiRequest } from './apiClient.js'
 import { absoluteUrl, getVenueOwnerFacility } from './facilityService.js'
 
@@ -95,7 +93,10 @@ async function fetchAllOwnerBookings(token) {
 // }]>
 // (The mock list only has the fields the table shows.)
 export async function getVenueOwnerBookings(token) {
-  if (!IS_API_ENABLED) return structuredClone(MOCK_VENUE_OWNER_BOOKINGS)
+  if (!IS_API_ENABLED) {
+    const { MOCK_VENUE_OWNER_BOOKINGS } = await import('../mocks/mockVenueOwnerBookings.js')
+    return structuredClone(MOCK_VENUE_OWNER_BOOKINGS)
+  }
   return fetchAllOwnerBookings(token)
 }
 
@@ -190,17 +191,22 @@ function toBookingDetails(item) {
 }
 
 export async function getVenueOwnerBookingDetails(id, token) {
-  if (IS_API_ENABLED) {
-    if (!/^\d+$/.test(String(id ?? ''))) return null
-    try {
-      const body = await apiRequest(`/venue_owner/owner/bookings/${encodeURIComponent(id)}`, { token })
-      return toBookingDetails(body?.data)
-    } catch (error) {
-      if (error?.status === 404) return null
-      throw error
-    }
+  // Demo branch first, so API builds drop it (and its mock data) entirely.
+  if (!IS_API_ENABLED) {
+    const [{ MOCK_VENUE_OWNER_BOOKINGS }, { MOCK_VENUE_OWNER_BOOKING_TIMELINE }] = await Promise.all([
+      import('../mocks/mockVenueOwnerBookings.js'),
+      import('../mocks/mockVenueOwnerBookingTimeline.js'),
+    ])
+    const booking = MOCK_VENUE_OWNER_BOOKINGS.find((item) => String(item.id) === String(id))
+    if (!booking) return null
+    return structuredClone({ ...booking, timeline: MOCK_VENUE_OWNER_BOOKING_TIMELINE[booking.id] ?? null })
   }
-  const booking = MOCK_VENUE_OWNER_BOOKINGS.find((item) => String(item.id) === String(id))
-  if (!booking) return null
-  return structuredClone({ ...booking, timeline: MOCK_VENUE_OWNER_BOOKING_TIMELINE[booking.id] ?? null })
+  if (!/^\d+$/.test(String(id ?? ''))) return null
+  try {
+    const body = await apiRequest(`/venue_owner/owner/bookings/${encodeURIComponent(id)}`, { token })
+    return toBookingDetails(body?.data)
+  } catch (error) {
+    if (error?.status === 404) return null
+    throw error
+  }
 }
