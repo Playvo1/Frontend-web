@@ -1,5 +1,4 @@
 import { IS_API_ENABLED } from '../config/api.js'
-import { MOCK_VENUE_OWNER_REVIEWS } from '../mocks/mockVenueOwnerReviews.js'
 import { apiRequest } from './apiClient.js'
 import { getVenueOwnerFacility } from './facilityService.js'
 
@@ -79,6 +78,7 @@ function toDistribution(list) {
 
 export async function getVenueOwnerReviews(token, page = 1) {
   if (!IS_API_ENABLED) {
+    const { MOCK_VENUE_OWNER_REVIEWS } = await import('../mocks/mockVenueOwnerReviews.js')
     return { ...structuredClone(MOCK_VENUE_OWNER_REVIEWS), page: { current: 1, last: 1 } }
   }
 

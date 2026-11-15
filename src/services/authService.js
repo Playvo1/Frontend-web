@@ -2,7 +2,6 @@ import { IS_API_ENABLED } from '../config/api.js'
 import { WEB_ROLES } from '../constants/roles.js'
 import * as authApi from './authApi.js'
 import { AUTH_ERRORS, AuthError } from './authErrors.js'
-import * as authMock from './authMock.js'
 
 // Auth service — the single entry point used by AuthProvider and the auth
 // pages. It picks the implementation once, from configuration:
@@ -124,12 +123,16 @@ const api = {
 
 // ---- Mock implementation ---------------------------------------------------
 
+// authMock.js (and the mock accounts it reads) is loaded only when a demo
+// call is made, so API builds leave it out entirely (see vite.config.js).
+const loadAuthMock = () => import('./authMock.js')
+
 const mock = {
-  login: authMock.login,
-  requestPasswordReset: authMock.requestPasswordReset,
-  verifyResetCode: authMock.verifyResetCode,
-  resetPassword: authMock.resetPassword,
-  logout: () => authMock.logout(),
+  login: async (credentials) => (await loadAuthMock()).login(credentials),
+  requestPasswordReset: async (params) => (await loadAuthMock()).requestPasswordReset(params),
+  verifyResetCode: async (params) => (await loadAuthMock()).verifyResetCode(params),
+  resetPassword: async (params) => (await loadAuthMock()).resetPassword(params),
+  logout: async () => (await loadAuthMock()).logout(),
 }
 
 const impl = IS_API_ENABLED ? api : mock

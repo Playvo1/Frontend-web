@@ -1,5 +1,4 @@
 import { IS_API_ENABLED } from '../config/api.js'
-import { MOCK_VENUE_OWNER_SLOTS } from '../mocks/mockVenueOwnerSlots.js'
 import { apiRequest } from './apiClient.js'
 import { getVenueOwnerFacility } from './facilityService.js'
 
@@ -83,14 +82,20 @@ async function fetchSlots(token, date) {
 // All of the owner's slots (calendar dots).
 // getVenueOwnerSlots(token) -> Promise<Slot[]>
 export async function getVenueOwnerSlots(token) {
-  if (!IS_API_ENABLED) return structuredClone(MOCK_VENUE_OWNER_SLOTS)
+  if (!IS_API_ENABLED) {
+    const { MOCK_VENUE_OWNER_SLOTS } = await import('../mocks/mockVenueOwnerSlots.js')
+    return structuredClone(MOCK_VENUE_OWNER_SLOTS)
+  }
   return fetchSlots(token)
 }
 
 // The slots of one date (the selected day), filtered by the backend.
 // getVenueOwnerDaySlots(date, token) -> Promise<Slot[]>
 export async function getVenueOwnerDaySlots(date, token) {
-  if (!IS_API_ENABLED) return structuredClone(MOCK_VENUE_OWNER_SLOTS.filter((slot) => slot.slot_date === date))
+  if (!IS_API_ENABLED) {
+    const { MOCK_VENUE_OWNER_SLOTS } = await import('../mocks/mockVenueOwnerSlots.js')
+    return structuredClone(MOCK_VENUE_OWNER_SLOTS.filter((slot) => slot.slot_date === date))
+  }
   return fetchSlots(token, date)
 }
 

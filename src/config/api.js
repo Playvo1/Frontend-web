@@ -13,5 +13,9 @@ export const API_BASE_URL = String(rawBaseUrl).trim().replace(/\/+$/, '')
 // Route prefix confirmed in the backend's routes/api.php (commit 3c2c09f).
 export const API_PREFIX = '/api/v1'
 
-// true only when a base URL has been configured.
-export const IS_API_ENABLED = API_BASE_URL !== ''
+// true only when a base URL has been configured. A build-time constant
+// (vite.config.js defines __PLAYVO_API_ENABLED__ from the same variable,
+// normalised the same way), so Vite removes the demo-mode code and the mock
+// data from API builds.
+/* global __PLAYVO_API_ENABLED__ */
+export const IS_API_ENABLED = __PLAYVO_API_ENABLED__

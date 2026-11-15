@@ -1,5 +1,4 @@
 import { API_BASE_URL, IS_API_ENABLED } from '../config/api.js'
-import { MOCK_VENUE_OWNER_FACILITY } from '../mocks/mockVenueOwnerFacility.js'
 import { apiRequest } from './apiClient.js'
 import { getOwnerProfile } from './ownerProfileService.js'
 
@@ -186,7 +185,10 @@ function toOwnerFacility(venues, user) {
 }
 
 export async function getVenueOwnerFacility({ token, user } = {}) {
-  if (!IS_API_ENABLED) return structuredClone(MOCK_VENUE_OWNER_FACILITY)
+  if (!IS_API_ENABLED) {
+    const { MOCK_VENUE_OWNER_FACILITY } = await import('../mocks/mockVenueOwnerFacility.js')
+    return structuredClone(MOCK_VENUE_OWNER_FACILITY)
+  }
 
   const venues = await fetchOwnerVenues(token)
   return toOwnerFacility(venues, user)

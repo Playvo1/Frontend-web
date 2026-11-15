@@ -1,0 +1,808 @@
+/*
+ * Admin "Payment receipts" page — layout from the design: title + subtitle,
+ * three statistics cards (the "awaiting review" one outlined and marked
+ * "Priority"), then one white card with the search and filters, the
+ * "Showing x of y" line and the receipts table (pending rows on a light
+ * background). Same tokens and patterns as the venues page (AdminVenues.css);
+ * colors use the tokens in index.css; spacing follows the 8pt grid.
+ */
+
+.apr-header {
+  margin-block-end: 24px;
+}
+
+.apr-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.apr-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Statistics cards */
+.apr-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-block-end: 16px;
+}
+
+.apr-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-white);
+}
+
+.apr-stat-pending {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.apr-stat-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-block-end: 12px;
+}
+
+.apr-stat-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+}
+
+.apr-stat-icon-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+
+.apr-stat-icon-verified {
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--color-success);
+}
+
+.apr-stat-icon-rejected {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-error);
+}
+
+.apr-priority {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-orange);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--color-white);
+}
+
+.apr-stat-value {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-navy);
+}
+
+.apr-stat-label {
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* Table card */
+.apr-card {
+  overflow: hidden;
+  padding: 24px 24px 8px;
+  border-radius: 12px;
+  background: var(--color-white);
+  box-shadow: 0 2px 10px rgba(1, 33, 61, 0.06);
+}
+
+.apr-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.apr-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.apr-search {
+  flex: 0 1 448px;
+  min-width: 0;
+}
+
+.apr-search .input-field {
+  height: 40px;
+  padding: 0 12px;
+  border-color: var(--color-border);
+  border-radius: 8px;
+}
+
+.apr-search .input-field:focus-within {
+  border-color: var(--color-orange);
+}
+
+.apr-search .input-control {
+  font-size: 13px;
+}
+
+.apr-search .input-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.apr-select {
+  height: 40px;
+  min-width: 120px;
+  padding-inline: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-white);
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.apr-count {
+  margin: 12px 0 16px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* Table: full card width (bleeds into the card's padding). */
+.apr-table-scroll {
+  margin-inline: -24px;
+  overflow-x: auto;
+}
+
+.apr-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+}
+
+.apr-table th,
+.apr-table td {
+  padding-inline: 12px;
+  text-align: start;
+}
+
+.apr-table th:first-child,
+.apr-table td:first-child {
+  padding-inline-start: 24px;
+}
+
+.apr-table th:last-child,
+.apr-table td:last-child {
+  padding-inline-end: 24px;
+}
+
+.apr-table th {
+  height: 40px;
+  background: var(--color-background-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.apr-table td {
+  height: 64px;
+  border-block-start: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-navy);
+}
+
+/* Receipts awaiting review: light background, as in the design. */
+.apr-table tr.apr-row-pending td {
+  background: #fffbf2;
+}
+
+.apr-table td.apr-code {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.apr-table td.apr-player {
+  font-weight: 600;
+}
+
+.apr-table td.apr-muted {
+  color: var(--color-text-secondary);
+}
+
+.apr-table td.apr-uploaded {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.apr-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.apr-slot-date {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.apr-slot-time {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.apr-thumb {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.apr-thumb-missing {
+  display: grid;
+  place-items: center;
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+}
+
+/* Status badges: dot + label. */
+.apr-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.apr-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.apr-status-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+
+.apr-status-verified {
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--color-success);
+}
+
+.apr-status-rejected {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--color-error);
+}
+
+/* "Review receipt": filled for pending receipts, outlined otherwise. */
+.apr-review {
+  height: 32px;
+  padding-inline: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-white);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-navy);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.apr-review:hover {
+  background: var(--color-background-secondary);
+}
+
+.apr-review-primary {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.apr-review-primary:hover {
+  background: #0b3557; /* Navy 700 */
+}
+
+.apr-table td.apr-no-results {
+  height: 96px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+/* Loading placeholders */
+.apr-skeleton {
+  display: inline-block;
+  height: 12px;
+  border-radius: 4px;
+  background-color: var(--color-border);
+  vertical-align: middle;
+}
+
+.apr-skeleton-value {
+  width: 32px;
+  height: 22px;
+  margin-block: 4px;
+}
+
+.apr-skeleton-code {
+  width: 64px;
+}
+
+.apr-skeleton-name {
+  width: 88px;
+}
+
+.apr-skeleton-venue {
+  width: 96px;
+}
+
+.apr-skeleton-slot {
+  width: 88px;
+  height: 28px;
+}
+
+.apr-skeleton-date {
+  width: 72px;
+}
+
+.apr-skeleton-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+}
+
+.apr-skeleton-badge {
+  width: 72px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+.apr-skeleton-button {
+  width: 96px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+/* Empty / error (inside the card) */
+.apr-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 16px 56px;
+  text-align: center;
+}
+
+.apr-state-icon {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.apr-state-icon-error {
+  color: var(--color-error);
+  opacity: 1;
+}
+
+.apr-state-title {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.apr-state-text {
+  max-width: 440px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.apr-retry {
+  height: 40px;
+  margin-block-start: 8px;
+  padding-inline: 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-navy);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-white);
+  cursor: pointer;
+}
+
+/* Review dialog */
+.apr-dialog {
+  width: 820px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  padding: 24px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-white);
+  color: var(--color-navy);
+  font: inherit;
+}
+
+.apr-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.apr-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 16px;
+}
+
+.apr-dialog-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.apr-dialog-code {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.apr-dialog-close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-white);
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.apr-dialog-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.apr-receipt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  min-width: 0;
+}
+
+.apr-receipt-image,
+.apr-receipt-missing {
+  width: 100%;
+  height: 380px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background-secondary);
+}
+
+.apr-receipt-image {
+  display: block;
+  object-fit: contain;
+}
+
+.apr-receipt-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.apr-receipt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.apr-summary {
+  min-width: 0;
+}
+
+.apr-summary-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.apr-summary-list {
+  margin: 0;
+}
+
+.apr-summary-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 10px;
+  border-block-end: 1px solid var(--color-border);
+}
+
+.apr-summary-row dt {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.apr-summary-row dd {
+  margin: 0;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+.apr-dialog-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.apr-muted-text {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.apr-dialog-reason {
+  font-weight: 500;
+  white-space: pre-line;
+}
+
+/* Rejection reason */
+.apr-reason {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-block-start: 16px;
+}
+
+.apr-reason-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.apr-required {
+  color: var(--color-orange);
+}
+
+.apr-reason-input {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-navy);
+  resize: vertical;
+}
+
+.apr-reason-input:focus {
+  outline: none;
+  border-color: var(--color-orange);
+  background: var(--color-white);
+}
+
+.apr-reason-input-invalid {
+  border-color: var(--color-error);
+}
+
+.apr-reason-hint,
+.apr-reason-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.apr-reason-error {
+  color: var(--color-error);
+}
+
+/* Final rejection check (dsm-* look) */
+.apr-dialog-confirm {
+  padding-block: 8px;
+}
+
+.apr-confirm-message {
+  margin-block-start: 0;
+  font-size: 15px;
+}
+
+.apr-confirm-reason-label {
+  margin: 16px 0 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.apr-confirm-reason {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-background-secondary);
+  font-size: 13px;
+}
+
+.apr-dialog-error {
+  margin-block-start: 16px;
+}
+
+.apr-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block-start: 24px;
+}
+
+.apr-button {
+  height: 44px;
+  padding-inline: 24px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apr-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.apr-button-primary {
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.apr-button-primary:hover:not(:disabled) {
+  background: #0b3557; /* Navy 700 */
+}
+
+.apr-button-danger {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+.apr-button-danger-outline {
+  border-color: rgba(220, 38, 38, 0.4);
+  background: var(--color-white);
+  color: var(--color-error);
+}
+
+.apr-button-secondary {
+  border-color: var(--color-border);
+  background: var(--color-white);
+  color: var(--color-navy);
+}
+
+.apr-select:focus-visible,
+.apr-review:focus-visible,
+.apr-retry:focus-visible,
+.apr-button:focus-visible,
+.apr-dialog-close:focus-visible,
+.apr-receipt-link:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .apr-dialog-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .apr-receipt-image,
+  .apr-receipt-missing {
+    height: 300px;
+  }
+}
+
+/* Phone */
+@media (max-width: 767px) {
+  .apr-title {
+    font-size: 24px;
+  }
+
+  .apr-stats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .apr-card {
+    padding: 16px 16px 8px;
+  }
+
+  .apr-table-scroll {
+    margin-inline: -16px;
+  }
+
+  .apr-search {
+    flex: 1 1 100%;
+  }
+
+  .apr-select {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .apr-table th:first-child,
+  .apr-table td:first-child {
+    padding-inline-start: 16px;
+  }
+
+  .apr-table th:last-child,
+  .apr-table td:last-child {
+    padding-inline-end: 16px;
+  }
+
+  .apr-dialog {
+    padding: 16px;
+  }
+
+  .apr-receipt-image,
+  .apr-receipt-missing {
+    height: 220px;
+  }
+
+  .apr-dialog-footer {
+    flex-direction: column;
+  }
+
+  .apr-button {
+    width: 100%;
+  }
+}

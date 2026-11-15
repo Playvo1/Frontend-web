@@ -4,8 +4,8 @@
 // of the signed-in admin is shown (adminNotificationsService.js), never this
 // one.
 //
-// The backend (main) creates no notifications for admins yet; the `type`
-// values below are demo-only names. Texts are translation keys
+// The backend sends admins 'payment_receipt_uploaded' notifications only;
+// the other `type` values below are demo-only names. Texts are translation keys
 // (titleKey / bodyKey) so the demo follows the interface language.
 // Times are relative to when the page loads.
 

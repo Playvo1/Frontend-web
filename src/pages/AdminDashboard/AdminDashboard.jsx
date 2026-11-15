@@ -20,9 +20,14 @@ import './AdminDashboard.css'
 // received the data (the response has no timestamp).
 //
 // States: loading (design: the navy card's title with placeholder tiles,
-// one placeholder block per list card), error (connection or
-// server, with "Try again"; 401 signs out → /admin/login), empty data and the
-// loaded dashboard.
+// one placeholder block per list card), error (connection or server, with
+// "Try again"; no permission (403), without "Try again"; 401 signs out →
+// /admin/login), empty data and the loaded dashboard.
+//
+// "Most booked venues" lists only venues with at least one booking (the
+// backend also returns venues with 0 bookings; they are left out, keeping
+// the backend's order). "View venues" is a button that opens nothing on
+// purpose (temporary team decision): it only shows a pressed state.
 //
 // Empty data (design): each section is checked on its own. A list with no
 // items shows the empty illustration and message inside its card; a 0
@@ -67,7 +72,7 @@ function AdminDashboard() {
   const { token, logout } = useAuth()
   const [data, setData] = useState(null)
   const [fetchedAt, setFetchedAt] = useState(null)
-  // null | 'network' (no connection) | 'server' (any other failure).
+  // null | 'network' (no connection) | 'forbidden' (403) | 'server' (any other failure).
   const [errorKind, setErrorKind] = useState(null)
   const hasError = errorKind !== null
   // Incremented by "Try again" to run the request once more.
@@ -87,7 +92,7 @@ function AdminDashboard() {
           logout()
           return
         }
-        setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
+        setErrorKind(error?.status === 403 ? 'forbidden' : isConnectionFailure(error) ? 'network' : 'server')
       })
     return () => {
       isActive = false
@@ -186,12 +191,17 @@ function AdminDashboard() {
                 {t(
                   errorKind === 'network'
                     ? 'adminDashboard.errorState.networkMessage'
-                    : 'adminDashboard.errorState.serverMessage',
+                    : errorKind === 'forbidden'
+                      ? 'adminDashboard.errorState.forbiddenMessage'
+                      : 'adminDashboard.errorState.serverMessage',
                 )}
               </p>
-              <button type="button" className="ad-error-button" onClick={retry} disabled={isLoading}>
-                {t('adminDashboard.errorState.retry')}
-              </button>
+              {/* No permission: trying again would give the same answer. */}
+              {errorKind !== 'forbidden' && (
+                <button type="button" className="ad-error-button" onClick={retry} disabled={isLoading}>
+                  {t('adminDashboard.errorState.retry')}
+                </button>
+              )}
             </div>
           </section>
         </>
@@ -263,12 +273,11 @@ function AdminDashboard() {
                     </h2>
                     <p className="ad-card-subtitle">{t('adminDashboard.topVenues.subtitle')}</p>
                   </div>
-                  {/* The venues page is not built yet: shown as in the design,
-                      not a link (same convention as the sidebar). */}
-                  <span className="ad-card-link" aria-disabled="true">
+                  {/* Opens nothing on purpose (temporary team decision). */}
+                  <button type="button" className="ad-card-link">
                     {t('adminDashboard.topVenues.viewAll')}
                     <ForwardIcon size={14} aria-hidden="true" />
-                  </span>
+                  </button>
                 </header>
 
                 {data.topVenues.length === 0 ? (
