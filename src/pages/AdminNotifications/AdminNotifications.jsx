@@ -28,17 +28,26 @@ import './AdminNotifications.css'
 //
 // Data: adminNotificationsService — the signed-in admin's own notifications
 // (GET /notifications, each with its is_read state) in API mode, the demo
-// list in demo mode. Clicking an unread card marks it as read
-// (PUT /notifications/{id}/read); "Mark all as read" sends that request for
-// each unread notification (no bulk endpoint). A notification only becomes
-// read (and moves from Unread to Read) once its request succeeded; while it
-// runs the card shows as pending, and a failed request leaves it unread with
-// an error message.
+// list in demo mode. Title and body are shown as the backend stores them
+// (Arabic today, also in English; isolated with <bdi> so the direction of
+// the text does not disturb the card). Clicking an unread card marks it as
+// read (PUT /notifications/{id}/read); "Mark all as read" sends that request
+// for each unread notification, a few at a time (no bulk endpoint). A
+// notification only becomes read (and moves from Unread to Read) once its
+// request succeeded; while it runs the card shows as pending, and a failed
+// request leaves it unread with an error message (no connection / not found
+// / other). A 404 means the notification is no longer the admin's: the list
+// is read again in the background. The unread count (title, tab, top-bar
+// bell) follows. Results arriving after the page closed change nothing.
 //
-// Action buttons (design: review receipt, view receipts, view venues, view
-// accounts) open Admin pages that are not built yet: until a page exists
-// (ACTION_ROUTES `to`), the button only marks the notification as read, as
-// clicking the card does (no message, no page).
+// Load errors: no connection → Wi-Fi state; 403 → no-permission message
+// without "Try again"; 404 / 5xx / unexpected answer → server state; 401
+// signs out. No delete action (not in the design, no backend endpoint).
+//
+// Action buttons (design): mark the notification as read and open the
+// related Admin page (ACTION_ROUTES `to`). Receipts (the kind the backend
+// sends to admins) open the payment receipts page. `to: null` = that page
+// is not built yet (admin accounts): the button only marks as read.
 
 const TABS = ['all', 'unread', 'read']
 
@@ -62,12 +71,12 @@ const TYPE_ICONS = {
 }
 
 // Action of each kind: label key + the page it opens. `to: null` = that
-// Admin page is not linked yet (venues, admin accounts /admins): the button
-// only marks the notification as read. Set `to` when the page is linked.
+// Admin page is not built yet (admin accounts /admins): the button only
+// marks the notification as read. Set `to` when the page is built.
 const ACTION_ROUTES = {
   payment_receipt_uploaded: { labelKey: 'adminNotifications.actions.reviewReceipt', to: '/admin/payments' },
   payment_receipts_pending: { labelKey: 'adminNotifications.actions.viewReceipts', to: '/admin/payments' },
-  venue_created: { labelKey: 'adminNotifications.actions.viewVenues', to: null },
+  venue_created: { labelKey: 'adminNotifications.actions.viewVenues', to: '/admin/venues' },
   admin_created: { labelKey: 'adminNotifications.actions.viewAccounts', to: null },
 }
 
@@ -108,18 +117,28 @@ function AdminNotifications({ view = 'all' }) {
   const { token, logout } = useAuth()
   const timeLabel = useTimeLabel()
   const [notifications, setNotifications] = useState(null)
-  // null | 'network' | 'server'
+  // null | 'network' | 'forbidden' (403) | 'server'
   const [errorKind, setErrorKind] = useState(null)
   const [attempt, setAttempt] = useState(0)
   // "Try again" button of the error state: focused again when a retry fails
   // (the button is replaced by the loading state while the request runs).
   const retryRef = useRef(null)
   const tab = TABS.includes(view) ? view : 'all'
-  // A "mark as read" request failed (the notification stays unread).
+  // A "mark as read" request failed (the notification stays unread):
+  // false | 'generic' | 'network' | 'notFound'.
   const [markError, setMarkError] = useState(false)
   const [isMarkingAll, setIsMarkingAll] = useState(false)
   // Ids whose "mark as read" request is running.
   const [pendingIds, setPendingIds] = useState([])
+
+  // Requests finishing after the page closed must not update it.
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     let isActive = true
@@ -131,7 +150,7 @@ function AdminNotifications({ view = 'all' }) {
           logout()
           return
         }
-        setErrorKind(isConnectionFailure(error) ? 'network' : 'server')
+        setErrorKind(isConnectionFailure(error) ? 'network' : error?.status === 403 ? 'forbidden' : 'server')
       })
     return () => {
       isActive = false
@@ -158,22 +177,43 @@ function AdminNotifications({ view = 'all' }) {
       isPending ? [...current, ...ids.filter((id) => !current.includes(id))] : current.filter((id) => !ids.includes(id)),
     )
 
+  // Ids already sent (state updates are not seen by a second click in the
+  // same moment): no request is sent twice for one notification.
+  const sendingRef = useRef(new Set())
+
+  // List read again in the background (a notification was not found): the
+  // shown list is replaced only when the request succeeded.
+  const refreshQuietly = () => {
+    getAdminNotifications(token)
+      .then((fresh) => isMountedRef.current && setNotifications(fresh))
+      .catch(() => {})
+  }
+
+  // Failed "mark as read" -> message key; 401 signs out (no message).
+  const onMarkFailure = (error) => {
+    if (error?.status === 401) {
+      logout()
+      return
+    }
+    if (error?.status === 404) refreshQuietly()
+    setMarkError(isConnectionFailure(error) ? 'network' : error?.status === 404 ? 'notFound' : 'generic')
+  }
+
   // Marks one notification as read once the request succeeded; a failed
   // request leaves it unread and shows the error message.
   const markRead = (notification) => {
-    if (notification.is_read || pendingIds.includes(notification.id) || isMarkingAll) return
+    const { id } = notification
+    if (notification.is_read || pendingIds.includes(id) || sendingRef.current.has(id) || isMarkingAll) return
+    sendingRef.current.add(id)
     setMarkError(false)
-    setPending([notification.id], true)
-    markAdminNotificationRead(notification.id, token)
-      .then(() => setRead([notification.id], true))
-      .catch((error) => {
-        if (error?.status === 401) {
-          logout()
-          return
-        }
-        setMarkError(true)
+    setPending([id], true)
+    markAdminNotificationRead(id, token)
+      .then(() => isMountedRef.current && setRead([id], true))
+      .catch((error) => isMountedRef.current && onMarkFailure(error))
+      .finally(() => {
+        sendingRef.current.delete(id)
+        if (isMountedRef.current) setPending([id], false)
       })
-      .finally(() => setPending([notification.id], false))
   }
 
   const list = notifications ?? []
@@ -182,28 +222,26 @@ function AdminNotifications({ view = 'all' }) {
 
   const markAllRead = () => {
     if (unreadCount === 0 || isMarkingAll) return
-    const ids = unreadIds.filter((id) => !pendingIds.includes(id))
+    const ids = unreadIds.filter((id) => !pendingIds.includes(id) && !sendingRef.current.has(id))
     if (ids.length === 0) return
+    ids.forEach((id) => sendingRef.current.add(id))
     setMarkError(false)
     setIsMarkingAll(true)
     setPending(ids, true)
     markAllAdminNotificationsRead(ids, token)
-      .then(({ failedIds }) => {
+      .then(({ failedIds, error }) => {
+        if (!isMountedRef.current) return
         // Only the notifications whose request succeeded become read.
         setRead(
           ids.filter((id) => !failedIds.includes(id)),
           true,
         )
-        if (failedIds.length > 0) setMarkError(true)
+        if (failedIds.length > 0) onMarkFailure(error)
       })
-      .catch((error) => {
-        if (error?.status === 401) {
-          logout()
-          return
-        }
-        setMarkError(true)
-      })
+      .catch((error) => isMountedRef.current && onMarkFailure(error))
       .finally(() => {
+        ids.forEach((id) => sendingRef.current.delete(id))
+        if (!isMountedRef.current) return
         setPending(ids, false)
         setIsMarkingAll(false)
       })
@@ -262,7 +300,13 @@ function AdminNotifications({ view = 'all' }) {
 
       {markError && (
         <p className="adn-mark-error" role="alert">
-          {t('adminNotifications.markError')}
+          {t(
+            markError === 'network'
+              ? 'adminNotifications.markErrorNetwork'
+              : markError === 'notFound'
+                ? 'adminNotifications.markErrorNotFound'
+                : 'adminNotifications.markError',
+          )}
         </p>
       )}
 
@@ -307,12 +351,17 @@ function AdminNotifications({ view = 'all' }) {
             {t(
               errorKind === 'network'
                 ? 'adminNotifications.errorState.networkMessage'
-                : 'adminNotifications.errorState.serverMessage',
+                : errorKind === 'forbidden'
+                  ? 'adminNotifications.errorState.forbiddenMessage'
+                  : 'adminNotifications.errorState.serverMessage',
             )}
           </p>
-          <button ref={retryRef} type="button" className="adn-error-retry" onClick={retry}>
-            {t('adminNotifications.errorState.retry')}
-          </button>
+          {/* No permission: trying again would give the same answer. */}
+          {errorKind !== 'forbidden' && (
+            <button ref={retryRef} type="button" className="adn-error-retry" onClick={retry}>
+              {t('adminNotifications.errorState.retry')}
+            </button>
+          )}
         </div>
       )}
 
@@ -360,10 +409,14 @@ function AdminNotifications({ view = 'all' }) {
                 <div className="adn-content">
                   <p className="adn-card-title">
                     {isUnread && <span className="adn-dot" aria-hidden="true" />}
-                    {title}
+                    <bdi>{title}</bdi>
                     {isUnread && <span className="adn-visually-hidden"> — {t('adminNotifications.unread')}</span>}
                   </p>
-                  {body && <p className="adn-card-body">{body}</p>}
+                  {body && (
+                    <p className="adn-card-body">
+                      <bdi>{body}</bdi>
+                    </p>
+                  )}
                   <p className="adn-card-time">
                     <bdi>{timeLabel(notification.created_at)}</bdi>
                   </p>
